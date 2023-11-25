@@ -1,9 +1,11 @@
-use crate::exec;
+use std::fmt;
+use std::str::FromStr;
+
 use simplicity::jet::Jet;
 use simplicity::node::Inner;
 use simplicity::RedeemNode;
-use std::fmt;
-use std::str::FromStr;
+
+use crate::exec;
 
 #[derive(Copy, Clone, Ord, PartialOrd, Eq, PartialEq)]
 pub enum Instruction {
@@ -104,101 +106,195 @@ impl Instruction {
 #[derive(Debug, Copy, Clone)]
 enum Task<'a, J: Jet> {
     Run(Instruction),
-    Translate(&'a RedeemNode<J>),
+    TcoOff(&'a RedeemNode<J>),
+    TcoOn(&'a RedeemNode<J>),
 }
 
 #[derive(Debug, Clone)]
 pub struct Tco<'a, J: Jet> {
     stack: Vec<Task<'a, J>>,
+    optimization: bool,
 }
 
 impl<'a, J: Jet> Tco<'a, J> {
-    pub fn for_program(program: &'a RedeemNode<J>) -> Self {
+    pub fn for_program(program: &'a RedeemNode<J>, optimization: bool) -> Self {
         Self {
-            stack: vec![Task::Translate(program)],
+            stack: vec![Task::TcoOff(program)],
+            optimization,
         }
     }
 
     pub fn next(&mut self, mac: &mut exec::BitMachine) -> Result<Option<Instruction>, exec::Error> {
         while let Some(top) = self.stack.pop() {
-            let node = match top {
+            match top {
                 Task::Run(x) => {
                     x.execute(mac)?;
                     return Ok(Some(x));
                 }
-                Task::Translate(node) => node,
-            };
-
-            match node.inner() {
-                Inner::Unit => {
-                    // nop; continue with next instruction
+                Task::TcoOff(node) => {
+                    self.tco_off(mac, node)?;
                 }
-                Inner::Iden => {
-                    let size_a = node.arrow().source.bit_width();
-                    self.stack.push(Task::Run(Instruction::Copy(size_a)));
+                Task::TcoOn(node) => {
+                    self.tco_off(mac, node)?;
                 }
-                Inner::InjL(left) => {
-                    let (b, _c) = node.arrow().target.split_sum().unwrap();
-                    let padl_b_c = node.arrow().target.bit_width() - b.bit_width() - 1;
-                    self.stack.push(Task::Translate(left));
-                    self.stack.push(Task::Run(Instruction::Skip(padl_b_c)));
-                    self.stack.push(Task::Run(Instruction::Write(false)));
-                }
-                Inner::InjR(left) => {
-                    let (_b, c) = node.arrow().target.split_sum().unwrap();
-                    let padr_b_c = node.arrow().target.bit_width() - c.bit_width() - 1;
-                    self.stack.push(Task::Translate(left));
-                    self.stack.push(Task::Run(Instruction::Skip(padr_b_c)));
-                    self.stack.push(Task::Run(Instruction::Write(true)));
-                }
-                Inner::Take(left) => {
-                    self.stack.push(Task::Translate(left));
-                }
-                Inner::Drop(left) => {
-                    let size_a = node.arrow().source.split_product().unwrap().0.bit_width();
-                    self.stack.push(Task::Run(Instruction::Bwd(size_a)));
-                    self.stack.push(Task::Translate(left));
-                    self.stack.push(Task::Run(Instruction::Fwd(size_a)));
-                }
-                Inner::Comp(left, right) => {
-                    let size_b = left.arrow().target.bit_width();
-                    self.stack.push(Task::Run(Instruction::DropFrame));
-                    self.stack.push(Task::Translate(right));
-                    self.stack.push(Task::Run(Instruction::MoveFrame));
-                    self.stack.push(Task::Translate(left));
-                    self.stack.push(Task::Run(Instruction::NewFrame(size_b)));
-                }
-                Inner::Pair(left, right) => {
-                    self.stack.push(Task::Translate(right));
-                    self.stack.push(Task::Translate(left));
-                }
-                Inner::Case(left, right) => {
-                    let choice_bit = mac.peek()?;
-                    let (sum_a_b, _c) = node.arrow().source.split_product().unwrap();
-                    let (a, b) = sum_a_b.split_sum().unwrap();
-
-                    if !choice_bit {
-                        let padl_a_b = sum_a_b.bit_width() - a.bit_width() - 1;
-                        self.stack.push(Task::Run(Instruction::Bwd(padl_a_b + 1)));
-                        self.stack.push(Task::Translate(left));
-                        self.stack.push(Task::Run(Instruction::Fwd(padl_a_b + 1)));
-                    } else {
-                        let padr_a_b = sum_a_b.bit_width() - b.bit_width() - 1;
-                        self.stack.push(Task::Run(Instruction::Bwd(padr_a_b + 1)));
-                        self.stack.push(Task::Translate(right));
-                        self.stack.push(Task::Run(Instruction::Fwd(padr_a_b + 1)));
-                    }
-                }
-                Inner::AssertL(..) | Inner::AssertR(..) | Inner::Fail(..) => {
-                    panic!("Assertions not supported")
-                }
-                Inner::Disconnect(..) => panic!("Disconnect not supported"),
-                Inner::Witness(..) => panic!("Witness not supported"),
-                Inner::Jet(..) | Inner::Word(..) => panic!("Jets not supported"),
             }
         }
 
         Ok(None)
+    }
+
+    fn tco_off(
+        &mut self,
+        mac: &mut exec::BitMachine,
+        node: &'a RedeemNode<J>,
+    ) -> Result<(), exec::Error> {
+        match node.inner() {
+            Inner::Unit => {
+                // nop; continue with next instruction
+            }
+            Inner::Iden => {
+                let size_a = node.arrow().source.bit_width();
+                self.stack.push(Task::Run(Instruction::Copy(size_a)));
+            }
+            Inner::InjL(left) => {
+                let (b, _c) = node.arrow().target.split_sum().unwrap();
+                let padl_b_c = node.arrow().target.bit_width() - b.bit_width() - 1;
+                self.stack.push(Task::TcoOff(left));
+                self.stack.push(Task::Run(Instruction::Skip(padl_b_c)));
+                self.stack.push(Task::Run(Instruction::Write(false)));
+            }
+            Inner::InjR(left) => {
+                let (_b, c) = node.arrow().target.split_sum().unwrap();
+                let padr_b_c = node.arrow().target.bit_width() - c.bit_width() - 1;
+                self.stack.push(Task::TcoOff(left));
+                self.stack.push(Task::Run(Instruction::Skip(padr_b_c)));
+                self.stack.push(Task::Run(Instruction::Write(true)));
+            }
+            Inner::Take(left) => {
+                self.stack.push(Task::TcoOff(left));
+            }
+            Inner::Drop(left) => {
+                let size_a = node.arrow().source.split_product().unwrap().0.bit_width();
+                self.stack.push(Task::TcoOff(left));
+                self.stack.push(Task::Run(Instruction::Fwd(size_a)));
+            }
+            Inner::Comp(left, right) => {
+                let size_b = left.arrow().target.bit_width();
+                if !self.optimization {
+                    self.stack.push(Task::Run(Instruction::DropFrame));
+                    self.stack.push(Task::TcoOff(right));
+                } else {
+                    self.stack.push(Task::TcoOn(right));
+                }
+                self.stack.push(Task::Run(Instruction::MoveFrame));
+                self.stack.push(Task::TcoOff(left));
+                self.stack.push(Task::Run(Instruction::NewFrame(size_b)));
+            }
+            Inner::Pair(left, right) => {
+                self.stack.push(Task::TcoOff(right));
+                self.stack.push(Task::TcoOff(left));
+            }
+            Inner::Case(left, right) => {
+                let choice_bit = mac.peek()?;
+                let (sum_a_b, _c) = node.arrow().source.split_product().unwrap();
+                let (a, b) = sum_a_b.split_sum().unwrap();
+
+                if !choice_bit {
+                    let padl_a_b = sum_a_b.bit_width() - a.bit_width() - 1;
+                    self.stack.push(Task::TcoOff(left));
+                    self.stack.push(Task::Run(Instruction::Fwd(padl_a_b + 1)));
+                } else {
+                    let padr_a_b = sum_a_b.bit_width() - b.bit_width() - 1;
+                    self.stack.push(Task::TcoOff(right));
+                    self.stack.push(Task::Run(Instruction::Fwd(padr_a_b + 1)));
+                }
+            }
+            Inner::AssertL(..) | Inner::AssertR(..) | Inner::Fail(..) => {
+                panic!("Assertions not supported")
+            }
+            Inner::Disconnect(..) => panic!("Disconnect not supported"),
+            Inner::Witness(..) => panic!("Witness not supported"),
+            Inner::Jet(..) | Inner::Word(..) => panic!("Jets not supported"),
+        }
+
+        Ok(())
+    }
+
+    fn tco_on(
+        &mut self,
+        mac: &mut exec::BitMachine,
+        node: &'a RedeemNode<J>,
+    ) -> Result<(), exec::Error> {
+        match node.inner() {
+            Inner::Unit => {
+                self.stack.push(Task::Run(Instruction::DropFrame));
+            }
+            Inner::Iden => {
+                let size_a = node.arrow().source.bit_width();
+                self.stack.push(Task::Run(Instruction::DropFrame));
+                self.stack.push(Task::Run(Instruction::Copy(size_a)));
+            }
+            Inner::InjL(left) => {
+                let (b, _c) = node.arrow().target.split_sum().unwrap();
+                let padl_b_c = node.arrow().target.bit_width() - b.bit_width() - 1;
+                self.stack.push(Task::TcoOn(left));
+                self.stack.push(Task::Run(Instruction::Skip(padl_b_c)));
+                self.stack.push(Task::Run(Instruction::Write(false)));
+            }
+            Inner::InjR(left) => {
+                let (_b, c) = node.arrow().target.split_sum().unwrap();
+                let padr_b_c = node.arrow().target.bit_width() - c.bit_width() - 1;
+                self.stack.push(Task::TcoOn(left));
+                self.stack.push(Task::Run(Instruction::Skip(padr_b_c)));
+                self.stack.push(Task::Run(Instruction::Write(true)));
+            }
+            Inner::Take(left) => {
+                self.stack.push(Task::TcoOn(left));
+            }
+            Inner::Drop(left) => {
+                let size_a = node.arrow().source.split_product().unwrap().0.bit_width();
+                self.stack.push(Task::Run(Instruction::Bwd(size_a)));
+                self.stack.push(Task::TcoOn(left));
+                self.stack.push(Task::Run(Instruction::Fwd(size_a)));
+            }
+            Inner::Comp(left, right) => {
+                let size_b = left.arrow().target.bit_width();
+                self.stack.push(Task::Run(Instruction::DropFrame));
+                self.stack.push(Task::TcoOn(right));
+                self.stack.push(Task::Run(Instruction::MoveFrame));
+                self.stack.push(Task::TcoOn(left));
+                self.stack.push(Task::Run(Instruction::NewFrame(size_b)));
+            }
+            Inner::Pair(left, right) => {
+                self.stack.push(Task::TcoOn(right));
+                self.stack.push(Task::TcoOff(left));
+            }
+            Inner::Case(left, right) => {
+                let choice_bit = mac.peek()?;
+                let (sum_a_b, _c) = node.arrow().source.split_product().unwrap();
+                let (a, b) = sum_a_b.split_sum().unwrap();
+
+                if !choice_bit {
+                    let padl_a_b = sum_a_b.bit_width() - a.bit_width() - 1;
+                    self.stack.push(Task::Run(Instruction::Bwd(padl_a_b + 1)));
+                    self.stack.push(Task::TcoOn(left));
+                    self.stack.push(Task::Run(Instruction::Fwd(padl_a_b + 1)));
+                } else {
+                    let padr_a_b = sum_a_b.bit_width() - b.bit_width() - 1;
+                    self.stack.push(Task::Run(Instruction::Bwd(padr_a_b + 1)));
+                    self.stack.push(Task::TcoOn(right));
+                    self.stack.push(Task::Run(Instruction::Fwd(padr_a_b + 1)));
+                }
+            }
+            Inner::AssertL(..) | Inner::AssertR(..) | Inner::Fail(..) => {
+                panic!("Assertions not supported")
+            }
+            Inner::Disconnect(..) => panic!("Disconnect not supported"),
+            Inner::Witness(..) => panic!("Witness not supported"),
+            Inner::Jet(..) | Inner::Word(..) => panic!("Jets not supported"),
+        }
+
+        Ok(())
     }
 }
 
@@ -245,17 +341,17 @@ mod tests {
         ";
         let program = program_from_string(s);
         let mut mac = exec::BitMachine::default();
-        let mut tco = Tco::for_program(&program);
-        println!("{mac}");
+        let mut tco = Tco::for_program(&program, true);
+        println!("Step 0: {mac}");
 
-        loop {
+        for i in 1.. {
             match tco.next(&mut mac) {
                 Ok(Some(x)) => println!("{x}"),
                 Ok(None) => break,
                 Err(error) => panic!("Error: {error}"),
             }
 
-            println!("{mac}");
+            println!("Step {i}: {mac}");
         }
     }
 }
