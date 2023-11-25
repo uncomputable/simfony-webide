@@ -311,6 +311,23 @@ mod tests {
         forest.to_witness_node(&empty_witness).finalize().unwrap()
     }
 
+    pub fn execute_string(s: &str, optimization: bool) {
+        let program = program_from_string(s);
+        let mut mac = exec::BitMachine::default();
+        let mut runner = Runner::for_program(&program, optimization);
+        println!("Step 0: {mac}");
+
+        for i in 1.. {
+            match runner.next(&mut mac) {
+                Ok(Some(x)) => println!("{x}"),
+                Ok(None) => break,
+                Err(error) => panic!("Error: {error}"),
+            }
+
+            println!("Step {i}: {mac}");
+        }
+    }
+
     #[test]
     fn to_string_from_string_roundtrip() {
         let instructions = [
@@ -332,26 +349,24 @@ mod tests {
     }
 
     #[test]
-    fn execute_program() {
+    fn execute_not() {
         let s = "
             not := comp (pair iden unit) (case (injr unit) (injl unit)) : 2 -> 2
             input := injl unit : 1 -> 2
             output := unit : 2 -> 1
             main := comp input (comp not output)
         ";
-        let program = program_from_string(s);
-        let mut mac = exec::BitMachine::default();
-        let mut runner = Runner::for_program(&program, true);
-        println!("Step 0: {mac}");
+        execute_string(s, false);
+    }
 
-        for i in 1.. {
-            match runner.next(&mut mac) {
-                Ok(Some(x)) => println!("{x}"),
-                Ok(None) => break,
-                Err(error) => panic!("Error: {error}"),
-            }
-
-            println!("Step {i}: {mac}");
-        }
+    #[test]
+    fn execute_not_optimized() {
+        let s = "
+            not := comp (pair iden unit) (case (injr unit) (injl unit)) : 2 -> 2
+            input := injl unit : 1 -> 2
+            output := unit : 2 -> 1
+            main := comp input (comp not output)
+        ";
+        execute_string(s, true);
     }
 }
