@@ -5,9 +5,9 @@ use simplicity::jet::Jet;
 use simplicity::node::Inner;
 use simplicity::RedeemNode;
 
-use crate::exec;
+use crate::{exec, util};
 
-#[derive(Copy, Clone, Ord, PartialOrd, Eq, PartialEq)]
+#[derive(Clone, Ord, PartialOrd, Eq, PartialEq)]
 pub enum Instruction {
     NewFrame(usize),
     MoveFrame,
@@ -17,6 +17,7 @@ pub enum Instruction {
     Copy(usize),
     Fwd(usize),
     Bwd(usize),
+    WriteString(Vec<bool>),
 }
 
 impl fmt::Display for Instruction {
@@ -30,6 +31,9 @@ impl fmt::Display for Instruction {
             Instruction::Copy(bit_len) => write!(f, "copy({bit_len})"),
             Instruction::Fwd(bit_len) => write!(f, "fwd({bit_len})"),
             Instruction::Bwd(bit_len) => write!(f, "bwd({bit_len})"),
+            Instruction::WriteString(bitstring) => {
+                write!(f, "writeString({})", util::fmt_bitstring(bitstring))
+            }
         }
     }
 }
@@ -80,14 +84,15 @@ impl FromStr for Instruction {
                 .parse::<usize>()
                 .map(Instruction::Bwd)
                 .map_err(|e| e.to_string()),
+            "writeString" => util::parse_bitstring(parts[1]).map(Instruction::WriteString),
             _ => Err(format!("Unknown instruction: {}", parts[0])),
         }
     }
 }
 
 impl Instruction {
-    pub fn execute(self, mac: &mut exec::BitMachine) -> Result<(), exec::Error> {
-        match self {
+    pub fn execute(&self, mac: &mut exec::BitMachine) -> Result<(), exec::Error> {
+        match *self {
             Instruction::NewFrame(bit_len) => {
                 mac.new_frame(bit_len);
                 Ok(())
@@ -99,11 +104,12 @@ impl Instruction {
             Instruction::Copy(bit_len) => mac.copy(bit_len),
             Instruction::Fwd(bit_len) => mac.fwd(bit_len),
             Instruction::Bwd(bit_len) => mac.bwd(bit_len),
+            Instruction::WriteString(ref bitstring) => mac.write_bitstring(bitstring),
         }
     }
 }
 
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Clone)]
 enum Task<'a, J: Jet> {
     Run(Instruction),
     TcoOff(&'a RedeemNode<J>),
@@ -210,11 +216,15 @@ impl<'a, J: Jet> Runner<'a, J> {
                 }
             }
             Inner::AssertL(..) | Inner::AssertR(..) | Inner::Fail(..) => {
-                panic!("Assertions not supported")
+                todo!("Assertions are like case")
             }
-            Inner::Disconnect(..) => panic!("Disconnect not supported"),
-            Inner::Witness(..) => panic!("Witness not supported"),
-            Inner::Jet(..) | Inner::Word(..) => panic!("Jets not supported"),
+            Inner::Disconnect(..) => todo!("Disconnect is easy at redemption time"),
+            Inner::Witness(value) | Inner::Word(value) => {
+                let bitstring = util::value_to_bitstring(value);
+                self.stack
+                    .push(Task::Run(Instruction::WriteString(bitstring)));
+            }
+            Inner::Jet(..) => todo!("TODO: Marshal with jets adaptor"),
         }
 
         Ok(())
@@ -290,8 +300,12 @@ impl<'a, J: Jet> Runner<'a, J> {
                 panic!("Assertions not supported")
             }
             Inner::Disconnect(..) => panic!("Disconnect not supported"),
-            Inner::Witness(..) => panic!("Witness not supported"),
-            Inner::Jet(..) | Inner::Word(..) => panic!("Jets not supported"),
+            Inner::Witness(value) | Inner::Word(value) => {
+                let bitstring = util::value_to_bitstring(value);
+                self.stack
+                    .push(Task::Run(Instruction::WriteString(bitstring)));
+            }
+            Inner::Jet(..) => panic!("Jets not supported"),
         }
 
         Ok(())
@@ -340,6 +354,7 @@ mod tests {
             Instruction::Skip(42),
             Instruction::Fwd(42),
             Instruction::Bwd(42),
+            Instruction::WriteString(vec![true, false, true]),
         ];
         for instruction in instructions {
             let s = instruction.to_string();
@@ -368,5 +383,15 @@ mod tests {
             main := comp input (comp not output)
         ";
         execute_string(s, true);
+    }
+
+    #[test]
+    fn execute_word() {
+        let s = "
+            input := const 0xff
+            output := unit
+            main := comp input output
+        ";
+        execute_string(s, false);
     }
 }

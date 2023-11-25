@@ -104,6 +104,19 @@ impl Frame {
         }
     }
 
+    pub fn write_bitstring(&mut self, bitstring: &[bool]) -> Result<(), Error> {
+        debug_assert!(self.cursor <= self.cells.len());
+        let self_new_cursor = self.cursor.saturating_add(bitstring.len());
+
+        if self_new_cursor <= self.cells.len() {
+            self.cells[self.cursor..self_new_cursor].copy_from_slice(bitstring);
+            self.cursor = self_new_cursor;
+            Ok(())
+        } else {
+            Err(Error::FrameEof)
+        }
+    }
+
     pub fn is_finished(&self) -> bool {
         self.cursor == self.cells.len()
     }
@@ -163,6 +176,11 @@ impl BitMachine {
     pub fn write(&mut self, bit: bool) -> Result<(), Error> {
         let write = self.write_stack.last_mut().ok_or(Error::WriteStackEmpty)?;
         write.write(bit)
+    }
+
+    pub fn write_bitstring(&mut self, bitstring: &[bool]) -> Result<(), Error> {
+        let write = self.write_stack.last_mut().ok_or(Error::WriteStackEmpty)?;
+        write.write_bitstring(bitstring)
     }
 
     pub fn skip(&mut self, bit_len: usize) -> Result<(), Error> {
