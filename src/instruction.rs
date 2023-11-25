@@ -111,12 +111,12 @@ enum Task<'a, J: Jet> {
 }
 
 #[derive(Debug, Clone)]
-pub struct Tco<'a, J: Jet> {
+pub struct Runner<'a, J: Jet> {
     stack: Vec<Task<'a, J>>,
     optimization: bool,
 }
 
-impl<'a, J: Jet> Tco<'a, J> {
+impl<'a, J: Jet> Runner<'a, J> {
     pub fn for_program(program: &'a RedeemNode<J>, optimization: bool) -> Self {
         Self {
             stack: vec![Task::TcoOff(program)],
@@ -341,11 +341,11 @@ mod tests {
         ";
         let program = program_from_string(s);
         let mut mac = exec::BitMachine::default();
-        let mut tco = Tco::for_program(&program, true);
+        let mut runner = Runner::for_program(&program, true);
         println!("Step 0: {mac}");
 
         for i in 1.. {
-            match tco.next(&mut mac) {
+            match runner.next(&mut mac) {
                 Ok(Some(x)) => println!("{x}"),
                 Ok(None) => break,
                 Err(error) => panic!("Error: {error}"),
