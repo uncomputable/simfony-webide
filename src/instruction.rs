@@ -1,0 +1,261 @@
+use crate::exec;
+use simplicity::jet::Jet;
+use simplicity::node::Inner;
+use simplicity::RedeemNode;
+use std::fmt;
+use std::str::FromStr;
+
+#[derive(Copy, Clone, Ord, PartialOrd, Eq, PartialEq)]
+pub enum Instruction {
+    NewFrame(usize),
+    MoveFrame,
+    DropFrame,
+    Write(bool),
+    Skip(usize),
+    Copy(usize),
+    Fwd(usize),
+    Bwd(usize),
+}
+
+impl fmt::Display for Instruction {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Instruction::NewFrame(bit_len) => write!(f, "newFrame({bit_len})"),
+            Instruction::MoveFrame => write!(f, "moveFrame"),
+            Instruction::DropFrame => write!(f, "dropFrame"),
+            Instruction::Write(bit) => write!(f, "write({bit})"),
+            Instruction::Skip(bit_len) => write!(f, "skip({bit_len})"),
+            Instruction::Copy(bit_len) => write!(f, "copy({bit_len})"),
+            Instruction::Fwd(bit_len) => write!(f, "fwd({bit_len})"),
+            Instruction::Bwd(bit_len) => write!(f, "bwd({bit_len})"),
+        }
+    }
+}
+
+impl fmt::Debug for Instruction {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        fmt::Display::fmt(self, f)
+    }
+}
+
+impl FromStr for Instruction {
+    type Err = String;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "moveFrame" => return Ok(Instruction::MoveFrame),
+            "dropFrame" => return Ok(Instruction::DropFrame),
+            _ => {}
+        }
+
+        let parts: Vec<&str> = s.split(&['(', ')'][..]).collect();
+        if parts.len() < 2 {
+            return Err(format!("Malformed instruction: {}", s));
+        }
+
+        match parts[0] {
+            "newFrame" => parts[1]
+                .parse::<usize>()
+                .map(Instruction::NewFrame)
+                .map_err(|e| e.to_string()),
+            "write" => parts[1]
+                .parse::<bool>()
+                .map(Instruction::Write)
+                .map_err(|e| e.to_string()),
+            "skip" => parts[1]
+                .parse::<usize>()
+                .map(Instruction::Skip)
+                .map_err(|e| e.to_string()),
+            "copy" => parts[1]
+                .parse::<usize>()
+                .map(Instruction::Copy)
+                .map_err(|e| e.to_string()),
+            "fwd" => parts[1]
+                .parse::<usize>()
+                .map(Instruction::Fwd)
+                .map_err(|e| e.to_string()),
+            "bwd" => parts[1]
+                .parse::<usize>()
+                .map(Instruction::Bwd)
+                .map_err(|e| e.to_string()),
+            _ => Err(format!("Unknown instruction: {}", parts[0])),
+        }
+    }
+}
+
+impl Instruction {
+    pub fn execute(self, mac: &mut exec::BitMachine) -> Result<(), exec::Error> {
+        match self {
+            Instruction::NewFrame(bit_len) => {
+                mac.new_frame(bit_len);
+                Ok(())
+            }
+            Instruction::MoveFrame => mac.move_frame(),
+            Instruction::DropFrame => mac.drop_frame(),
+            Instruction::Write(bit) => mac.write(bit),
+            Instruction::Skip(bit_len) => mac.skip(bit_len),
+            Instruction::Copy(bit_len) => mac.copy(bit_len),
+            Instruction::Fwd(bit_len) => mac.fwd(bit_len),
+            Instruction::Bwd(bit_len) => mac.bwd(bit_len),
+        }
+    }
+}
+
+#[derive(Debug, Copy, Clone)]
+enum Task<'a, J: Jet> {
+    Run(Instruction),
+    Translate(&'a RedeemNode<J>),
+}
+
+#[derive(Debug, Clone)]
+pub struct Tco<'a, J: Jet> {
+    stack: Vec<Task<'a, J>>,
+}
+
+impl<'a, J: Jet> Tco<'a, J> {
+    pub fn for_program(program: &'a RedeemNode<J>) -> Self {
+        Self {
+            stack: vec![Task::Translate(program)],
+        }
+    }
+
+    pub fn next(&mut self, mac: &mut exec::BitMachine) -> Result<Option<Instruction>, exec::Error> {
+        while let Some(top) = self.stack.pop() {
+            let node = match top {
+                Task::Run(x) => {
+                    x.execute(mac)?;
+                    return Ok(Some(x));
+                }
+                Task::Translate(node) => node,
+            };
+
+            match node.inner() {
+                Inner::Unit => {
+                    // nop; continue with next instruction
+                }
+                Inner::Iden => {
+                    let size_a = node.arrow().source.bit_width();
+                    self.stack.push(Task::Run(Instruction::Copy(size_a)));
+                }
+                Inner::InjL(left) => {
+                    let (b, _c) = node.arrow().target.split_sum().unwrap();
+                    let padl_b_c = node.arrow().target.bit_width() - b.bit_width() - 1;
+                    self.stack.push(Task::Translate(left));
+                    self.stack.push(Task::Run(Instruction::Skip(padl_b_c)));
+                    self.stack.push(Task::Run(Instruction::Write(false)));
+                }
+                Inner::InjR(left) => {
+                    let (_b, c) = node.arrow().target.split_sum().unwrap();
+                    let padr_b_c = node.arrow().target.bit_width() - c.bit_width() - 1;
+                    self.stack.push(Task::Translate(left));
+                    self.stack.push(Task::Run(Instruction::Skip(padr_b_c)));
+                    self.stack.push(Task::Run(Instruction::Write(true)));
+                }
+                Inner::Take(left) => {
+                    self.stack.push(Task::Translate(left));
+                }
+                Inner::Drop(left) => {
+                    let size_a = node.arrow().source.split_product().unwrap().0.bit_width();
+                    self.stack.push(Task::Run(Instruction::Bwd(size_a)));
+                    self.stack.push(Task::Translate(left));
+                    self.stack.push(Task::Run(Instruction::Fwd(size_a)));
+                }
+                Inner::Comp(left, right) => {
+                    let size_b = left.arrow().target.bit_width();
+                    self.stack.push(Task::Run(Instruction::DropFrame));
+                    self.stack.push(Task::Translate(right));
+                    self.stack.push(Task::Run(Instruction::MoveFrame));
+                    self.stack.push(Task::Translate(left));
+                    self.stack.push(Task::Run(Instruction::NewFrame(size_b)));
+                }
+                Inner::Pair(left, right) => {
+                    self.stack.push(Task::Translate(right));
+                    self.stack.push(Task::Translate(left));
+                }
+                Inner::Case(left, right) => {
+                    let choice_bit = mac.peek()?;
+                    let (sum_a_b, _c) = node.arrow().source.split_product().unwrap();
+                    let (a, b) = sum_a_b.split_sum().unwrap();
+
+                    if !choice_bit {
+                        let padl_a_b = sum_a_b.bit_width() - a.bit_width() - 1;
+                        self.stack.push(Task::Run(Instruction::Bwd(padl_a_b + 1)));
+                        self.stack.push(Task::Translate(left));
+                        self.stack.push(Task::Run(Instruction::Fwd(padl_a_b + 1)));
+                    } else {
+                        let padr_a_b = sum_a_b.bit_width() - b.bit_width() - 1;
+                        self.stack.push(Task::Run(Instruction::Bwd(padr_a_b + 1)));
+                        self.stack.push(Task::Translate(right));
+                        self.stack.push(Task::Run(Instruction::Fwd(padr_a_b + 1)));
+                    }
+                }
+                Inner::AssertL(..) | Inner::AssertR(..) | Inner::Fail(..) => {
+                    panic!("Assertions not supported")
+                }
+                Inner::Disconnect(..) => panic!("Disconnect not supported"),
+                Inner::Witness(..) => panic!("Witness not supported"),
+                Inner::Jet(..) | Inner::Word(..) => panic!("Jets not supported"),
+            }
+        }
+
+        Ok(None)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use simplicity::jet::Core;
+    use std::collections::HashMap;
+    use std::sync::Arc;
+
+    pub fn program_from_string(s: &str) -> Arc<RedeemNode<Core>> {
+        let empty_witness = HashMap::new();
+        let forest = simplicity::human_encoding::Forest::parse(s).unwrap();
+        forest.to_witness_node(&empty_witness).finalize().unwrap()
+    }
+
+    #[test]
+    fn to_string_from_string_roundtrip() {
+        let instructions = [
+            Instruction::NewFrame(42),
+            Instruction::MoveFrame,
+            Instruction::DropFrame,
+            Instruction::Write(false),
+            Instruction::Write(true),
+            Instruction::Copy(42),
+            Instruction::Skip(42),
+            Instruction::Fwd(42),
+            Instruction::Bwd(42),
+        ];
+        for instruction in instructions {
+            let s = instruction.to_string();
+            let parsed = Instruction::from_str(s.as_str()).unwrap();
+            assert_eq!(instruction, parsed);
+        }
+    }
+
+    #[test]
+    fn execute_program() {
+        let s = "
+            not := comp (pair iden unit) (case (injr unit) (injl unit)) : 2 -> 2
+            input := injl unit : 1 -> 2
+            output := unit : 2 -> 1
+            main := comp input (comp not output)
+        ";
+        let program = program_from_string(s);
+        let mut mac = exec::BitMachine::default();
+        let mut tco = Tco::for_program(&program);
+        println!("{mac}");
+
+        loop {
+            match tco.next(&mut mac) {
+                Ok(Some(x)) => println!("{x}"),
+                Ok(None) => break,
+                Err(error) => panic!("Error: {error}"),
+            }
+
+            println!("{mac}");
+        }
+    }
+}
