@@ -1,4 +1,8 @@
-use simplicity::Value;
+use std::collections::HashMap;
+use std::sync::Arc;
+
+use simplicity::jet::Elements;
+use simplicity::{RedeemNode, Value};
 
 pub fn value_to_bitstring(value: &Value) -> Vec<bool> {
     let mut bitstring = Vec::new();
@@ -37,4 +41,10 @@ pub fn parse_bitstring(s: &str) -> Result<Vec<bool>, String> {
         }
     }
     Ok(bitstring)
+}
+
+pub fn program_from_string(s: &str) -> Arc<RedeemNode<Elements>> {
+    let empty_witness = HashMap::new();
+    let forest = simplicity::human_encoding::Forest::parse(s).unwrap();
+    forest.to_witness_node(&empty_witness).finalize().unwrap()
 }

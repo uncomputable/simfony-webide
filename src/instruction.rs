@@ -360,18 +360,9 @@ impl<'a, J: Jet> Runner<'a, J> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use simplicity::jet::Core;
-    use std::collections::HashMap;
-    use std::sync::Arc;
-
-    pub fn program_from_string(s: &str) -> Arc<RedeemNode<Core>> {
-        let empty_witness = HashMap::new();
-        let forest = simplicity::human_encoding::Forest::parse(s).unwrap();
-        forest.to_witness_node(&empty_witness).finalize().unwrap()
-    }
 
     pub fn execute_string(s: &str, optimization: bool) {
-        let program = program_from_string(s);
+        let program = util::program_from_string(s);
         let mut mac = exec::BitMachine::for_program();
         let mut runner = Runner::for_program(&program, optimization);
         println!("Step 0: {mac}");
