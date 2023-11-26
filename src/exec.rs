@@ -88,15 +88,14 @@ impl Frame {
         }
     }
 
-    pub fn copy(&mut self, other: &mut Self, bit_len: usize) -> Result<(), Error> {
+    pub fn copy(&self, other: &mut Self, bit_len: usize) -> Result<(), Error> {
         debug_assert!(self.cursor <= self.cells.len());
         let self_new_cursor = self.cursor.saturating_add(bit_len);
         let other_new_cursor = other.cursor.saturating_add(bit_len);
 
-        if self_new_cursor <= self.cells.len() || other_new_cursor <= other.cells.len() {
+        if other_new_cursor <= other.cells.len() {
             other.cells[other.cursor..other_new_cursor]
                 .copy_from_slice(&self.cells[self.cursor..self_new_cursor]);
-            self.cursor = self_new_cursor;
             other.cursor = other_new_cursor;
             Ok(())
         } else {
