@@ -1,10 +1,14 @@
-use itertools::Itertools;
 use std::fmt;
+
+use itertools::Itertools;
+use simplicity::{Cmr, FailEntropy};
 
 #[derive(Debug, Copy, Clone)]
 pub enum Error {
     FrameEof,
     MoveUnfinishedFrame,
+    PrunedBranch(Cmr),
+    FailNode(FailEntropy),
 }
 
 impl fmt::Display for Error {
@@ -12,6 +16,8 @@ impl fmt::Display for Error {
         match self {
             Error::FrameEof => write!(f, "Unexpected end of frame"),
             Error::MoveUnfinishedFrame => write!(f, "Unfinished frame cannot be moved"),
+            Error::PrunedBranch(cmr) => write!(f, "Cannot execute pruned branch: {cmr}"),
+            Error::FailNode(entropy) => write!(f, "Cannot execute fail node: {entropy}"),
         }
     }
 }

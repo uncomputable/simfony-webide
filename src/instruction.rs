@@ -199,23 +199,35 @@ impl<'a, J: Jet> Runner<'a, J> {
                 stack.push(Task::TcoOff(right));
                 stack.push(Task::TcoOff(left));
             }
-            Inner::Case(left, right) => {
+            Inner::Case(..) | Inner::AssertL(..) | Inner::AssertR(..) => {
                 let choice_bit = mac.peek()?;
                 let (sum_a_b, _c) = node.arrow().source.split_product().unwrap();
                 let (a, b) = sum_a_b.split_sum().unwrap();
 
-                if !choice_bit {
-                    let padl_a_b = sum_a_b.bit_width() - a.bit_width() - 1;
-                    stack.push(Task::TcoOff(left));
-                    stack.push(Task::Run(Instruction::Fwd(padl_a_b + 1)));
-                } else {
-                    let padr_a_b = sum_a_b.bit_width() - b.bit_width() - 1;
-                    stack.push(Task::TcoOff(right));
-                    stack.push(Task::Run(Instruction::Fwd(padr_a_b + 1)));
+                match (node.inner(), choice_bit) {
+                    (Inner::Case(left, _) | Inner::AssertL(left, _), false) => {
+                        let padl_a_b = sum_a_b.bit_width() - a.bit_width() - 1;
+                        stack.push(Task::Run(Instruction::Bwd(padl_a_b + 1)));
+                        stack.push(Task::TcoOff(left));
+                        stack.push(Task::Run(Instruction::Fwd(padl_a_b + 1)));
+                    }
+                    (Inner::Case(_, right) | Inner::AssertR(_, right), true) => {
+                        let padr_a_b = sum_a_b.bit_width() - b.bit_width() - 1;
+                        stack.push(Task::Run(Instruction::Bwd(padr_a_b + 1)));
+                        stack.push(Task::TcoOff(right));
+                        stack.push(Task::Run(Instruction::Fwd(padr_a_b + 1)));
+                    }
+                    (Inner::AssertL(_, right_cmr), true) => {
+                        return Err(exec::Error::PrunedBranch(*right_cmr));
+                    }
+                    (Inner::AssertR(left_cmr, _), false) => {
+                        return Err(exec::Error::PrunedBranch(*left_cmr));
+                    }
+                    _ => unreachable!("Covered by outer match statement"),
                 }
             }
-            Inner::AssertL(..) | Inner::AssertR(..) | Inner::Fail(..) => {
-                todo!("Assertions are like case")
+            Inner::Fail(entropy) => {
+                return Err(exec::Error::FailNode(*entropy));
             }
             Inner::Disconnect(left, right) => {
                 let size_prod_256_a = left.arrow().source.bit_width();
@@ -307,25 +319,33 @@ impl<'a, J: Jet> Runner<'a, J> {
                 stack.push(Task::TcoOn(right));
                 stack.push(Task::TcoOff(left));
             }
-            Inner::Case(left, right) => {
+            Inner::Case(..) | Inner::AssertL(..) | Inner::AssertR(..) => {
                 let choice_bit = mac.peek()?;
                 let (sum_a_b, _c) = node.arrow().source.split_product().unwrap();
                 let (a, b) = sum_a_b.split_sum().unwrap();
 
-                if !choice_bit {
-                    let padl_a_b = sum_a_b.bit_width() - a.bit_width() - 1;
-                    stack.push(Task::Run(Instruction::Bwd(padl_a_b + 1)));
-                    stack.push(Task::TcoOn(left));
-                    stack.push(Task::Run(Instruction::Fwd(padl_a_b + 1)));
-                } else {
-                    let padr_a_b = sum_a_b.bit_width() - b.bit_width() - 1;
-                    stack.push(Task::Run(Instruction::Bwd(padr_a_b + 1)));
-                    stack.push(Task::TcoOn(right));
-                    stack.push(Task::Run(Instruction::Fwd(padr_a_b + 1)));
+                match (node.inner(), choice_bit) {
+                    (Inner::Case(left, _) | Inner::AssertL(left, _), false) => {
+                        let padl_a_b = sum_a_b.bit_width() - a.bit_width() - 1;
+                        stack.push(Task::TcoOn(left));
+                        stack.push(Task::Run(Instruction::Fwd(padl_a_b + 1)));
+                    }
+                    (Inner::Case(_, right) | Inner::AssertR(_, right), true) => {
+                        let padr_a_b = sum_a_b.bit_width() - b.bit_width() - 1;
+                        stack.push(Task::TcoOn(right));
+                        stack.push(Task::Run(Instruction::Fwd(padr_a_b + 1)));
+                    }
+                    (Inner::AssertL(_, right_cmr), true) => {
+                        return Err(exec::Error::PrunedBranch(*right_cmr));
+                    }
+                    (Inner::AssertR(left_cmr, _), false) => {
+                        return Err(exec::Error::PrunedBranch(*left_cmr));
+                    }
+                    _ => unreachable!("Covered by outer match statement"),
                 }
             }
-            Inner::AssertL(..) | Inner::AssertR(..) | Inner::Fail(..) => {
-                panic!("Assertions not supported")
+            Inner::Fail(entropy) => {
+                return Err(exec::Error::FailNode(*entropy));
             }
             Inner::Disconnect(left, right) => {
                 let size_prod_256_a = left.arrow().source.bit_width();
@@ -440,6 +460,16 @@ mod tests {
             id1 := iden : 2^256 * 1 -> 2^256 * 1
             disc1 := unit
             main := comp (disconnect id1 ?hole) unit -- fixme: ?hole is named disc1
+        ";
+        execute_string(s, false);
+    }
+
+    #[test]
+    fn execute_assert() {
+        let s = "
+            input := pair (const 0b0) unit
+            output := assertl unit #{unit}
+            main := comp input output
         ";
         execute_string(s, false);
     }
