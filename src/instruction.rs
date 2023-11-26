@@ -218,11 +218,40 @@ impl<'a, J: Jet> Runner<'a, J> {
             Inner::AssertL(..) | Inner::AssertR(..) | Inner::Fail(..) => {
                 todo!("Assertions are like case")
             }
-            Inner::Disconnect(..) => todo!("Disconnect is easy at redemption time"),
-            Inner::Witness(value) | Inner::Word(value) => {
-                let bitstring = util::value_to_bitstring(value);
+            Inner::Disconnect(left, right) => {
+                let prod_256_a = left.arrow().source.bit_width();
+                let size_a = prod_256_a - 256;
+                let prod_b_c = left.arrow().target.bit_width();
+                let size_b = prod_b_c - right.arrow().source.bit_width();
+                let cmr = util::bytes_to_bitstring(right.cmr());
+
+                if !self.optimization {
+                    self.stack.push(Task::Run(Instruction::DropFrame));
+                    self.stack.push(Task::Run(Instruction::DropFrame));
+                    self.stack.push(Task::Run(Instruction::Bwd(size_b)));
+                    self.stack.push(Task::TcoOff(right));
+                    self.stack.push(Task::Run(Instruction::Fwd(size_b)));
+                    self.stack.push(Task::Run(Instruction::Copy(size_b)));
+                    self.stack.push(Task::Run(Instruction::MoveFrame));
+                    self.stack.push(Task::TcoOff(left));
+                } else {
+                    self.stack.push(Task::TcoOn(right));
+                    self.stack.push(Task::Run(Instruction::Fwd(size_b)));
+                    self.stack.push(Task::Run(Instruction::Copy(size_b)));
+                    self.stack.push(Task::Run(Instruction::MoveFrame));
+                    self.stack.push(Task::TcoOn(left));
+                }
+
+                self.stack.push(Task::Run(Instruction::NewFrame(prod_b_c)));
+                self.stack.push(Task::Run(Instruction::MoveFrame));
+                self.stack.push(Task::Run(Instruction::Copy(size_a)));
+                self.stack.push(Task::Run(Instruction::WriteString(cmr)));
                 self.stack
-                    .push(Task::Run(Instruction::WriteString(bitstring)));
+                    .push(Task::Run(Instruction::NewFrame(prod_256_a)));
+            }
+            Inner::Witness(value) | Inner::Word(value) => {
+                let string = util::value_to_bitstring(value);
+                self.stack.push(Task::Run(Instruction::WriteString(string)));
             }
             Inner::Jet(..) => todo!("TODO: Marshal with jets adaptor"),
         }
@@ -299,11 +328,29 @@ impl<'a, J: Jet> Runner<'a, J> {
             Inner::AssertL(..) | Inner::AssertR(..) | Inner::Fail(..) => {
                 panic!("Assertions not supported")
             }
-            Inner::Disconnect(..) => panic!("Disconnect not supported"),
-            Inner::Witness(value) | Inner::Word(value) => {
-                let bitstring = util::value_to_bitstring(value);
+            Inner::Disconnect(left, right) => {
+                let prod_256_a = left.arrow().source.bit_width();
+                let size_a = prod_256_a - 256;
+                let prod_b_c = left.arrow().target.bit_width();
+                let size_b = prod_b_c - right.arrow().source.bit_width();
+                let cmr = util::bytes_to_bitstring(right.cmr());
+
+                self.stack.push(Task::TcoOn(right));
+                self.stack.push(Task::Run(Instruction::Fwd(size_b)));
+                self.stack.push(Task::Run(Instruction::Copy(size_b)));
+                self.stack.push(Task::Run(Instruction::MoveFrame));
+                self.stack.push(Task::TcoOn(left));
+                self.stack.push(Task::Run(Instruction::NewFrame(prod_b_c)));
+                self.stack.push(Task::Run(Instruction::MoveFrame));
+                self.stack.push(Task::Run(Instruction::DropFrame));
+                self.stack.push(Task::Run(Instruction::Copy(size_a)));
+                self.stack.push(Task::Run(Instruction::WriteString(cmr)));
                 self.stack
-                    .push(Task::Run(Instruction::WriteString(bitstring)));
+                    .push(Task::Run(Instruction::NewFrame(prod_256_a)));
+            }
+            Inner::Witness(value) | Inner::Word(value) => {
+                let string = util::value_to_bitstring(value);
+                self.stack.push(Task::Run(Instruction::WriteString(string)));
             }
             Inner::Jet(..) => panic!("Jets not supported"),
         }
@@ -394,6 +441,16 @@ mod tests {
             input := const 0xff
             output := unit
             main := comp input output
+        ";
+        execute_string(s, false);
+    }
+
+    #[test]
+    fn execute_disconnect() {
+        let s = "
+            id1 := iden : 2^256 * 1 -> 2^256 * 1
+            disc1 := unit
+            main := comp (disconnect id1 ?hole) unit -- fixme: ?hole is named disc1
         ";
         execute_string(s, false);
     }
