@@ -327,7 +327,7 @@ mod tests {
 
     pub fn execute_string(s: &str, optimization: bool) {
         let program = program_from_string(s);
-        let mut mac = exec::BitMachine::default();
+        let mut mac = exec::BitMachine::for_program();
         let mut runner = Runner::for_program(&program, optimization);
         println!("Step 0: {mac}");
 
@@ -364,6 +364,17 @@ mod tests {
     }
 
     #[test]
+    fn execute_iden() {
+        let s = "
+            main := iden
+        ";
+        println!("Unoptimized");
+        execute_string(s, false);
+        println!("\nOptimized");
+        execute_string(s, true);
+    }
+
+    #[test]
     fn execute_not() {
         let s = "
             not := comp (pair iden unit) (case (injr unit) (injl unit)) : 2 -> 2
@@ -371,17 +382,9 @@ mod tests {
             output := unit : 2 -> 1
             main := comp input (comp not output)
         ";
+        println!("Unoptimized");
         execute_string(s, false);
-    }
-
-    #[test]
-    fn execute_not_optimized() {
-        let s = "
-            not := comp (pair iden unit) (case (injr unit) (injl unit)) : 2 -> 2
-            input := injl unit : 1 -> 2
-            output := unit : 2 -> 1
-            main := comp input (comp not output)
-        ";
+        println!("\nOptimized");
         execute_string(s, true);
     }
 

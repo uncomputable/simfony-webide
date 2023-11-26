@@ -126,7 +126,7 @@ impl Frame {
     }
 }
 
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone)]
 pub struct BitMachine {
     read_stack: Vec<Frame>,
     write_stack: Vec<Frame>,
@@ -151,6 +151,13 @@ impl fmt::Display for BitMachine {
 }
 
 impl BitMachine {
+    pub fn for_program() -> Self {
+        Self {
+            read_stack: vec![Frame::new(0)],  // unit source value
+            write_stack: vec![Frame::new(0)], // unit target value
+        }
+    }
+
     pub fn new_frame(&mut self, bit_len: usize) {
         self.write_stack.push(Frame::new(bit_len));
     }
