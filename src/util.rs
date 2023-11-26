@@ -8,6 +8,17 @@ pub fn value_to_bitstring(value: &Value) -> Vec<bool> {
     bitstring
 }
 
+pub fn bytes_to_bitstring<A: AsRef<[u8]>>(bytes: A) -> Vec<bool> {
+    let mut bitstring = Vec::new();
+    for byte in bytes.as_ref() {
+        for i in (0..8).rev() {
+            let bit = byte & (1 << i) != 0;
+            bitstring.push(bit);
+        }
+    }
+    bitstring
+}
+
 pub fn fmt_bitstring(bitstring: &[bool]) -> String {
     let mut s = "".to_string();
     for bit in bitstring {
