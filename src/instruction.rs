@@ -152,51 +152,52 @@ impl<'a, J: Jet> Runner<'a, J> {
         mac: &mut exec::BitMachine,
         node: &'a RedeemNode<J>,
     ) -> Result<(), exec::Error> {
+        let stack = &mut self.stack;
         match node.inner() {
             Inner::Unit => {
                 // nop; continue with next instruction
             }
             Inner::Iden => {
                 let size_a = node.arrow().source.bit_width();
-                self.stack.push(Task::Run(Instruction::Copy(size_a)));
+                stack.push(Task::Run(Instruction::Copy(size_a)));
             }
             Inner::InjL(left) => {
                 let (b, _c) = node.arrow().target.split_sum().unwrap();
                 let padl_b_c = node.arrow().target.bit_width() - b.bit_width() - 1;
-                self.stack.push(Task::TcoOff(left));
-                self.stack.push(Task::Run(Instruction::Skip(padl_b_c)));
-                self.stack.push(Task::Run(Instruction::Write(false)));
+                stack.push(Task::TcoOff(left));
+                stack.push(Task::Run(Instruction::Skip(padl_b_c)));
+                stack.push(Task::Run(Instruction::Write(false)));
             }
             Inner::InjR(left) => {
                 let (_b, c) = node.arrow().target.split_sum().unwrap();
                 let padr_b_c = node.arrow().target.bit_width() - c.bit_width() - 1;
-                self.stack.push(Task::TcoOff(left));
-                self.stack.push(Task::Run(Instruction::Skip(padr_b_c)));
-                self.stack.push(Task::Run(Instruction::Write(true)));
+                stack.push(Task::TcoOff(left));
+                stack.push(Task::Run(Instruction::Skip(padr_b_c)));
+                stack.push(Task::Run(Instruction::Write(true)));
             }
             Inner::Take(left) => {
-                self.stack.push(Task::TcoOff(left));
+                stack.push(Task::TcoOff(left));
             }
             Inner::Drop(left) => {
                 let size_a = node.arrow().source.split_product().unwrap().0.bit_width();
-                self.stack.push(Task::TcoOff(left));
-                self.stack.push(Task::Run(Instruction::Fwd(size_a)));
+                stack.push(Task::TcoOff(left));
+                stack.push(Task::Run(Instruction::Fwd(size_a)));
             }
             Inner::Comp(left, right) => {
                 let size_b = left.arrow().target.bit_width();
                 if !self.optimization {
-                    self.stack.push(Task::Run(Instruction::DropFrame));
-                    self.stack.push(Task::TcoOff(right));
+                    stack.push(Task::Run(Instruction::DropFrame));
+                    stack.push(Task::TcoOff(right));
                 } else {
-                    self.stack.push(Task::TcoOn(right));
+                    stack.push(Task::TcoOn(right));
                 }
-                self.stack.push(Task::Run(Instruction::MoveFrame));
-                self.stack.push(Task::TcoOff(left));
-                self.stack.push(Task::Run(Instruction::NewFrame(size_b)));
+                stack.push(Task::Run(Instruction::MoveFrame));
+                stack.push(Task::TcoOff(left));
+                stack.push(Task::Run(Instruction::NewFrame(size_b)));
             }
             Inner::Pair(left, right) => {
-                self.stack.push(Task::TcoOff(right));
-                self.stack.push(Task::TcoOff(left));
+                stack.push(Task::TcoOff(right));
+                stack.push(Task::TcoOff(left));
             }
             Inner::Case(left, right) => {
                 let choice_bit = mac.peek()?;
@@ -205,51 +206,50 @@ impl<'a, J: Jet> Runner<'a, J> {
 
                 if !choice_bit {
                     let padl_a_b = sum_a_b.bit_width() - a.bit_width() - 1;
-                    self.stack.push(Task::TcoOff(left));
-                    self.stack.push(Task::Run(Instruction::Fwd(padl_a_b + 1)));
+                    stack.push(Task::TcoOff(left));
+                    stack.push(Task::Run(Instruction::Fwd(padl_a_b + 1)));
                 } else {
                     let padr_a_b = sum_a_b.bit_width() - b.bit_width() - 1;
-                    self.stack.push(Task::TcoOff(right));
-                    self.stack.push(Task::Run(Instruction::Fwd(padr_a_b + 1)));
+                    stack.push(Task::TcoOff(right));
+                    stack.push(Task::Run(Instruction::Fwd(padr_a_b + 1)));
                 }
             }
             Inner::AssertL(..) | Inner::AssertR(..) | Inner::Fail(..) => {
                 todo!("Assertions are like case")
             }
             Inner::Disconnect(left, right) => {
-                let prod_256_a = left.arrow().source.bit_width();
-                let size_a = prod_256_a - 256;
-                let prod_b_c = left.arrow().target.bit_width();
-                let size_b = prod_b_c - right.arrow().source.bit_width();
-                let cmr = util::bytes_to_bitstring(right.cmr());
+                let size_prod_256_a = left.arrow().source.bit_width();
+                let size_a = size_prod_256_a - 256;
+                let size_prod_b_c = left.arrow().target.bit_width();
+                let size_b = size_prod_b_c - right.arrow().source.bit_width();
+                let right_cmr = util::bytes_to_bitstring(right.cmr());
 
                 if !self.optimization {
-                    self.stack.push(Task::Run(Instruction::DropFrame));
-                    self.stack.push(Task::Run(Instruction::DropFrame));
-                    self.stack.push(Task::Run(Instruction::Bwd(size_b)));
-                    self.stack.push(Task::TcoOff(right));
-                    self.stack.push(Task::Run(Instruction::Fwd(size_b)));
-                    self.stack.push(Task::Run(Instruction::Copy(size_b)));
-                    self.stack.push(Task::Run(Instruction::MoveFrame));
-                    self.stack.push(Task::TcoOff(left));
+                    stack.push(Task::Run(Instruction::DropFrame));
+                    stack.push(Task::Run(Instruction::DropFrame));
+                    stack.push(Task::Run(Instruction::Bwd(size_b)));
+                    stack.push(Task::TcoOff(right));
+                    stack.push(Task::Run(Instruction::Fwd(size_b)));
+                    stack.push(Task::Run(Instruction::Copy(size_b)));
+                    stack.push(Task::Run(Instruction::MoveFrame));
+                    stack.push(Task::TcoOff(left));
                 } else {
-                    self.stack.push(Task::TcoOn(right));
-                    self.stack.push(Task::Run(Instruction::Fwd(size_b)));
-                    self.stack.push(Task::Run(Instruction::Copy(size_b)));
-                    self.stack.push(Task::Run(Instruction::MoveFrame));
-                    self.stack.push(Task::TcoOn(left));
+                    stack.push(Task::TcoOn(right));
+                    stack.push(Task::Run(Instruction::Fwd(size_b)));
+                    stack.push(Task::Run(Instruction::Copy(size_b)));
+                    stack.push(Task::Run(Instruction::MoveFrame));
+                    stack.push(Task::TcoOn(left));
                 }
 
-                self.stack.push(Task::Run(Instruction::NewFrame(prod_b_c)));
-                self.stack.push(Task::Run(Instruction::MoveFrame));
-                self.stack.push(Task::Run(Instruction::Copy(size_a)));
-                self.stack.push(Task::Run(Instruction::WriteString(cmr)));
-                self.stack
-                    .push(Task::Run(Instruction::NewFrame(prod_256_a)));
+                stack.push(Task::Run(Instruction::NewFrame(size_prod_b_c)));
+                stack.push(Task::Run(Instruction::MoveFrame));
+                stack.push(Task::Run(Instruction::Copy(size_a)));
+                stack.push(Task::Run(Instruction::WriteString(right_cmr)));
+                stack.push(Task::Run(Instruction::NewFrame(size_prod_256_a)));
             }
             Inner::Witness(value) | Inner::Word(value) => {
                 let string = util::value_to_bitstring(value);
-                self.stack.push(Task::Run(Instruction::WriteString(string)));
+                stack.push(Task::Run(Instruction::WriteString(string)));
             }
             Inner::Jet(..) => todo!("TODO: Marshal with jets adaptor"),
         }
@@ -262,49 +262,50 @@ impl<'a, J: Jet> Runner<'a, J> {
         mac: &mut exec::BitMachine,
         node: &'a RedeemNode<J>,
     ) -> Result<(), exec::Error> {
+        let stack = &mut self.stack;
         match node.inner() {
             Inner::Unit => {
-                self.stack.push(Task::Run(Instruction::DropFrame));
+                stack.push(Task::Run(Instruction::DropFrame));
             }
             Inner::Iden => {
                 let size_a = node.arrow().source.bit_width();
-                self.stack.push(Task::Run(Instruction::DropFrame));
-                self.stack.push(Task::Run(Instruction::Copy(size_a)));
+                stack.push(Task::Run(Instruction::DropFrame));
+                stack.push(Task::Run(Instruction::Copy(size_a)));
             }
             Inner::InjL(left) => {
                 let (b, _c) = node.arrow().target.split_sum().unwrap();
                 let padl_b_c = node.arrow().target.bit_width() - b.bit_width() - 1;
-                self.stack.push(Task::TcoOn(left));
-                self.stack.push(Task::Run(Instruction::Skip(padl_b_c)));
-                self.stack.push(Task::Run(Instruction::Write(false)));
+                stack.push(Task::TcoOn(left));
+                stack.push(Task::Run(Instruction::Skip(padl_b_c)));
+                stack.push(Task::Run(Instruction::Write(false)));
             }
             Inner::InjR(left) => {
                 let (_b, c) = node.arrow().target.split_sum().unwrap();
                 let padr_b_c = node.arrow().target.bit_width() - c.bit_width() - 1;
-                self.stack.push(Task::TcoOn(left));
-                self.stack.push(Task::Run(Instruction::Skip(padr_b_c)));
-                self.stack.push(Task::Run(Instruction::Write(true)));
+                stack.push(Task::TcoOn(left));
+                stack.push(Task::Run(Instruction::Skip(padr_b_c)));
+                stack.push(Task::Run(Instruction::Write(true)));
             }
             Inner::Take(left) => {
-                self.stack.push(Task::TcoOn(left));
+                stack.push(Task::TcoOn(left));
             }
             Inner::Drop(left) => {
                 let size_a = node.arrow().source.split_product().unwrap().0.bit_width();
-                self.stack.push(Task::Run(Instruction::Bwd(size_a)));
-                self.stack.push(Task::TcoOn(left));
-                self.stack.push(Task::Run(Instruction::Fwd(size_a)));
+                stack.push(Task::Run(Instruction::Bwd(size_a)));
+                stack.push(Task::TcoOn(left));
+                stack.push(Task::Run(Instruction::Fwd(size_a)));
             }
             Inner::Comp(left, right) => {
                 let size_b = left.arrow().target.bit_width();
-                self.stack.push(Task::Run(Instruction::DropFrame));
-                self.stack.push(Task::TcoOn(right));
-                self.stack.push(Task::Run(Instruction::MoveFrame));
-                self.stack.push(Task::TcoOn(left));
-                self.stack.push(Task::Run(Instruction::NewFrame(size_b)));
+                stack.push(Task::Run(Instruction::DropFrame));
+                stack.push(Task::TcoOn(right));
+                stack.push(Task::Run(Instruction::MoveFrame));
+                stack.push(Task::TcoOn(left));
+                stack.push(Task::Run(Instruction::NewFrame(size_b)));
             }
             Inner::Pair(left, right) => {
-                self.stack.push(Task::TcoOn(right));
-                self.stack.push(Task::TcoOff(left));
+                stack.push(Task::TcoOn(right));
+                stack.push(Task::TcoOff(left));
             }
             Inner::Case(left, right) => {
                 let choice_bit = mac.peek()?;
@@ -313,42 +314,41 @@ impl<'a, J: Jet> Runner<'a, J> {
 
                 if !choice_bit {
                     let padl_a_b = sum_a_b.bit_width() - a.bit_width() - 1;
-                    self.stack.push(Task::Run(Instruction::Bwd(padl_a_b + 1)));
-                    self.stack.push(Task::TcoOn(left));
-                    self.stack.push(Task::Run(Instruction::Fwd(padl_a_b + 1)));
+                    stack.push(Task::Run(Instruction::Bwd(padl_a_b + 1)));
+                    stack.push(Task::TcoOn(left));
+                    stack.push(Task::Run(Instruction::Fwd(padl_a_b + 1)));
                 } else {
                     let padr_a_b = sum_a_b.bit_width() - b.bit_width() - 1;
-                    self.stack.push(Task::Run(Instruction::Bwd(padr_a_b + 1)));
-                    self.stack.push(Task::TcoOn(right));
-                    self.stack.push(Task::Run(Instruction::Fwd(padr_a_b + 1)));
+                    stack.push(Task::Run(Instruction::Bwd(padr_a_b + 1)));
+                    stack.push(Task::TcoOn(right));
+                    stack.push(Task::Run(Instruction::Fwd(padr_a_b + 1)));
                 }
             }
             Inner::AssertL(..) | Inner::AssertR(..) | Inner::Fail(..) => {
                 panic!("Assertions not supported")
             }
             Inner::Disconnect(left, right) => {
-                let prod_256_a = left.arrow().source.bit_width();
-                let size_a = prod_256_a - 256;
-                let prod_b_c = left.arrow().target.bit_width();
-                let size_b = prod_b_c - right.arrow().source.bit_width();
-                let cmr = util::bytes_to_bitstring(right.cmr());
+                let size_prod_256_a = left.arrow().source.bit_width();
+                let size_a = size_prod_256_a - 256;
+                let size_prod_b_c = left.arrow().target.bit_width();
+                let size_b = size_prod_b_c - right.arrow().source.bit_width();
+                let right_cmr = util::bytes_to_bitstring(right.cmr());
 
-                self.stack.push(Task::TcoOn(right));
-                self.stack.push(Task::Run(Instruction::Fwd(size_b)));
-                self.stack.push(Task::Run(Instruction::Copy(size_b)));
-                self.stack.push(Task::Run(Instruction::MoveFrame));
-                self.stack.push(Task::TcoOn(left));
-                self.stack.push(Task::Run(Instruction::NewFrame(prod_b_c)));
-                self.stack.push(Task::Run(Instruction::MoveFrame));
-                self.stack.push(Task::Run(Instruction::DropFrame));
-                self.stack.push(Task::Run(Instruction::Copy(size_a)));
-                self.stack.push(Task::Run(Instruction::WriteString(cmr)));
-                self.stack
-                    .push(Task::Run(Instruction::NewFrame(prod_256_a)));
+                stack.push(Task::TcoOn(right));
+                stack.push(Task::Run(Instruction::Fwd(size_b)));
+                stack.push(Task::Run(Instruction::Copy(size_b)));
+                stack.push(Task::Run(Instruction::MoveFrame));
+                stack.push(Task::TcoOn(left));
+                stack.push(Task::Run(Instruction::NewFrame(size_prod_b_c)));
+                stack.push(Task::Run(Instruction::MoveFrame));
+                stack.push(Task::Run(Instruction::DropFrame));
+                stack.push(Task::Run(Instruction::Copy(size_a)));
+                stack.push(Task::Run(Instruction::WriteString(right_cmr)));
+                stack.push(Task::Run(Instruction::NewFrame(size_prod_256_a)));
             }
             Inner::Witness(value) | Inner::Word(value) => {
                 let string = util::value_to_bitstring(value);
-                self.stack.push(Task::Run(Instruction::WriteString(string)));
+                stack.push(Task::Run(Instruction::WriteString(string)));
             }
             Inner::Jet(..) => panic!("Jets not supported"),
         }
