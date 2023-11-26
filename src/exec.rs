@@ -5,8 +5,6 @@ use std::fmt;
 pub enum Error {
     FrameEof,
     MoveUnfinishedFrame,
-    ReadStackEmpty,
-    WriteStackEmpty,
 }
 
 impl fmt::Display for Error {
@@ -14,8 +12,6 @@ impl fmt::Display for Error {
         match self {
             Error::FrameEof => write!(f, "Unexpected end of frame"),
             Error::MoveUnfinishedFrame => write!(f, "Unfinished frame cannot be moved"),
-            Error::ReadStackEmpty => write!(f, "Read stack is empty"),
-            Error::WriteStackEmpty => write!(f, "Write stack is empty"),
         }
     }
 }
@@ -133,13 +129,7 @@ pub struct BitMachine {
 
 impl fmt::Display for BitMachine {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let fmt_stack = |stack: &[Frame]| {
-            if stack.is_empty() {
-                "_".to_string()
-            } else {
-                stack.iter().map(|x| format!("{}", x)).join(" ")
-            }
-        };
+        let fmt_stack = |stack: &[Frame]| stack.iter().map(|x| format!("{}", x)).join(" ");
         write!(
             f,
             "Read {} Write {}",
@@ -158,11 +148,13 @@ impl BitMachine {
     }
 
     pub fn new_frame(&mut self, bit_len: usize) {
+        debug_assert!(!self.read_stack.is_empty() && !self.write_stack.is_empty());
         self.write_stack.push(Frame::new(bit_len));
     }
 
     pub fn move_frame(&mut self) -> Result<(), Error> {
-        let mut write = self.write_stack.pop().ok_or(Error::WriteStackEmpty)?;
+        debug_assert!(!self.read_stack.is_empty() && !self.write_stack.is_empty());
+        let mut write = self.write_stack.pop().unwrap();
         if write.is_finished() {
             write.reset_cursor();
             self.read_stack.push(write);
@@ -172,48 +164,51 @@ impl BitMachine {
         }
     }
 
-    pub fn drop_frame(&mut self) -> Result<(), Error> {
-        self.read_stack
-            .pop()
-            .ok_or(Error::ReadStackEmpty)
-            .map(|_| ())
+    pub fn drop_frame(&mut self) {
+        debug_assert!(!self.read_stack.is_empty() && !self.write_stack.is_empty());
+        let _ = self.read_stack.pop().unwrap();
     }
 
     pub fn write(&mut self, bit: bool) -> Result<(), Error> {
-        let write = self.write_stack.last_mut().ok_or(Error::WriteStackEmpty)?;
+        debug_assert!(!self.read_stack.is_empty() && !self.write_stack.is_empty());
+        let write = self.write_stack.last_mut().unwrap();
         write.write(bit)
     }
 
     pub fn write_bitstring(&mut self, bitstring: &[bool]) -> Result<(), Error> {
-        let write = self.write_stack.last_mut().ok_or(Error::WriteStackEmpty)?;
+        debug_assert!(!self.read_stack.is_empty() && !self.write_stack.is_empty());
+        let write = self.write_stack.last_mut().unwrap();
         write.write_bitstring(bitstring)
     }
 
     pub fn skip(&mut self, bit_len: usize) -> Result<(), Error> {
-        let write = self.write_stack.last_mut().ok_or(Error::WriteStackEmpty)?;
+        debug_assert!(!self.read_stack.is_empty() && !self.write_stack.is_empty());
+        let write = self.write_stack.last_mut().unwrap();
         write.advance_cursor(bit_len)
     }
 
     pub fn copy(&mut self, bit_len: usize) -> Result<(), Error> {
-        match (self.read_stack.last_mut(), self.write_stack.last_mut()) {
-            (Some(read), Some(write)) => read.copy(write, bit_len),
-            (None, _) => Err(Error::ReadStackEmpty),
-            (_, None) => Err(Error::WriteStackEmpty),
-        }
+        debug_assert!(!self.read_stack.is_empty() && !self.write_stack.is_empty());
+        let read = self.read_stack.last_mut().unwrap();
+        let write = self.write_stack.last_mut().unwrap();
+        read.copy(write, bit_len)
     }
 
     pub fn fwd(&mut self, bit_len: usize) -> Result<(), Error> {
-        let read = self.read_stack.last_mut().ok_or(Error::ReadStackEmpty)?;
+        debug_assert!(!self.read_stack.is_empty() && !self.write_stack.is_empty());
+        let read = self.read_stack.last_mut().unwrap();
         read.advance_cursor(bit_len)
     }
 
     pub fn bwd(&mut self, bit_len: usize) -> Result<(), Error> {
-        let read = self.read_stack.last_mut().ok_or(Error::ReadStackEmpty)?;
+        debug_assert!(!self.read_stack.is_empty() && !self.write_stack.is_empty());
+        let read = self.read_stack.last_mut().unwrap();
         read.retract_cursor(bit_len)
     }
 
     pub fn peek(&mut self) -> Result<bool, Error> {
-        let read = self.read_stack.last_mut().ok_or(Error::ReadStackEmpty)?;
+        debug_assert!(!self.read_stack.is_empty() && !self.write_stack.is_empty());
+        let read = self.read_stack.last_mut().unwrap();
         Ok(read.peek())
     }
 }

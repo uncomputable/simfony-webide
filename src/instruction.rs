@@ -91,14 +91,12 @@ impl FromStr for Instruction {
 }
 
 impl Instruction {
+    #[allow(clippy::unit_arg)]
     pub fn execute(&self, mac: &mut exec::BitMachine) -> Result<(), exec::Error> {
         match *self {
-            Instruction::NewFrame(bit_len) => {
-                mac.new_frame(bit_len);
-                Ok(())
-            }
+            Instruction::NewFrame(bit_len) => Ok(mac.new_frame(bit_len)),
             Instruction::MoveFrame => mac.move_frame(),
-            Instruction::DropFrame => mac.drop_frame(),
+            Instruction::DropFrame => Ok(mac.drop_frame()),
             Instruction::Write(bit) => mac.write(bit),
             Instruction::Skip(bit_len) => mac.skip(bit_len),
             Instruction::Copy(bit_len) => mac.copy(bit_len),
