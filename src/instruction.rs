@@ -139,7 +139,7 @@ impl<'a, J: Jet> Runner<'a, J> {
                     self.tco_off(mac, node)?;
                 }
                 Task::TcoOn(node) => {
-                    self.tco_off(mac, node)?;
+                    self.tco_on(mac, node)?;
                 }
             }
         }
@@ -180,6 +180,7 @@ impl<'a, J: Jet> Runner<'a, J> {
             }
             Inner::Drop(left) => {
                 let size_a = node.arrow().source.split_product().unwrap().0.bit_width();
+                stack.push(Task::Run(Instruction::Bwd(size_a)));
                 stack.push(Task::TcoOff(left));
                 stack.push(Task::Run(Instruction::Fwd(size_a)));
             }
@@ -303,13 +304,11 @@ impl<'a, J: Jet> Runner<'a, J> {
             }
             Inner::Drop(left) => {
                 let size_a = node.arrow().source.split_product().unwrap().0.bit_width();
-                stack.push(Task::Run(Instruction::Bwd(size_a)));
                 stack.push(Task::TcoOn(left));
                 stack.push(Task::Run(Instruction::Fwd(size_a)));
             }
             Inner::Comp(left, right) => {
                 let size_b = left.arrow().target.bit_width();
-                stack.push(Task::Run(Instruction::DropFrame));
                 stack.push(Task::TcoOn(right));
                 stack.push(Task::Run(Instruction::MoveFrame));
                 stack.push(Task::TcoOn(left));
