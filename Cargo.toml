@@ -6,3 +6,4 @@ edition = "2021"
 [dependencies]
 itertools = "0.11.0"
 simplicity = { git = "https://github.com/uncomputable/rust-simplicity", branch = "no-sys", features = ["serde"] }
+leptos = { version = "0.5.2", features = ["csr"] }
