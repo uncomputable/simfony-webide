@@ -1,7 +1,11 @@
+mod components;
 mod exec;
 mod instruction;
 mod util;
 
+use components::App;
+use leptos::*;
+
 fn main() {
-    println!("Hello world");
+    mount_to_body(|| view! { <App/> })
 }
