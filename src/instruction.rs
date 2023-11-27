@@ -1,5 +1,6 @@
 use std::fmt;
 use std::str::FromStr;
+use std::sync::Arc;
 
 use simplicity::jet::Jet;
 use simplicity::node::Inner;
@@ -108,20 +109,20 @@ impl Instruction {
 }
 
 #[derive(Debug, Clone)]
-enum Task<'a, J: Jet> {
+enum Task<J: Jet> {
     Run(Instruction),
-    TcoOff(&'a RedeemNode<J>),
-    TcoOn(&'a RedeemNode<J>),
+    TcoOff(Arc<RedeemNode<J>>),
+    TcoOn(Arc<RedeemNode<J>>),
 }
 
 #[derive(Debug, Clone)]
-pub struct Runner<'a, J: Jet> {
-    stack: Vec<Task<'a, J>>,
+pub struct Runner<J: Jet> {
+    stack: Vec<Task<J>>,
     optimization: bool,
 }
 
-impl<'a, J: Jet> Runner<'a, J> {
-    pub fn for_program(program: &'a RedeemNode<J>, optimization: bool) -> Self {
+impl<J: Jet> Runner<J> {
+    pub fn for_program(program: Arc<RedeemNode<J>>, optimization: bool) -> Self {
         Self {
             stack: vec![Task::TcoOff(program)],
             optimization,
@@ -150,10 +151,11 @@ impl<'a, J: Jet> Runner<'a, J> {
     fn tco_off(
         &mut self,
         mac: &mut exec::BitMachine,
-        node: &'a RedeemNode<J>,
+        node: Arc<RedeemNode<J>>,
     ) -> Result<(), exec::Error> {
         let stack = &mut self.stack;
-        match node.inner() {
+        let inner = node.inner().clone();
+        match inner {
             Inner::Unit => {
                 // nop; continue with next instruction
             }
@@ -205,7 +207,7 @@ impl<'a, J: Jet> Runner<'a, J> {
                 let (sum_a_b, _c) = node.arrow().source.split_product().unwrap();
                 let (a, b) = sum_a_b.split_sum().unwrap();
 
-                match (node.inner(), choice_bit) {
+                match (inner, choice_bit) {
                     (Inner::Case(left, _) | Inner::AssertL(left, _), false) => {
                         let padl_a_b = sum_a_b.bit_width() - a.bit_width() - 1;
                         stack.push(Task::Run(Instruction::Bwd(padl_a_b + 1)));
@@ -219,16 +221,16 @@ impl<'a, J: Jet> Runner<'a, J> {
                         stack.push(Task::Run(Instruction::Fwd(padr_a_b + 1)));
                     }
                     (Inner::AssertL(_, right_cmr), true) => {
-                        return Err(exec::Error::PrunedBranch(*right_cmr));
+                        return Err(exec::Error::PrunedBranch(right_cmr));
                     }
                     (Inner::AssertR(left_cmr, _), false) => {
-                        return Err(exec::Error::PrunedBranch(*left_cmr));
+                        return Err(exec::Error::PrunedBranch(left_cmr));
                     }
                     _ => unreachable!("Covered by outer match statement"),
                 }
             }
             Inner::Fail(entropy) => {
-                return Err(exec::Error::FailNode(*entropy));
+                return Err(exec::Error::FailNode(entropy));
             }
             Inner::Disconnect(left, right) => {
                 let size_prod_256_a = left.arrow().source.bit_width();
@@ -261,7 +263,7 @@ impl<'a, J: Jet> Runner<'a, J> {
                 stack.push(Task::Run(Instruction::NewFrame(size_prod_256_a)));
             }
             Inner::Witness(value) | Inner::Word(value) => {
-                let string = util::value_to_bitstring(value);
+                let string = util::value_to_bitstring(&value);
                 stack.push(Task::Run(Instruction::WriteString(string)));
             }
             Inner::Jet(..) => todo!("TODO: Marshal with jets adaptor"),
@@ -273,10 +275,11 @@ impl<'a, J: Jet> Runner<'a, J> {
     fn tco_on(
         &mut self,
         mac: &mut exec::BitMachine,
-        node: &'a RedeemNode<J>,
+        node: Arc<RedeemNode<J>>,
     ) -> Result<(), exec::Error> {
         let stack = &mut self.stack;
-        match node.inner() {
+        let inner = node.inner().clone();
+        match inner {
             Inner::Unit => {
                 stack.push(Task::Run(Instruction::DropFrame));
             }
@@ -323,7 +326,7 @@ impl<'a, J: Jet> Runner<'a, J> {
                 let (sum_a_b, _c) = node.arrow().source.split_product().unwrap();
                 let (a, b) = sum_a_b.split_sum().unwrap();
 
-                match (node.inner(), choice_bit) {
+                match (inner, choice_bit) {
                     (Inner::Case(left, _) | Inner::AssertL(left, _), false) => {
                         let padl_a_b = sum_a_b.bit_width() - a.bit_width() - 1;
                         stack.push(Task::TcoOn(left));
@@ -335,16 +338,16 @@ impl<'a, J: Jet> Runner<'a, J> {
                         stack.push(Task::Run(Instruction::Fwd(padr_a_b + 1)));
                     }
                     (Inner::AssertL(_, right_cmr), true) => {
-                        return Err(exec::Error::PrunedBranch(*right_cmr));
+                        return Err(exec::Error::PrunedBranch(right_cmr));
                     }
                     (Inner::AssertR(left_cmr, _), false) => {
-                        return Err(exec::Error::PrunedBranch(*left_cmr));
+                        return Err(exec::Error::PrunedBranch(left_cmr));
                     }
                     _ => unreachable!("Covered by outer match statement"),
                 }
             }
             Inner::Fail(entropy) => {
-                return Err(exec::Error::FailNode(*entropy));
+                return Err(exec::Error::FailNode(entropy));
             }
             Inner::Disconnect(left, right) => {
                 let size_prod_256_a = left.arrow().source.bit_width();
@@ -366,7 +369,7 @@ impl<'a, J: Jet> Runner<'a, J> {
                 stack.push(Task::Run(Instruction::NewFrame(size_prod_256_a)));
             }
             Inner::Witness(value) | Inner::Word(value) => {
-                let string = util::value_to_bitstring(value);
+                let string = util::value_to_bitstring(&value);
                 stack.push(Task::Run(Instruction::WriteString(string)));
             }
             Inner::Jet(..) => panic!("Jets not supported"),
@@ -383,7 +386,7 @@ mod tests {
     pub fn execute_string(s: &str, optimization: bool) {
         let program = util::program_from_string(s);
         let mut mac = exec::BitMachine::for_program();
-        let mut runner = Runner::for_program(&program, optimization);
+        let mut runner = Runner::for_program(program, optimization);
         println!("Step 0: {mac}");
 
         for i in 1.. {
