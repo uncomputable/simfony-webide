@@ -1,39 +1,46 @@
 use leptos::*;
+use simplicity::jet::Elements;
 
+use crate::exec::BitMachine;
 use crate::instruction::Runner;
-use crate::{exec, util};
-
-fn default_program() -> &'static str {
-    "
-        not := comp (pair iden unit) (case (injr unit) (injl unit)) : 2 -> 2
-        input := injl unit : 1 -> 2
-        output := unit : 2 -> 1
-        main := comp input (comp not output)
-    "
-}
+use crate::util;
 
 #[component]
 pub fn App() -> impl IntoView {
     let (step, set_step) = create_signal(0);
-    let (output, set_output) = create_signal("(Start)".to_string());
+    let (output, set_output) = create_signal("(No output)".to_string());
+    let (mac, set_mac) = create_signal(Option::<BitMachine>::None);
+    let (_, set_runner) = create_signal(Option::<Runner<Elements>>::None);
 
-    let mac = exec::BitMachine::for_program();
-    let (mac, set_mac) = create_signal(mac);
+    let update_program = move |new_human: String| match util::program_from_string(&new_human) {
+        Ok(program) => {
+            set_mac.set(Some(BitMachine::for_program()));
+            set_runner.set(Some(Runner::for_program(program, false)));
+            set_output.set("(Let's start)".to_string());
+        }
+        Err(error) => {
+            set_output.set(error);
+        }
+    };
 
-    let program = util::program_from_string(default_program()).unwrap();
-    let runner = Runner::for_program(program, false);
-    let (_, set_runner) = create_signal(runner);
+    let display_mac = move || {
+        mac.get()
+            .map(|m| m.to_string())
+            .unwrap_or("(No machine)".to_string())
+    };
 
     let run_next_step = move || {
         set_output.update(|o| {
-            set_mac.update(|m| {
-                set_runner.update(|r| {
-                    let new_output = match r.next(m) {
-                        Ok(Some(x)) => x.to_string(),
-                        Ok(None) => "(Done)".to_string(),
-                        Err(error) => format!("Error: {error}"),
-                    };
-                    *o = new_output;
+            set_mac.update(|maybe_m| {
+                set_runner.update(|maybe_r| {
+                    if let (Some(m), Some(r)) = (maybe_m, maybe_r) {
+                        let new_output = match r.next(m) {
+                            Ok(Some(x)) => x.to_string(),
+                            Ok(None) => "(Done)".to_string(),
+                            Err(error) => format!("Error: {error}"),
+                        };
+                        *o = new_output;
+                    }
                 })
             })
         });
@@ -54,7 +61,12 @@ pub fn App() -> impl IntoView {
             {output}
         </p>
         <p>
-            {move || mac.get().to_string()}
+            {display_mac}
         </p>
+        <textarea
+            on:input=move |event| update_program(event_target_value(&event))
+            placeholder="Enter program text here"
+            rows="10" cols="50"
+        />
     }
 }
