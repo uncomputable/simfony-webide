@@ -266,7 +266,7 @@ impl<J: Jet> Runner<J> {
                 let string = util::value_to_bitstring(&value);
                 stack.push(Task::Run(Instruction::WriteString(string)));
             }
-            Inner::Jet(..) => todo!("TODO: Marshal with jets adaptor"),
+            Inner::Jet(..) => return Err(exec::Error::JetsNotSupported),
         }
 
         Ok(())
@@ -372,7 +372,7 @@ impl<J: Jet> Runner<J> {
                 let string = util::value_to_bitstring(&value);
                 stack.push(Task::Run(Instruction::WriteString(string)));
             }
-            Inner::Jet(..) => panic!("Jets not supported"),
+            Inner::Jet(..) => return Err(exec::Error::JetsNotSupported),
         }
 
         Ok(())
@@ -472,6 +472,15 @@ mod tests {
             input := pair (const 0b0) unit
             output := assertl unit #{unit}
             main := comp input output
+        ";
+        execute_string(s, false);
+    }
+
+    #[test]
+    #[should_panic(expected = "Jets are currently not supported")]
+    fn execute_jet() {
+        let s = "
+            main := comp jet_version unit
         ";
         execute_string(s, false);
     }

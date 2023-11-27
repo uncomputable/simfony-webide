@@ -9,6 +9,7 @@ pub enum Error {
     MoveUnfinishedFrame,
     PrunedBranch(Cmr),
     FailNode(FailEntropy),
+    JetsNotSupported,
 }
 
 impl fmt::Display for Error {
@@ -18,6 +19,7 @@ impl fmt::Display for Error {
             Error::MoveUnfinishedFrame => write!(f, "Unfinished frame cannot be moved"),
             Error::PrunedBranch(cmr) => write!(f, "Cannot execute pruned branch: {cmr}"),
             Error::FailNode(entropy) => write!(f, "Cannot execute fail node: {entropy}"),
+            Error::JetsNotSupported => write!(f, "Jets are currently not supported"),
         }
     }
 }
