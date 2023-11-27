@@ -20,7 +20,7 @@ pub fn App() -> impl IntoView {
     let mac = exec::BitMachine::for_program();
     let (mac, set_mac) = create_signal(mac);
 
-    let program = util::program_from_string(default_program());
+    let program = util::program_from_string(default_program()).unwrap();
     let runner = Runner::for_program(program, false);
     let (_, set_runner) = create_signal(runner);
 

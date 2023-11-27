@@ -384,7 +384,7 @@ mod tests {
     use super::*;
 
     pub fn execute_string(s: &str, optimization: bool) {
-        let program = util::program_from_string(s);
+        let program = util::program_from_string(s).unwrap();
         let mut mac = exec::BitMachine::for_program();
         let mut runner = Runner::for_program(program, optimization);
         println!("Step 0: {mac}");

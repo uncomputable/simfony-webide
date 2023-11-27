@@ -43,8 +43,11 @@ pub fn parse_bitstring(s: &str) -> Result<Vec<bool>, String> {
     Ok(bitstring)
 }
 
-pub fn program_from_string(s: &str) -> Arc<RedeemNode<Elements>> {
+pub fn program_from_string(s: &str) -> Result<Arc<RedeemNode<Elements>>, String> {
     let empty_witness = HashMap::new();
-    let forest = simplicity::human_encoding::Forest::parse(s).unwrap();
-    forest.to_witness_node(&empty_witness).finalize().unwrap()
+    let forest = simplicity::human_encoding::Forest::parse(s).map_err(|e| e.to_string())?;
+    forest
+        .to_witness_node(&empty_witness)
+        .finalize()
+        .map_err(|e| e.to_string())
 }
