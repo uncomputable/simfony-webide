@@ -5,4 +5,4 @@ edition = "2021"
 
 [dependencies]
 itertools = "0.11.0"
-simplicity = { git = "https://github.com/uncomputable/rust-simplicity", branch = "types", features = ["serde"] }
+simplicity = { git = "https://github.com/uncomputable/rust-simplicity", branch = "no-sys", features = ["serde"] }
