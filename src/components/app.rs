@@ -14,10 +14,10 @@ pub fn App() -> impl IntoView {
     let (mac, set_mac) = create_signal::<Option<BitMachine>>(None);
     let (_, set_runner) = create_signal::<Option<Runner<Elements>>>(None);
 
-    let update_program = move |new_human: String| match util::program_from_string(&new_human) {
+    let update_program = move |human: String, tco: bool| match util::program_from_string(&human) {
         Ok(program) => {
             set_mac.set(Some(BitMachine::for_program()));
-            let runner = Runner::for_program(program, false);
+            let runner = Runner::for_program(program, tco);
             let stack = runner.get_stack().iter().map(|x| x.to_string()).collect();
             set_runner.set(Some(runner));
 
@@ -64,7 +64,7 @@ pub fn App() -> impl IntoView {
         <PastInstructions prefix=prefix/>
         <InstructionStack suffix=suffix/>
         <textarea
-            on:input=move |event| update_program(event_target_value(&event))
+            on:input=move |event| update_program(event_target_value(&event), false)
             placeholder="Enter program text here"
             rows="10" cols="50"
         />
