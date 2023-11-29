@@ -109,7 +109,7 @@ impl Instruction {
 }
 
 #[derive(Debug, Clone)]
-enum Task<J: Jet> {
+pub enum Task<J: Jet> {
     Run(Instruction),
     TcoOff(Arc<RedeemNode<J>>),
     TcoOn(Arc<RedeemNode<J>>),
@@ -137,6 +137,10 @@ impl<J: Jet> Runner<J> {
             stack: vec![Task::TcoOff(program)],
             optimization,
         }
+    }
+
+    pub fn get_stack(&self) -> &[Task<J>] {
+        &self.stack
     }
 
     pub fn next(&mut self, mac: &mut exec::BitMachine) -> Result<Option<Instruction>, exec::Error> {
