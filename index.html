@@ -1,6 +1,21 @@
-<!DOCTYPE html><html><head>
-<link rel="preload" href="/simplicity-webide/simplicity-webide-ca9cc5b33aedddcb_bg.wasm" as="fetch" type="application/wasm" crossorigin="">
-<link rel="modulepreload" href="/simplicity-webide/simplicity-webide-ca9cc5b33aedddcb.js"></head>
+<!DOCTYPE html><html lang="en"><head>
+    <title>Simplicity Web IDE</title>
+    <style>
+      .instructions {
+        font-family: monospace;
+        margin-top: 16px;
+        margin-bottom: 16px;
+      }
+      .instruction {
+        display: block;
+      }
+      .instruction-stack > .instruction:first-child {
+        background-color: yellow;
+      }
+    </style>
+  
+<link rel="preload" href="/simplicity-webide/simplicity-webide-7e0445b978c8687f_bg.wasm" as="fetch" type="application/wasm" crossorigin="">
+<link rel="modulepreload" href="/simplicity-webide/simplicity-webide-7e0445b978c8687f.js"></head>
   <body>
 
-<script type="module">import init from '/simplicity-webide/simplicity-webide-ca9cc5b33aedddcb.js';init('/simplicity-webide/simplicity-webide-ca9cc5b33aedddcb_bg.wasm');</script></body></html>
+<script type="module">import init from '/simplicity-webide/simplicity-webide-7e0445b978c8687f.js';init('/simplicity-webide/simplicity-webide-7e0445b978c8687f_bg.wasm');</script></body></html>
