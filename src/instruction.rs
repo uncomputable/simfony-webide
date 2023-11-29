@@ -115,6 +115,16 @@ enum Task<J: Jet> {
     TcoOn(Arc<RedeemNode<J>>),
 }
 
+impl<J: Jet> fmt::Display for Task<J> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Task::Run(instruction) => write!(f, "{instruction}"),
+            Task::TcoOff(node) => write!(f, "⟪{}⟫", node.inner()),
+            Task::TcoOn(node) => write!(f, "⟪{}⟫tco", node.inner()),
+        }
+    }
+}
+
 #[derive(Debug, Clone)]
 pub struct Runner<J: Jet> {
     stack: Vec<Task<J>>,
