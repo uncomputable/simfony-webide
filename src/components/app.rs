@@ -1,3 +1,4 @@
+use itertools::Itertools;
 use leptos::*;
 use simplicity::jet::Elements;
 
@@ -15,8 +16,10 @@ pub fn App() -> impl IntoView {
     let update_program = move |new_human: String| match util::program_from_string(&new_human) {
         Ok(program) => {
             set_mac.set(Some(BitMachine::for_program()));
-            set_runner.set(Some(Runner::for_program(program, false)));
-            set_output.set("(Let's start)".to_string());
+            let runner = Runner::for_program(program, false);
+            let stack = runner.get_stack().iter().map(|x| x.to_string()).join(" ");
+            set_runner.set(Some(runner));
+            set_output.set(stack);
         }
         Err(error) => {
             set_output.set(error);
@@ -34,12 +37,13 @@ pub fn App() -> impl IntoView {
             set_mac.update(|maybe_m| {
                 set_runner.update(|maybe_r| {
                     if let (Some(m), Some(r)) = (maybe_m, maybe_r) {
-                        let new_output = match r.next(m) {
+                        let status = match r.next(m) {
                             Ok(Some(x)) => x.to_string(),
                             Ok(None) => "(Done)".to_string(),
                             Err(error) => format!("Error: {error}"),
                         };
-                        *o = new_output;
+                        let stack = r.get_stack().iter().map(|x| x.to_string()).join(" ");
+                        *o = format!("{stack} | {status}");
                     }
                 })
             })
