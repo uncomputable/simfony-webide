@@ -3,7 +3,7 @@ use std::fmt;
 use itertools::Itertools;
 use simplicity::{Cmr, FailEntropy};
 
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Copy, Clone, Ord, PartialOrd, Eq, PartialEq)]
 pub enum Error {
     FrameEof,
     MoveUnfinishedFrame,
@@ -24,7 +24,7 @@ impl fmt::Display for Error {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Ord, PartialOrd, Eq, PartialEq)]
 pub struct Frame {
     cells: Vec<bool>,
     cursor: usize,
@@ -129,7 +129,7 @@ impl Frame {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Ord, PartialOrd, Eq, PartialEq)]
 pub struct BitMachine {
     read_stack: Vec<Frame>,
     write_stack: Vec<Frame>,

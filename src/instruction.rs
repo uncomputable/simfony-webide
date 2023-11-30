@@ -108,7 +108,7 @@ impl Instruction {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub enum Task<J: Jet> {
     Run(Instruction),
     TcoOff(Arc<RedeemNode<J>>),
