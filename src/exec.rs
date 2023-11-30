@@ -24,6 +24,32 @@ impl fmt::Display for Error {
     }
 }
 
+#[derive(Debug, Copy, Clone, Ord, PartialOrd, Eq, PartialEq)]
+pub enum Cell {
+    Zero,
+    One,
+    Cursor,
+}
+
+impl From<bool> for Cell {
+    fn from(bit: bool) -> Self {
+        match bit {
+            false => Cell::Zero,
+            true => Cell::One,
+        }
+    }
+}
+
+impl fmt::Display for Cell {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Cell::Zero => f.write_str("0"),
+            Cell::One => f.write_str("1"),
+            Cell::Cursor => f.write_str("^"),
+        }
+    }
+}
+
 #[derive(Debug, Clone, Ord, PartialOrd, Eq, PartialEq)]
 pub struct Frame {
     cells: Vec<bool>,
@@ -33,17 +59,9 @@ pub struct Frame {
 impl fmt::Display for Frame {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "[")?;
-
-        for (i, &cell) in self.cells.iter().enumerate() {
-            if i == self.cursor {
-                write!(f, "∧")?;
-            }
-            write!(f, "{}", if cell { '1' } else { '0' })?;
+        for cell in self.cells() {
+            write!(f, "{cell}")?;
         }
-        if self.cursor == self.cells.len() {
-            write!(f, "∧")?;
-        }
-
         write!(f, "]")
     }
 }
@@ -54,6 +72,12 @@ impl Frame {
             cells: vec![false; bit_size],
             cursor: 0,
         }
+    }
+
+    pub fn cells(&self) -> impl Iterator<Item = Cell> + '_ {
+        let before_cursor = self.cells[..self.cursor].iter().map(|bit| Cell::from(*bit));
+        let after_cursor = self.cells[self.cursor..].iter().map(|bit| Cell::from(*bit));
+        before_cursor.chain(std::iter::once(Cell::Cursor).chain(after_cursor))
     }
 
     pub fn write(&mut self, bit: bool) -> Result<(), Error> {
