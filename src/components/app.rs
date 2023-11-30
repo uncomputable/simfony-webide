@@ -1,7 +1,6 @@
 use leptos::*;
 use simplicity::jet::Elements;
 
-use crate::exec::BitMachine;
 use crate::instruction::Runner;
 use crate::util;
 
@@ -11,12 +10,10 @@ pub fn App() -> impl IntoView {
     let (prefix, set_prefix) = create_signal::<Vec<String>>(vec![]);
     let (suffix, set_suffix) = create_signal::<Vec<String>>(vec![]);
 
-    let (mac, set_mac) = create_signal::<Option<BitMachine>>(None);
-    let (_, set_runner) = create_signal::<Option<Runner<Elements>>>(None);
+    let (runner, set_runner) = create_signal::<Option<Runner<Elements>>>(None);
 
     let update_program = move |human: String, tco: bool| match util::program_from_string(&human) {
         Ok(program) => {
-            set_mac.set(Some(BitMachine::for_program()));
             let runner = Runner::for_program(program, tco);
             let stack = runner.get_stack().iter().map(|x| x.to_string()).collect();
             set_runner.set(Some(runner));
@@ -31,25 +28,23 @@ pub fn App() -> impl IntoView {
     };
 
     let run_next_step = move || {
-        set_mac.update(|maybe_m| {
-            set_runner.update(|maybe_r| {
-                if let (Some(m), Some(r)) = (maybe_m, maybe_r) {
-                    match r.next(m) {
-                        Ok(Some(instruction)) => {
-                            set_prefix.update(|p| p.push(instruction.to_string()));
-                            set_status.set("(Ok)".to_string());
-                        }
-                        Ok(None) => {
-                            set_status.set("(Done)".to_string());
-                        }
-                        Err(error) => {
-                            set_status.set(format!("Error: {error}"));
-                        }
-                    };
-                    let stack = r.get_stack().iter().map(|x| x.to_string()).collect();
-                    set_suffix.set(stack);
-                }
-            })
+        set_runner.update(|maybe_r| {
+            if let Some(r) = maybe_r {
+                match r.next() {
+                    Ok(Some(instruction)) => {
+                        set_prefix.update(|p| p.push(instruction.to_string()));
+                        set_status.set("(Ok)".to_string());
+                    }
+                    Ok(None) => {
+                        set_status.set("(Done)".to_string());
+                    }
+                    Err(error) => {
+                        set_status.set(format!("Error: {error}"));
+                    }
+                };
+                let stack = r.get_stack().iter().map(|x| x.to_string()).collect();
+                set_suffix.set(stack);
+            }
         })
     };
 
@@ -60,7 +55,7 @@ pub fn App() -> impl IntoView {
         <p>
             {status}
         </p>
-        <BitMachine mac=mac/>
+        <BitMachine runner=runner/>
         <PastInstructions prefix=prefix/>
         <InstructionStack suffix=suffix/>
         <textarea
@@ -72,11 +67,11 @@ pub fn App() -> impl IntoView {
 }
 
 #[component]
-fn BitMachine(mac: ReadSignal<Option<BitMachine>>) -> impl IntoView {
+fn BitMachine(runner: ReadSignal<Option<Runner<Elements>>>) -> impl IntoView {
     view! {
         <p>
             {
-                move || mac.get().map(|m| m.to_string()).unwrap_or("(No machine)".to_string())
+                move || runner.get().map(|r| r.get_mac().to_string()).unwrap_or("(No machine)".to_string())
             }
         </p>
     }

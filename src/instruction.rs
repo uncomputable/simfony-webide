@@ -128,6 +128,7 @@ impl<J: Jet> fmt::Display for Task<J> {
 #[derive(Debug, Clone)]
 pub struct Runner<J: Jet> {
     stack: Vec<Task<J>>,
+    mac: exec::BitMachine,
     optimization: bool,
 }
 
@@ -135,6 +136,7 @@ impl<J: Jet> Runner<J> {
     pub fn for_program(program: Arc<RedeemNode<J>>, optimization: bool) -> Self {
         Self {
             stack: vec![Task::TcoOff(program)],
+            mac: exec::BitMachine::for_program(),
             optimization,
         }
     }
@@ -143,18 +145,22 @@ impl<J: Jet> Runner<J> {
         &self.stack
     }
 
-    pub fn next(&mut self, mac: &mut exec::BitMachine) -> Result<Option<Instruction>, exec::Error> {
+    pub fn get_mac(&self) -> &exec::BitMachine {
+        &self.mac
+    }
+
+    pub fn next(&mut self) -> Result<Option<Instruction>, exec::Error> {
         while let Some(top) = self.stack.pop() {
             match top {
                 Task::Run(x) => {
-                    x.execute(mac)?;
+                    x.execute(&mut self.mac)?;
                     return Ok(Some(x));
                 }
                 Task::TcoOff(node) => {
-                    self.tco_off(mac, node)?;
+                    self.tco_off(node)?;
                 }
                 Task::TcoOn(node) => {
-                    self.tco_on(mac, node)?;
+                    self.tco_on(node)?;
                 }
             }
         }
@@ -162,11 +168,7 @@ impl<J: Jet> Runner<J> {
         Ok(None)
     }
 
-    fn tco_off(
-        &mut self,
-        mac: &mut exec::BitMachine,
-        node: Arc<RedeemNode<J>>,
-    ) -> Result<(), exec::Error> {
+    fn tco_off(&mut self, node: Arc<RedeemNode<J>>) -> Result<(), exec::Error> {
         let stack = &mut self.stack;
         let inner = node.inner().clone();
         match inner {
@@ -217,7 +219,7 @@ impl<J: Jet> Runner<J> {
                 stack.push(Task::TcoOff(left));
             }
             Inner::Case(..) | Inner::AssertL(..) | Inner::AssertR(..) => {
-                let choice_bit = mac.peek()?;
+                let choice_bit = self.mac.peek()?;
                 let (sum_a_b, _c) = node.arrow().source.split_product().unwrap();
                 let (a, b) = sum_a_b.split_sum().unwrap();
 
@@ -286,11 +288,7 @@ impl<J: Jet> Runner<J> {
         Ok(())
     }
 
-    fn tco_on(
-        &mut self,
-        mac: &mut exec::BitMachine,
-        node: Arc<RedeemNode<J>>,
-    ) -> Result<(), exec::Error> {
+    fn tco_on(&mut self, node: Arc<RedeemNode<J>>) -> Result<(), exec::Error> {
         let stack = &mut self.stack;
         let inner = node.inner().clone();
         match inner {
@@ -336,7 +334,7 @@ impl<J: Jet> Runner<J> {
                 stack.push(Task::TcoOff(left));
             }
             Inner::Case(..) | Inner::AssertL(..) | Inner::AssertR(..) => {
-                let choice_bit = mac.peek()?;
+                let choice_bit = self.mac.peek()?;
                 let (sum_a_b, _c) = node.arrow().source.split_product().unwrap();
                 let (a, b) = sum_a_b.split_sum().unwrap();
 
@@ -399,18 +397,17 @@ mod tests {
 
     pub fn execute_string(s: &str, optimization: bool) {
         let program = util::program_from_string(s).unwrap();
-        let mut mac = exec::BitMachine::for_program();
         let mut runner = Runner::for_program(program, optimization);
-        println!("Step 0: {mac}");
+        println!("Step 0: {}", runner.get_mac());
 
         for i in 1.. {
-            match runner.next(&mut mac) {
+            match runner.next() {
                 Ok(Some(x)) => println!("{x}"),
                 Ok(None) => break,
                 Err(error) => panic!("Error: {error}"),
             }
 
-            println!("Step {i}: {mac}");
+            println!("Step {i}: {}", runner.get_mac());
         }
     }
 
