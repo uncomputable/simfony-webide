@@ -1,3 +1,4 @@
+use std::cmp::max;
 use std::collections::VecDeque;
 use std::fmt;
 use std::marker::PhantomData;
@@ -401,15 +402,31 @@ pub struct CachedRunner<J: Jet> {
     success: Result<(), exec::Error>,
     // will be required later for jet instructions
     jet: PhantomData<J>,
+    max_stack_len: usize,
+    max_frame_len: usize,
 }
 
 impl<J: Jet> CachedRunner<J> {
     pub fn for_program(program: Arc<RedeemNode<J>>, optimization: bool) -> Self {
+        fn get_max_stack_len<J: Jet>(runner: &Runner<J>) -> usize {
+            max(
+                runner.get_mac().read_stack().len(),
+                runner.get_mac().write_stack().len(),
+            )
+        }
+
         let mut runner = Runner::for_program(program, optimization);
         let mut cached_instructions = VecDeque::new();
+        let mut max_stack_len = get_max_stack_len(&runner);
+        let mut max_frame_len = 0;
+
         let success = loop {
             match runner.next() {
                 Ok(Some(instruction)) => {
+                    if let Instruction::NewFrame(bit_len) = instruction {
+                        max_frame_len = max(max_frame_len, bit_len);
+                    }
+                    max_stack_len = get_max_stack_len(&runner);
                     cached_instructions.push_back(instruction);
                 }
                 Ok(None) => break Ok(()),
@@ -423,6 +440,8 @@ impl<J: Jet> CachedRunner<J> {
             cached_instructions,
             success,
             jet: PhantomData,
+            max_stack_len,
+            max_frame_len,
         }
     }
 
@@ -436,6 +455,14 @@ impl<J: Jet> CachedRunner<J> {
 
     pub fn get_mac(&self) -> &exec::BitMachine {
         &self.mac
+    }
+
+    pub fn max_stack_len(&self) -> usize {
+        self.max_stack_len
+    }
+
+    pub fn max_frame_len(&self) -> usize {
+        self.max_frame_len
     }
 
     pub fn next(&mut self) -> Result<(), exec::Error> {
