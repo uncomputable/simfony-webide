@@ -1,4 +1,6 @@
+use std::collections::VecDeque;
 use std::fmt;
+use std::marker::PhantomData;
 use std::str::FromStr;
 use std::sync::Arc;
 
@@ -391,11 +393,71 @@ impl<J: Jet> Runner<J> {
     }
 }
 
+#[derive(Debug, Clone)]
+pub struct CachedRunner<J: Jet> {
+    mac: exec::BitMachine,
+    past_instructions: Vec<Instruction>,
+    cached_instructions: VecDeque<Instruction>,
+    success: Result<(), exec::Error>,
+    // will be required later for jet instructions
+    jet: PhantomData<J>,
+}
+
+impl<J: Jet> CachedRunner<J> {
+    pub fn for_program(program: Arc<RedeemNode<J>>, optimization: bool) -> Self {
+        let mut runner = Runner::for_program(program, optimization);
+        let mut cached_instructions = VecDeque::new();
+        let success = loop {
+            match runner.next() {
+                Ok(Some(instruction)) => {
+                    cached_instructions.push_back(instruction);
+                }
+                Ok(None) => break Ok(()),
+                Err(error) => break Err(error),
+            }
+        };
+
+        Self {
+            mac: exec::BitMachine::for_program(),
+            past_instructions: vec![],
+            cached_instructions,
+            success,
+            jet: PhantomData,
+        }
+    }
+
+    pub fn past_instructions(&self) -> impl Iterator<Item = &Instruction> {
+        self.past_instructions.iter()
+    }
+
+    pub fn next_instructions(&self) -> impl Iterator<Item = &Instruction> {
+        self.cached_instructions.iter()
+    }
+
+    pub fn get_mac(&self) -> &exec::BitMachine {
+        &self.mac
+    }
+
+    pub fn next(&mut self) -> Result<(), exec::Error> {
+        if let Some(instruction) = self.cached_instructions.pop_front() {
+            let result = instruction.execute(&mut self.mac);
+            debug_assert!(
+                result.is_ok(),
+                "Cached instructions were generated up to first error"
+            );
+            self.past_instructions.push(instruction);
+            Ok(())
+        } else {
+            self.success
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
 
-    pub fn execute_string(s: &str, optimization: bool) {
+    fn execute_string(s: &str, optimization: bool) {
         let program = util::program_from_string(s).unwrap();
         let mut runner = Runner::for_program(program, optimization);
         println!("Step 0: {}", runner.get_mac());
@@ -408,6 +470,46 @@ mod tests {
             }
 
             println!("Step {i}: {}", runner.get_mac());
+        }
+    }
+
+    fn cached_assert_equal_uncached(s: &str, optimization: bool) {
+        let program = util::program_from_string(s).unwrap();
+        let mut runner = Runner::for_program(program.clone(), optimization);
+        let mut cached = CachedRunner::for_program(program, optimization);
+
+        loop {
+            let cached_next = cached.cached_instructions.front().cloned();
+            match (runner.next(), cached.next()) {
+                (Ok(runner_next), Ok(())) => {
+                    assert_eq!(runner_next, cached_next, "Uncached next != cached next");
+                    if runner_next.is_none() {
+                        break;
+                    }
+                }
+                (runner_res, cached_res) => {
+                    let runner_res = runner_res.map(|_| ());
+                    assert_eq!(runner_res, cached_res, "Uncached result != Cached result");
+                    if runner_res.is_err() {
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
+    fn execute_string_all(s: &str) {
+        for optimization in [false, true] {
+            println!(
+                "\n{}\n",
+                if optimization {
+                    "Optimized"
+                } else {
+                    "Unoptimized"
+                }
+            );
+            execute_string(s, optimization);
+            cached_assert_equal_uncached(s, optimization);
         }
     }
 
@@ -437,10 +539,7 @@ mod tests {
         let s = "
             main := iden
         ";
-        println!("Unoptimized");
-        execute_string(s, false);
-        println!("\nOptimized");
-        execute_string(s, true);
+        execute_string_all(s);
     }
 
     #[test]
@@ -451,10 +550,7 @@ mod tests {
             output := unit : 2 -> 1
             main := comp input (comp not output)
         ";
-        println!("Unoptimized");
-        execute_string(s, false);
-        println!("\nOptimized");
-        execute_string(s, true);
+        execute_string_all(s);
     }
 
     #[test]
@@ -464,7 +560,7 @@ mod tests {
             output := unit
             main := comp input output
         ";
-        execute_string(s, false);
+        execute_string_all(s);
     }
 
     #[test]
@@ -474,7 +570,7 @@ mod tests {
             disc1 := unit
             main := comp (disconnect id1 ?hole) unit -- fixme: ?hole is named disc1
         ";
-        execute_string(s, false);
+        execute_string_all(s);
     }
 
     #[test]
@@ -484,7 +580,7 @@ mod tests {
             output := assertl unit #{unit}
             main := comp input output
         ";
-        execute_string(s, false);
+        execute_string_all(s);
     }
 
     #[test]
@@ -494,5 +590,14 @@ mod tests {
             main := comp jet_version unit
         ";
         execute_string(s, false);
+    }
+
+    #[test]
+    fn execute_jet_cached() {
+        let s = "
+            main := comp jet_version unit
+        ";
+        cached_assert_equal_uncached(s, false);
+        cached_assert_equal_uncached(s, true);
     }
 }
