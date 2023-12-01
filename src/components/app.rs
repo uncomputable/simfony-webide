@@ -1,6 +1,7 @@
 use leptos::*;
 use simplicity::jet::Elements;
 
+use super::bit_machine::Stacks;
 use crate::instruction::CachedRunner;
 use crate::util;
 
@@ -51,7 +52,7 @@ pub fn App() -> impl IntoView {
         <p>
             {status}
         </p>
-        <BitMachine runner=runner/>
+        <Stacks runner=runner/>
         <Instructions instructions=past_instructions highlight=false/>
         <Instructions instructions=next_instructions highlight=true/>
         <textarea
@@ -59,17 +60,6 @@ pub fn App() -> impl IntoView {
             placeholder="Enter program text here"
             rows="10" cols="50"
         />
-    }
-}
-
-#[component]
-fn BitMachine(runner: ReadSignal<Option<CachedRunner<Elements>>>) -> impl IntoView {
-    view! {
-        <p>
-            {
-                move || runner.get().map(|r| r.get_mac().to_string()).unwrap_or("(No machine)".to_string())
-            }
-        </p>
     }
 }
 
