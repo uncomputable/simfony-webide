@@ -10,5 +10,8 @@ pkgs.mkShell.override {
   CFLAGS_wasm32_unknown_unknown = "-I ${pkgs.llvmPackages_16.libclang.lib}/lib/clang/16/include/";
   buildInputs = with pkgs; [
     trunk
+    nodejs
+    wasm-pack
+    wasm-bindgen-cli
   ];
 }
