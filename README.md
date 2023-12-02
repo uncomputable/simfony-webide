@@ -11,12 +11,18 @@ Write Simplicity programs and see how they are executed on the Bit Machine.
 Enter the provided nix shell.
 
 ```bash
-nix-shell
+nix-shell # --pure
 ```
 
 ### Deploy a local website
 
 Use trunk to compile the project and deploy a local website.
+
+```bash
+trunk serve
+```
+
+Trunk can open a browser if one is available.
 
 ```bash
 trunk serve --open
