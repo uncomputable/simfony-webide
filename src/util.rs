@@ -48,6 +48,7 @@ pub fn program_from_string(s: &str) -> Result<Arc<RedeemNode<Elements>>, String>
     let forest = simplicity::human_encoding::Forest::parse(s).map_err(|e| e.to_string())?;
     forest
         .to_witness_node(&empty_witness)
+        .ok_or("Main root is missing".to_string())?
         .finalize()
         .map_err(|e| e.to_string())
 }
