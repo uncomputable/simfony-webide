@@ -8,16 +8,12 @@
   }
 }:
 let
-  targets = [
-    "wasm32-unknown-unknown"
-  ];
-  rust = with pkgs; [
-    (
-      rust-bin.stable.latest.default.override {
-        inherit targets;
-      }
-    )
-  ];
+  rust = pkgs.rust-bin.stable.latest.default.override {
+    targets = [
+      "wasm32-unknown-unknown"
+    ];
+    extensions = [ "rust-src" ];
+  };
   leptos = with pkgs; [
     trunk
   ];
@@ -32,5 +28,7 @@ in
   } {
     CC_wasm32_unknown_unknown = "${pkgs.llvmPackages_16.clang-unwrapped}/bin/clang-16";
     CFLAGS_wasm32_unknown_unknown = "-I ${pkgs.llvmPackages_16.libclang.lib}/lib/clang/16/include/";
-    buildInputs = rust ++ leptos ++ wasm-tests;
+    buildInputs = [ rust ] ++ leptos ++ wasm-tests;
+    RUST_TOOLCHAIN = "${rust}/bin";
+    RUST_STDLIB = "${rust}/lib/rustlib/src/rust";
   }
