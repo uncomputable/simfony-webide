@@ -38,30 +38,34 @@ pub fn App() -> impl IntoView {
     };
 
     view! {
-        <p>
-            {human_error}
-        </p>
-        <p>
-            {program_success}
-        </p>
-        <select
-            on:input=move |event| select_example_program(event_target_value(&event))
-        >
-            <option value="" disabled selected>Example programs</option>
-            {
-                examples::get_names()
-                    .map(|name| view! { <option value={name}>{name}</option>})
-                    .collect::<Vec<_>>()
-            }
-        </select>
+        <div>
+            <p>
+                {human_error}
+            </p>
+            <p>
+                {program_success}
+            </p>
+            <select
+                on:input=move |event| select_example_program(event_target_value(&event))
+            >
+                <option value="" disabled selected>Example programs</option>
+                {
+                    examples::get_names()
+                        .map(|name| view! { <option value={name}>{name}</option>})
+                        .collect::<Vec<_>>()
+                }
+            </select>
+        </div>
         <textarea
             prop:value=move || human.get()
             on:input=move |event| set_human.set(event_target_value(&event))
             placeholder="Enter your program here"
             rows="10" cols="80"
         />
-        <button on:click=move |_| run_program()>
-            "Run program"
-        </button>
+        <div>
+            <button on:click=move |_| run_program()>
+                "Run program"
+            </button>
+        </div>
     }
 }
