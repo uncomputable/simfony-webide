@@ -14,6 +14,10 @@ let
     ];
     extensions = [ "rust-src" ];
   };
+  rust-dev = [
+    rust
+    pkgs.gdb
+  ];
   leptos = with pkgs; [
     trunk
   ];
@@ -28,7 +32,8 @@ in
   } {
     CC_wasm32_unknown_unknown = "${pkgs.llvmPackages_16.clang-unwrapped}/bin/clang-16";
     CFLAGS_wasm32_unknown_unknown = "-I ${pkgs.llvmPackages_16.libclang.lib}/lib/clang/16/include/";
-    buildInputs = [ rust ] ++ leptos ++ wasm-tests;
+    buildInputs = rust-dev ++ leptos ++ wasm-tests;
     RUST_TOOLCHAIN = "${rust}/bin";
     RUST_STDLIB = "${rust}/lib/rustlib/src/rust";
+    DEBUGGER = "${pkgs.gdb}";
   }
