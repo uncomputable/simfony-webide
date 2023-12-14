@@ -1,7 +1,7 @@
 use leptos::*;
 
 use crate::examples;
-use crate::instruction::CachedRunner;
+use crate::function::Runner;
 use crate::util;
 
 #[component]
@@ -26,13 +26,13 @@ pub fn App() -> impl IntoView {
             Ok(program) => program,
             Err(_) => return,
         };
-        let runner = CachedRunner::for_program(program, true);
-        match runner.get_success() {
-            Ok(()) => {
+        let mut runner = Runner::for_program(util::Expression(program));
+        match runner.run() {
+            Ok(_) => {
                 set_program_success.set("✅ Program success".to_string());
             }
             Err(error) => {
-                set_program_success.set(format!("❌ Program failure: {error}"));
+                set_program_success.set(format!("❌ {error}"));
             }
         }
     };
