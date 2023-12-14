@@ -432,8 +432,8 @@ impl<J: Jet> CachedRunner<J> {
         self.cached_instructions.iter()
     }
 
-    pub fn get_mac(&self) -> &exec::BitMachine {
-        &self.mac
+    pub fn get_success(&self) -> Result<(), exec::Error> {
+        self.success
     }
 
     pub fn next(&mut self) -> Result<(), exec::Error> {
