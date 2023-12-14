@@ -1,5 +1,5 @@
 // Names must be unique because they serve as primary keys
-const NAMED_PROGRAMS: [(&str, &str); 9] = [
+pub(crate) const NAMED_PROGRAMS: [(&str, &str); 9] = [
     ("unit", UNIT),
     ("iden", IDEN),
     ("not", NOT),
