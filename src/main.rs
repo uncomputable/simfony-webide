@@ -1,4 +1,5 @@
 mod components;
+mod examples;
 mod exec;
 mod instruction;
 mod util;

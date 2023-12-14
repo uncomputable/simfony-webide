@@ -454,6 +454,7 @@ impl<J: Jet> CachedRunner<J> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::examples;
 
     fn execute_string(s: &str, optimization: bool) {
         let program = util::program_from_string(s).unwrap();
@@ -533,69 +534,45 @@ mod tests {
     }
 
     #[test]
+    fn execute_unit() {
+        execute_string_all(examples::UNIT);
+    }
+
+    #[test]
     fn execute_iden() {
-        let s = "
-            main := iden
-        ";
-        execute_string_all(s);
+        execute_string_all(examples::IDEN);
     }
 
     #[test]
     fn execute_not() {
-        let s = "
-            not := comp (pair iden unit) (case (injr unit) (injl unit)) : 2 -> 2
-            input := injl unit : 1 -> 2
-            output := unit : 2 -> 1
-            main := comp input (comp not output)
-        ";
-        execute_string_all(s);
+        execute_string_all(examples::NOT);
     }
 
     #[test]
     fn execute_word() {
-        let s = "
-            input := const 0xff
-            output := unit
-            main := comp input output
-        ";
-        execute_string_all(s);
+        execute_string_all(examples::WORD);
     }
 
     #[test]
     fn execute_disconnect() {
-        let s = "
-            id1 := iden : 2^256 * 1 -> 2^256 * 1
-            disc1 := unit
-            main := comp (disconnect id1 ?hole) unit -- fixme: ?hole is named disc1
-        ";
-        execute_string_all(s);
+        execute_string_all(examples::DISCONNECT);
     }
 
     #[test]
     fn execute_assert() {
-        let s = "
-            input := pair (const 0b0) unit
-            output := assertl unit #{unit}
-            main := comp input output
-        ";
-        execute_string_all(s);
+        execute_string_all(examples::ASSERTL);
+        execute_string_all(examples::ASSERTR);
     }
 
     #[test]
     #[should_panic(expected = "Jets are currently not supported")]
     fn execute_jet() {
-        let s = "
-            main := comp jet_version unit
-        ";
-        execute_string(s, false);
+        execute_string(examples::JET_VERSION_FAILURE, false);
     }
 
     #[test]
     fn execute_jet_cached() {
-        let s = "
-            main := comp jet_version unit
-        ";
-        cached_assert_equal_uncached(s, false);
-        cached_assert_equal_uncached(s, true);
+        cached_assert_equal_uncached(examples::JET_VERSION_FAILURE, false);
+        cached_assert_equal_uncached(examples::JET_VERSION_FAILURE, true);
     }
 }
