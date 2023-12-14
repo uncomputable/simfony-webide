@@ -95,13 +95,13 @@ impl fmt::Display for Expression {
                 Inner::Case(_, _) => f.write_str("case (")?,
                 Inner::AssertL(_, _) => f.write_str("assertl (")?,
                 Inner::AssertR(_, _) => f.write_str("assertl (")?,
-                Inner::Pair(_, _) => f.write_str("pair")?,
+                Inner::Pair(_, _) => f.write_str("pair (")?,
                 Inner::Disconnect(_, _) => f.write_str("disconnect (")?,
                 Inner::Witness(_) => f.write_str("witness")?,
                 Inner::Fail(_) => f.write_str("fail")?,
                 Inner::Jet(jet) => write!(f, "jet_{}", jet)?,
                 Inner::Word(value) => {
-                    let bitstring = value_to_bitstring(&value);
+                    let bitstring = value_to_bitstring(value);
                     write!(f, "const {}", fmt_bitstring(&bitstring))?;
                 }
             }
