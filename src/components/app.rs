@@ -1,51 +1,64 @@
-use std::sync::Arc;
-
 use leptos::*;
-use simplicity::jet::Elements;
-use simplicity::RedeemNode;
 
+use crate::examples;
 use crate::instruction::CachedRunner;
 use crate::util;
 
 #[component]
 pub fn App() -> impl IntoView {
-    let (status, set_status) = create_signal("(Idle)".to_string());
-    let (program, set_program) = create_signal::<Option<Arc<RedeemNode<Elements>>>>(None);
+    let (human, set_human) = create_signal("".to_string());
+    let (program_success, set_program_success) = create_signal("".to_string());
 
-    let update_program = move |human: String| match util::program_from_string(&human) {
-        Ok(program) => {
-            set_program.set(Some(program));
-            set_status.set("Ready to run".to_string());
-        }
-        Err(error) => {
-            set_program.set(None);
-            set_status.set(format!("Error: {error}"));
+    let program = move || util::program_from_string(&human.get());
+    let human_error = move || match program() {
+        Ok(_) => "Ready to run".to_string(),
+        Err(error) => format!("Error: {error}"),
+    };
+
+    let select_example_program = move |name: String| {
+        if let Some(new_human) = examples::get_program(&name) {
+            set_human.set(new_human.to_string());
+            set_program_success.set("".to_string());
         }
     };
     let run_program = move || {
-        let program = match program.get() {
-            Some(program) => program,
-            None => return,
+        let program = match program() {
+            Ok(program) => program,
+            Err(_) => return,
         };
         let runner = CachedRunner::for_program(program, true);
         match runner.get_success() {
             Ok(()) => {
-                set_status.set("✅ Program success".to_string());
+                set_program_success.set("✅ Program success".to_string());
             }
             Err(error) => {
-                set_status.set(format!("❌ Program failure: {error}"));
+                set_program_success.set(format!("❌ Program failure: {error}"));
             }
         }
     };
 
     view! {
         <p>
-            {status}
+            {human_error}
         </p>
+        <p>
+            {program_success}
+        </p>
+        <select
+            on:input=move |event| select_example_program(event_target_value(&event))
+        >
+            <option value="" disabled selected>Example programs</option>
+            {
+                examples::get_names()
+                    .map(|name| view! { <option value={name}>{name}</option>})
+                    .collect::<Vec<_>>()
+            }
+        </select>
         <textarea
-            on:input=move |event| update_program(event_target_value(&event))
+            prop:value=move || human.get()
+            on:input=move |event| set_human.set(event_target_value(&event))
             placeholder="Enter your program here"
-            rows="10" cols="50"
+            rows="10" cols="80"
         />
         <button on:click=move |_| run_program()>
             "Run program"
