@@ -179,14 +179,6 @@ impl BitMachine {
         }
     }
 
-    pub fn read_stack(&self) -> &[Frame] {
-        &self.read_stack
-    }
-
-    pub fn write_stack(&self) -> &[Frame] {
-        &self.write_stack
-    }
-
     pub fn new_frame(&mut self, bit_len: usize) {
         debug_assert!(!self.read_stack.is_empty() && !self.write_stack.is_empty());
         self.write_stack.push(Frame::new(bit_len));
