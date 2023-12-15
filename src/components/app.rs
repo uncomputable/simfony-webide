@@ -36,6 +36,9 @@ pub fn App() -> impl IntoView {
     };
 
     view! {
+        <h1>Simplicity Web IDE</h1>
+        <p>Write and execute Simplicity programs in the browser!</p>
+        <p>"The IDE uses the "<a href="https://github.com/BlockstreamResearch/rust-simplicity/blob/master/src/human_encoding/README.md">human encoding</a>" to serialize Simplicity."</p>
         <div>
             <p>
                 {human_error}
@@ -66,6 +69,8 @@ pub fn App() -> impl IntoView {
             </button>
         </div>
         <div>
+            <h2>Merkle tree</h2>
+            <p>A Simplicity program is a Merkle tree, which makes it easy to analyze.</p>
             {
                 move || program().ok().map(|t| view! { <Merkle expression=t/> })
             }
