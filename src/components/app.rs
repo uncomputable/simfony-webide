@@ -11,10 +11,7 @@ pub fn App() -> impl IntoView {
     let (program_success, set_program_success) = create_signal("".to_string());
 
     let program = move || util::program_from_string(&human.get());
-    let human_error = move || match program() {
-        Ok(_) => "Ready to run".to_string(),
-        Err(error) => format!("Error: {error}"),
-    };
+    let human_error = move || program().err().map(|error| format!("Error: {error}"));
 
     let select_example_program = move |name: String| {
         if let Some(new_human) = examples::get_program(&name) {
