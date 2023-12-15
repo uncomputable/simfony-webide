@@ -13,10 +13,13 @@ pub fn App() -> impl IntoView {
     let program = move || util::program_from_string(&human.get());
     let human_error = move || program().err().map(|error| format!("Error: {error}"));
 
+    let update_human = move |new_human: String| {
+        set_human.set(new_human);
+        set_program_success.set("".to_string());
+    };
     let select_example_program = move |name: String| {
         if let Some(new_human) = examples::get_program(&name) {
-            set_human.set(new_human.to_string());
-            set_program_success.set("".to_string());
+            update_human(new_human.to_string());
         }
     };
     let run_program = move || {
@@ -59,7 +62,7 @@ pub fn App() -> impl IntoView {
         </div>
         <textarea
             prop:value=move || human.get()
-            on:input=move |event| set_human.set(event_target_value(&event))
+            on:input=move |event| update_human(event_target_value(&event))
             placeholder="Enter your program here"
             rows="10" cols="80"
         />
