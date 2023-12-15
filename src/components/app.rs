@@ -1,5 +1,6 @@
 use leptos::*;
 
+use super::merkle::Merkle;
 use crate::examples;
 use crate::function::Runner;
 use crate::util;
@@ -66,6 +67,11 @@ pub fn App() -> impl IntoView {
             <button on:click=move |_| run_program()>
                 "Run program"
             </button>
+        </div>
+        <div>
+            {
+                move || program().ok().map(|t| view! { <Merkle expression=t/> })
+            }
         </div>
     }
 }
