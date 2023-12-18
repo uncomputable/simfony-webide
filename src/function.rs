@@ -2,14 +2,14 @@ use std::fmt;
 use std::sync::Arc;
 
 use simplicity::node::Inner;
-use simplicity::Value;
 
 use crate::util::Expression;
+use crate::value::{Bytes, ExtValue};
 
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct State {
     pub expression: Expression,
-    pub input: Arc<Value>,
+    pub input: Arc<ExtValue>,
 }
 
 impl fmt::Display for State {
@@ -72,15 +72,15 @@ enum Task {
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct Runner {
     input: Vec<Task>,
-    output: Vec<Arc<Value>>,
+    output: Vec<Arc<ExtValue>>,
 }
 
 impl Runner {
     pub fn for_program(program: Expression) -> Self {
-        Self::for_expression(program, Value::unit())
+        Self::for_expression(program, ExtValue::unit())
     }
 
-    fn for_expression(expression: Expression, input: Arc<Value>) -> Self {
+    fn for_expression(expression: Expression, input: Arc<ExtValue>) -> Self {
         let initial_state = State { expression, input };
         Self {
             input: vec![Task::Execute(initial_state)],
@@ -88,7 +88,7 @@ impl Runner {
         }
     }
 
-    pub fn run(&mut self) -> Result<Arc<Value>, Error> {
+    pub fn run(&mut self) -> Result<Arc<ExtValue>, Error> {
         while let Some(task) = self.input.pop() {
             match task {
                 Task::Execute(state) => {
@@ -114,16 +114,16 @@ impl Runner {
                 }
                 Task::MakeLeft => {
                     let a = self.output.pop().unwrap();
-                    self.output.push(Value::sum_l(a));
+                    self.output.push(ExtValue::left(a));
                 }
                 Task::MakeRight => {
                     let a = self.output.pop().unwrap();
-                    self.output.push(Value::sum_r(a));
+                    self.output.push(ExtValue::right(a));
                 }
                 Task::MakeProduct => {
                     let b = self.output.pop().unwrap();
                     let a = self.output.pop().unwrap();
-                    self.output.push(Value::prod(a, b));
+                    self.output.push(ExtValue::product(a, b));
                 }
             }
         }
@@ -140,7 +140,7 @@ impl Runner {
                 self.output.push(state.input);
             }
             Inner::Unit => {
-                self.output.push(Value::unit());
+                self.output.push(ExtValue::unit());
             }
             Inner::InjL(t) => {
                 self.input.push(Task::MakeLeft);
@@ -207,12 +207,12 @@ impl Runner {
                     .split_product()
                     .ok_or_else(|| Error::new(ErrorKind::ExpectedProduct, state.clone()))?;
 
-                match sum_a_b.as_ref() {
-                    Value::SumL(a) => match inner {
+                if let Some(a) = sum_a_b.split_left() {
+                    match inner {
                         Inner::Case(s, _) | Inner::AssertL(s, _) => {
                             let s_state = State {
                                 expression: Expression(s.clone()),
-                                input: Value::prod(a.clone(), c),
+                                input: ExtValue::product(a.clone(), c),
                             };
                             self.input.push(Task::Execute(s_state));
                         }
@@ -220,12 +220,13 @@ impl Runner {
                             return Err(Error::new(ErrorKind::AssertionFailed, state.clone()));
                         }
                         _ => unreachable!("Covered by outer match statement"),
-                    },
-                    Value::SumR(b) => match inner {
+                    }
+                } else if let Some(b) = sum_a_b.split_right() {
+                    match inner {
                         Inner::Case(_, t) | Inner::AssertR(_, t) => {
                             let t_state = State {
                                 expression: Expression(t.clone()),
-                                input: Value::prod(b.clone(), c),
+                                input: ExtValue::product(b.clone(), c),
                             };
                             self.input.push(Task::Execute(t_state));
                         }
@@ -233,13 +234,12 @@ impl Runner {
                             return Err(Error::new(ErrorKind::AssertionFailed, state.clone()));
                         }
                         _ => unreachable!("Covered by outer match statement"),
-                    },
-                    _ => {
-                        return Err(Error::new(
-                            ErrorKind::ExpectedSumInFirstComponent,
-                            state.clone(),
-                        ))
                     }
+                } else {
+                    return Err(Error::new(
+                        ErrorKind::ExpectedSumInFirstComponent,
+                        state.clone(),
+                    ));
                 }
             }
             Inner::Disconnect(s, t) => {
@@ -247,25 +247,21 @@ impl Runner {
                 self.input
                     .push(Task::ExecuteDisconnect(Expression(t.clone())));
 
-                let t_cmr = Value::u256_from_slice(t.cmr().as_ref());
+                let t_cmr = ExtValue::bytes(Bytes::from_slice(t.cmr()));
                 let s_state = State {
                     expression: Expression(s.clone()),
-                    input: Value::prod(t_cmr, state.input),
+                    input: ExtValue::product(t_cmr, state.input),
                 };
                 self.input.push(Task::Execute(s_state));
             }
-            Inner::Witness(value) => {
-                self.output.push(value.clone());
-            }
+            Inner::Witness(value) => self.output.push(Arc::new(ExtValue::from(value.as_ref()))),
             Inner::Fail(_) => {
                 return Err(Error::new(ErrorKind::FailNode, state));
             }
             Inner::Jet(_) => {
                 return Err(Error::new(ErrorKind::JetsNotSupported, state));
             }
-            Inner::Word(value) => {
-                self.output.push(value.clone());
-            }
+            Inner::Word(value) => self.output.push(Arc::new(ExtValue::from(value.as_ref()))),
         };
 
         Ok(())
