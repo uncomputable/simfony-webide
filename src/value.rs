@@ -17,7 +17,7 @@ impl fmt::Display for Bits {
         write!(f, "0b")?;
 
         for i in self.start..self.start + self.len {
-            let bit = if self.bits[7 - i] { '1' } else { '0' };
+            let bit = if self.bits[i] { '1' } else { '0' };
             write!(f, "{}", bit)?;
         }
 
@@ -48,7 +48,7 @@ impl Bits {
 
     pub fn from_byte(byte: u8) -> Self {
         Self {
-            bits: Arc::new((0..8).map(|i| byte & (1 << i) != 0).collect()),
+            bits: Arc::new((0..8).map(|i| byte & (1 << (7 - i)) != 0).collect()),
             start: 0,
             len: 8,
         }
