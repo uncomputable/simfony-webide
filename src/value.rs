@@ -136,6 +136,7 @@ impl Bytes {
     }
 }
 
+#[derive(Clone, Eq, PartialEq)]
 pub enum ExtValue {
     Unit,
     Left(Arc<Self>),
@@ -173,6 +174,12 @@ impl fmt::Display for ExtValue {
         }
 
         Ok(())
+    }
+}
+
+impl fmt::Debug for ExtValue {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        fmt::Display::fmt(self, f)
     }
 }
 
