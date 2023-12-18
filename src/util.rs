@@ -5,23 +5,9 @@ use std::sync::Arc;
 use simplicity::dag::{Dag, DagLike, NoSharing};
 use simplicity::jet::Elements;
 use simplicity::node::Inner;
-use simplicity::{RedeemNode, Value};
+use simplicity::{RedeemNode};
 
-pub fn value_to_bitstring(value: &Value) -> Vec<bool> {
-    let mut bitstring = Vec::new();
-    value.do_each_bit(|bit| {
-        bitstring.push(bit);
-    });
-    bitstring
-}
-
-pub fn fmt_bitstring(bitstring: &[bool]) -> String {
-    let mut s = "".to_string();
-    for bit in bitstring {
-        s.push_str(if !bit { "0" } else { "1" });
-    }
-    s
-}
+use crate::value::ExtValue;
 
 pub fn program_from_string(s: &str) -> Result<Arc<RedeemNode<Elements>>, String> {
     let empty_witness = HashMap::new();
@@ -78,8 +64,7 @@ impl fmt::Display for Expression {
                 Inner::Fail(_) => f.write_str("fail")?,
                 Inner::Jet(jet) => write!(f, "jet_{}", jet)?,
                 Inner::Word(value) => {
-                    let bitstring = value_to_bitstring(value);
-                    write!(f, "const {}", fmt_bitstring(&bitstring))?;
+                    write!(f, "const {}", ExtValue::from(value.as_ref()))?;
                 }
             }
         }
