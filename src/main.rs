@@ -2,6 +2,7 @@ mod components;
 mod examples;
 mod function;
 mod util;
+mod value;
 
 use components::App;
 use leptos::*;
