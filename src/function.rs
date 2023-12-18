@@ -14,7 +14,10 @@ pub struct State {
 
 impl fmt::Display for State {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "[{}]({})", self.expression, self.input)
+        match self.input.as_ref() {
+            ExtValue::Product(..) => write!(f, "[{}]{}", self.expression, self.input),
+            _ => write!(f, "[{}]({})", self.expression, self.input),
+        }
     }
 }
 
