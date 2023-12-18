@@ -103,13 +103,21 @@ impl Bytes {
     pub fn from_bytes(bytes: Vec<u8>) -> Self {
         assert!(
             bytes.len().is_power_of_two(),
-            "Length of byte sequence must be a power of two"
+            "Length of byte sequence must be a power of 2"
         );
         Self {
             len: bytes.len(),
             bytes: Arc::new(bytes),
             start: 0,
         }
+    }
+
+    pub fn from_slice<A: AsRef<[u8]>>(bytes: A) -> Self {
+        assert!(
+            bytes.as_ref().len().is_power_of_two(),
+            "Length of byte sequence must be a power of 2"
+        );
+        Self::from_bytes(bytes.as_ref().to_vec())
     }
 }
 
