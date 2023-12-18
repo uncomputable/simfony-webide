@@ -3,6 +3,7 @@ use std::sync::Arc;
 
 use hex_conservative::DisplayHex;
 use simplicity::dag::{Dag, DagLike, NoSharing};
+use simplicity::Value;
 
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct Bits {
@@ -82,6 +83,66 @@ impl Bits {
     }
 }
 
+/// # Panics
+///
+/// Input value is a left or right value that wraps something other than unit.
+///
+/// Input value is a product of unit.
+fn do_each_bit_strict<F>(value: &Value, mut f: F) -> Result<(), String>
+where
+    F: FnMut(bool),
+{
+    for data in value.pre_order_iter::<NoSharing>() {
+        match data {
+            Value::Unit => {}
+            Value::SumL(left) => {
+                if let Value::Unit = left.as_ref() {
+                    f(false);
+                } else {
+                    return Err(format!("Illegal left value: {data}"));
+                }
+            }
+            Value::SumR(right) => {
+                if let Value::Unit = right.as_ref() {
+                    f(true);
+                } else {
+                    return Err(format!("Illegal right value: {data}"));
+                }
+            }
+            Value::Prod(left, right) => {
+                if let (Value::Unit, Value::Unit) = (left.as_ref(), right.as_ref()) {
+                    return Err(format!("Illegal product value: {data}"));
+                }
+            }
+        }
+    }
+
+    Ok(())
+}
+
+impl<'a> TryFrom<&'a Value> for Bits {
+    type Error = String;
+
+    fn try_from(value: &'a Value) -> Result<Self, Self::Error> {
+        if !value.len().is_power_of_two() {
+            return Err("Length of bit sequence must a be a power of 2".to_string());
+        }
+
+        let mut bits = Vec::with_capacity(value.len());
+        let add_bit = |bit: bool| {
+            bits.push(bit);
+        };
+
+        do_each_bit_strict(value, add_bit)?;
+
+        Ok(Bits {
+            len: bits.len(),
+            bits: Arc::new(bits),
+            start: 0,
+        })
+    }
+}
+
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct Bytes {
     bytes: Arc<Vec<u8>>,
@@ -141,6 +202,44 @@ impl Bytes {
             };
             Ok((left, right))
         }
+    }
+}
+
+impl<'a> TryFrom<&'a Value> for Bytes {
+    type Error = String;
+
+    fn try_from(value: &'a Value) -> Result<Self, Self::Error> {
+        if !value.len().is_power_of_two() {
+            return Err("Length of byte sequence must be a power of 2".to_string());
+        }
+        if value.len() % 8 != 0 {
+            return Err("Length of bit sequence must be divisible by 8".to_string());
+        }
+
+        let mut bytes = Vec::with_capacity(value.len());
+        let mut unfinished_byte = Vec::with_capacity(8);
+
+        let add_bit = |bit: bool| {
+            if unfinished_byte.len() < 8 {
+                bytes.push(
+                    unfinished_byte
+                        .iter()
+                        .fold(0, |acc, &b| acc * 2 + u8::from(b)),
+                );
+            } else {
+                unfinished_byte.push(bit);
+            }
+        };
+
+        do_each_bit_strict(value, add_bit)?;
+        debug_assert!(unfinished_byte.is_empty());
+
+        let bytes = value.try_to_bytes()?;
+        Ok(Bytes {
+            len: bytes.len(),
+            bytes: Arc::new(bytes),
+            start: 0,
+        })
     }
 }
 
@@ -263,9 +362,43 @@ impl<'a> DagLike for &'a ExtValue {
     }
 }
 
+impl<'a> From<&'a Value> for ExtValue {
+    fn from(value: &'a Value) -> Self {
+        if let Ok(bytes) = Bytes::try_from(value) {
+            ExtValue::Bytes(bytes)
+        } else if let Ok(bits) = Bits::try_from(value) {
+            ExtValue::Bits(bits)
+        } else {
+            let mut stack = vec![];
+            for data in value.post_order_iter::<NoSharing>() {
+                match data.node {
+                    Value::Unit => stack.push(ExtValue::Unit),
+                    Value::SumL(..) => {
+                        let left = stack.pop().unwrap();
+                        stack.push(ExtValue::Left(Arc::new(left)));
+                    }
+                    Value::SumR(..) => {
+                        let right = stack.pop().unwrap();
+                        stack.push(ExtValue::Right(Arc::new(right)));
+                    }
+                    Value::Prod(..) => {
+                        let right = stack.pop().unwrap();
+                        let left = stack.pop().unwrap();
+                        stack.push(ExtValue::Product(Arc::new(left), Arc::new(right)))
+                    }
+                }
+            }
+
+            debug_assert!(stack.len() == 1);
+            stack.pop().unwrap()
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+    use simplicity::Cmr;
 
     #[test]
     fn split_bits() {
@@ -325,5 +458,36 @@ mod tests {
             "(LR●, (0b01101111, 0xdeadbeef))",
             value.to_string().as_str()
         );
+    }
+
+    #[test]
+    fn extvalue_from_value() {
+        let output_input = vec![
+            (ExtValue::unit(), Value::unit()),
+            (
+                ExtValue::bits(Bits::from_bit(false)),
+                Value::sum_l(Value::unit()),
+            ),
+            (
+                ExtValue::bits(Bits::from_bit(true)),
+                Value::sum_r(Value::unit()),
+            ),
+            (
+                ExtValue::left(ExtValue::right(ExtValue::unit())),
+                Value::sum_l(Value::sum_r(Value::unit())),
+            ),
+            (
+                ExtValue::product(ExtValue::unit(), ExtValue::unit()),
+                Value::prod(Value::unit(), Value::unit()),
+            ),
+            (
+                ExtValue::bytes(Bytes::from_slice(Cmr::unit())),
+                Value::u256_from_slice(Cmr::unit().as_ref()),
+            ),
+        ];
+
+        for (expected_output, input) in output_input {
+            assert_eq!(expected_output.as_ref(), &ExtValue::from(input.as_ref()));
+        }
     }
 }
