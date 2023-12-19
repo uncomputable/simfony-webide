@@ -10,8 +10,8 @@ pub fn App() -> impl IntoView {
     let (human, set_human) = create_signal("".to_string());
     let (program_success, set_program_success) = create_signal("".to_string());
 
-    let program = move || util::program_from_string(&human.get());
-    let human_error = move || program().err().map(|error| format!("Error: {error}"));
+    let program = Signal::derive(move || util::program_from_string(&human.get()));
+    let human_error = move || program.get().err().map(|error| format!("Error: {error}"));
 
     let update_human = move |new_human: String| {
         set_human.set(new_human);
@@ -23,7 +23,7 @@ pub fn App() -> impl IntoView {
         }
     };
     let run_program = move || {
-        let program = match program() {
+        let program = match program.get() {
             Ok(program) => program,
             Err(_) => return,
         };
@@ -71,12 +71,6 @@ pub fn App() -> impl IntoView {
                 "Run program"
             </button>
         </div>
-        <div>
-            <h2>Merkle tree</h2>
-            <p>A Simplicity program is a Merkle tree, which makes it easy to analyze.</p>
-            {
-                move || program().ok().map(|t| view! { <Merkle expression=t/> })
-            }
-        </div>
+        <Merkle program=program/>
     }
 }
