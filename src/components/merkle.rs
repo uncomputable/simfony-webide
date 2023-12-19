@@ -5,9 +5,11 @@ use simplicity::dag::DagLike;
 use simplicity::jet::Elements;
 use simplicity::RedeemNode;
 
+use crate::util::DisplayInner;
+
 #[component]
 pub fn Merkle(expression: Arc<RedeemNode<Elements>>) -> impl IntoView {
-    let inner = expression.inner().to_string();
+    let inner = DisplayInner::from(expression.as_ref()).to_string();
     let maybe_s = expression.left_child();
     let maybe_t = expression.right_child();
 
