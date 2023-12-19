@@ -20,8 +20,7 @@ jobs:
 
     - name: Build website
       run: |
-        nix develop .#deploy
-        trunk serve --release
+        nix develop .#deploy --command bash -c "trunk build --release"
 
     - name: Fix links
       run: sh fix-links.sh
