@@ -24,22 +24,24 @@
       pkgs = import nixpkgs {
         inherit system overlays;
       };
-      rust-min = pkgs.rust-bin.stable.latest.default.override {
-        targets = [
-          "wasm32-unknown-unknown"
+      targets = [
+        "wasm32-unknown-unknown"
+      ];
+      rust-min = pkgs.rust-bin.stable.latest.minimal.override {
+        inherit targets;
+      };
+      rust-dev = pkgs.rust-bin.stable.latest.minimal.override {
+        inherit targets;
+        extensions = [
+          "rust-src"
         ];
       };
       leptos-min = [
         rust-min
         pkgs.trunk
       ];
-      rust-src = rust-min.override {
-        extensions = [
-          "rust-src"
-        ];
-      };
       leptos-dev = [
-        rust-src
+        rust-dev
         pkgs.gdb
         pkgs.trunk
       ];
@@ -61,8 +63,8 @@
 
           CC_wasm32_unknown_unknown = "${pkgs.llvmPackages_16.clang-unwrapped}/bin/clang-16";
           CFLAGS_wasm32_unknown_unknown = "-I ${pkgs.llvmPackages_16.libclang.lib}/lib/clang/16/include/";
-          RUST_TOOLCHAIN = "${rust-src}/bin";
-          RUST_STDLIB = "${rust-src}/lib/rustlib/src/rust";
+          RUST_TOOLCHAIN = "${rust-dev}/bin";
+          RUST_STDLIB = "${rust-dev}/lib/rustlib/src/rust";
           DEBUGGER = "${pkgs.gdb}";
         };
         # Temporary shell until deploy.nix works
