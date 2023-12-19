@@ -5,6 +5,7 @@ use simplicity::jet::Elements;
 use simplicity::node::Inner;
 use simplicity::RedeemNode;
 
+use crate::util::DisplayExpression;
 use crate::value::{Bytes, ExtValue};
 
 #[derive(Debug, Clone, Eq, PartialEq)]
@@ -15,9 +16,10 @@ pub struct State {
 
 impl fmt::Display for State {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let expression = DisplayExpression::from(self.expression.as_ref());
         match self.input.as_ref() {
-            ExtValue::Product(..) => write!(f, "[{}]{}", self.expression, self.input),
-            _ => write!(f, "[{}]({})", self.expression, self.input),
+            ExtValue::Product(..) => write!(f, "[{}]{}", expression, self.input),
+            _ => write!(f, "[{}]({})", expression, self.input),
         }
     }
 }
