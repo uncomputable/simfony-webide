@@ -2,16 +2,20 @@
 
 [Simplicity](https://github.com/BlockstreamResearch/simplicity) development in the browser!
 
-Write Simplicity programs and see how they are executed on the Bit Machine.
+Write and execute Simplicity programs.
+
+Take a look at the example programs.
 
 [A live demo is running on GitHub pages](https://uncomputable.github.io/simplicity-webide/).
 
 ## Develop the project
 
-Enter the provided nix shell.
+### Enter the development environment
+
+Enter the provided developer shell.
 
 ```bash
-nix-shell # --pure
+nix develop
 ```
 
 ### Deploy a local website
@@ -29,13 +33,3 @@ trunk serve --open
 ```
 
 Trunk will keep running in the background and make live updates to the website as you change the code.
-
-### Deploy a global website
-
-Use trunk to generate static HTML and JavaScript artifacts.
-
-```bash
-trunk build --release
-```
-
-Upload the artifacts to a web server.
