@@ -83,7 +83,7 @@ impl Bits {
     }
 }
 
-/// # Panics
+/// # Error
 ///
 /// Input value is a left or right value that wraps something other than unit.
 ///
