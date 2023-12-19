@@ -64,7 +64,7 @@ where
                 Inner::Comp(_, _) => f.write_str("comp (")?,
                 Inner::Case(_, _) => f.write_str("case (")?,
                 Inner::AssertL(_, _) => f.write_str("assertl")?,
-                Inner::AssertR(_, _) => f.write_str("assertl")?,
+                Inner::AssertR(_, _) => f.write_str("assertr")?,
                 Inner::Pair(_, _) => f.write_str("pair (")?,
                 Inner::Disconnect(_, _) => f.write_str("disconnect (")?,
                 Inner::Witness(_) => f.write_str("witness")?,
