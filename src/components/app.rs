@@ -1,7 +1,8 @@
 use leptos::*;
 
+use super::examples::{ExampleProgramDescription, SelectExampleProgram};
 use super::merkle::Merkle;
-use crate::examples;
+
 use crate::function::Runner;
 use crate::util;
 
@@ -9,6 +10,7 @@ use crate::util;
 pub fn App() -> impl IntoView {
     let (human, set_human) = create_signal("".to_string());
     let (program_success, set_program_success) = create_signal("".to_string());
+    let (name, set_name) = create_signal::<Option<String>>(None);
 
     let program = Signal::derive(move || util::program_from_string(&human.get()));
     let human_error = move || program.get().err().map(|error| format!("Error: {error}"));
@@ -16,11 +18,7 @@ pub fn App() -> impl IntoView {
     let update_human = move |new_human: String| {
         set_human.set(new_human);
         set_program_success.set("".to_string());
-    };
-    let select_example_program = move |name: String| {
-        if let Some(new_human) = examples::get_program(&name) {
-            update_human(new_human.to_string());
-        }
+        set_name.set(None);
     };
     let run_program = move || {
         let program = match program.get() {
@@ -49,16 +47,7 @@ pub fn App() -> impl IntoView {
             <p>
                 {program_success}
             </p>
-            <select
-                on:input=move |event| select_example_program(event_target_value(&event))
-            >
-                <option value="" disabled selected>Example programs</option>
-                {
-                    examples::get_names()
-                        .map(|name| view! { <option value={name}>{name}</option>})
-                        .collect::<Vec<_>>()
-                }
-            </select>
+            <SelectExampleProgram update_human=update_human set_name=set_name/>
         </div>
         <textarea
             prop:value=move || human.get()
@@ -71,6 +60,7 @@ pub fn App() -> impl IntoView {
                 "Run program"
             </button>
         </div>
+        <ExampleProgramDescription name=name/>
         <Merkle program=program/>
     }
 }
