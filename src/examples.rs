@@ -11,6 +11,12 @@ pub(crate) const NAME_TO_PROGRAM: [(&str, &str); 9] = [
     ("jet_version failure", JET_VERSION_FAILURE),
 ];
 
+#[rustfmt::skip]
+pub(crate) const NAME_TO_DESCRIPTION: [(&str, &str); 2] = [
+    ("unit", UNIT_DESCRIPTION),
+    ("iden", IDEN_DESCRIPTION)
+];
+
 pub fn get_names() -> impl Iterator<Item = &'static str> {
     NAME_TO_PROGRAM.iter().map(|(name, _)| *name)
 }
@@ -22,8 +28,19 @@ pub fn get_program(name: &str) -> Option<&'static str> {
         .map(|(_, human)| *human)
 }
 
+pub fn get_description(name: &str) -> Option<&'static str> {
+    NAME_TO_DESCRIPTION
+        .iter()
+        .find(|(program_name, _)| &name == program_name)
+        .map(|(_, description)| *description)
+}
+
 pub const UNIT: &str = r#"main := unit : 1 -> 1"#;
+const UNIT_DESCRIPTION: &str = r#"The unit program is an ANYONECANSPEND."#;
+
 pub const IDEN: &str = r#"main := iden : 1 -> 1"#;
+const IDEN_DESCRIPTION: &str = r#"The identity program is an ANYONECANSPEND"#;
+
 pub const NOT: &str = r#"not := comp (pair iden unit) (case (injr unit) (injl unit)) : 2 -> 2
 input := injl unit : 1 -> 2
 output := unit : 2 -> 1
