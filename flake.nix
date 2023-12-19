@@ -32,7 +32,7 @@
       rust-min = pkgs.rust-bin.stable.latest.minimal.override {
         inherit targets;
       };
-      rust-dev = pkgs.rust-bin.stable.latest.minimal.override {
+      rust-dev = pkgs.rust-bin.stable.latest.default.override {
         inherit targets;
         extensions = [
           "rust-src"
