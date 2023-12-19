@@ -1,5 +1,5 @@
 // Names must be unique because they serve as primary keys
-pub(crate) const NAMED_PROGRAMS: [(&str, &str); 9] = [
+pub(crate) const NAME_TO_PROGRAM: [(&str, &str); 9] = [
     ("unit", UNIT),
     ("iden", IDEN),
     ("not", NOT),
@@ -12,11 +12,11 @@ pub(crate) const NAMED_PROGRAMS: [(&str, &str); 9] = [
 ];
 
 pub fn get_names() -> impl Iterator<Item = &'static str> {
-    NAMED_PROGRAMS.iter().map(|(name, _)| *name)
+    NAME_TO_PROGRAM.iter().map(|(name, _)| *name)
 }
 
 pub fn get_program(name: &str) -> Option<&'static str> {
-    NAMED_PROGRAMS
+    NAME_TO_PROGRAM
         .iter()
         .find(|(program_name, _)| &name == program_name)
         .map(|(_, human)| *human)

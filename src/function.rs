@@ -280,7 +280,7 @@ mod tests {
 
     #[test]
     fn test() {
-        for (name, human) in examples::NAMED_PROGRAMS {
+        for (name, human) in examples::NAME_TO_PROGRAM {
             let program = util::program_from_string(human).unwrap();
             let mut runner = Runner::for_program(program);
             let ret = runner.run();
