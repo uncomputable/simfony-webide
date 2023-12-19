@@ -29,6 +29,10 @@
           "wasm32-unknown-unknown"
         ];
       };
+      leptos-min = [
+        rust-min
+        pkgs.trunk
+      ];
       rust-src = rust-min.override {
         extensions = [
           "rust-src"
@@ -44,18 +48,31 @@
         wasm-bindgen-cli
         nodejs
       ];
+      deploy = pkgs.callPackage ./deploy.nix {
+        rust = rust-min;
+      };
     in
     {
-      devShells.default = pkgs.mkShell.override {
-        stdenv = pkgs.clang16Stdenv;
-      } {
-        buildInputs = leptos-dev ++ wasm-tests;
+      devShells = {
+        default = pkgs.mkShell.override {
+          stdenv = pkgs.clang16Stdenv;
+        } {
+          buildInputs = leptos-dev ++ wasm-tests;
 
-        CC_wasm32_unknown_unknown = "${pkgs.llvmPackages_16.clang-unwrapped}/bin/clang-16";
-        CFLAGS_wasm32_unknown_unknown = "-I ${pkgs.llvmPackages_16.libclang.lib}/lib/clang/16/include/";
-        RUST_TOOLCHAIN = "${rust-src}/bin";
-        RUST_STDLIB = "${rust-src}/lib/rustlib/src/rust";
-        DEBUGGER = "${pkgs.gdb}";
+          CC_wasm32_unknown_unknown = "${pkgs.llvmPackages_16.clang-unwrapped}/bin/clang-16";
+          CFLAGS_wasm32_unknown_unknown = "-I ${pkgs.llvmPackages_16.libclang.lib}/lib/clang/16/include/";
+          RUST_TOOLCHAIN = "${rust-src}/bin";
+          RUST_STDLIB = "${rust-src}/lib/rustlib/src/rust";
+          DEBUGGER = "${pkgs.gdb}";
+        };
+        # Temporary shell until deploy.nix works
+        deploy = pkgs.mkShell.override {
+          stdenv = pkgs.clang16Stdenv;
+        } {
+          buildInputs = leptos-min;
+          CC_wasm32_unknown_unknown = "${pkgs.llvmPackages_16.clang-unwrapped}/bin/clang-16";
+          CFLAGS_wasm32_unknown_unknown = "-I ${pkgs.llvmPackages_16.libclang.lib}/lib/clang/16/include/";
+        };
       };
     }
   );
