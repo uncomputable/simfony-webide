@@ -35,10 +35,12 @@ where
         for data in self.0.verbose_pre_order_iter::<NoSharing>() {
             match data.n_children_yielded {
                 1 => {
-                    match data.node.inner().as_dag() {
-                        Dag::Nullary => {}
-                        Dag::Unary(..) => f.write_str(")")?,
-                        Dag::Binary(..) => f.write_str(" ")?,
+                    debug_assert!(matches!(
+                        data.node.inner().as_dag(),
+                        Dag::Unary(..) | Dag::Binary(..)
+                    ));
+                    if let Dag::Binary(..) = data.node.inner().as_dag() {
+                        f.write_str(" ")?;
                     }
                     continue;
                 }
@@ -52,20 +54,17 @@ where
                 }
             };
 
-            // FIXME: Print assert{l,r} hashes
-            // FIXME: Print fail entropy?
-            // FIXME: Print witness value??
             match data.node.inner() {
                 Inner::Iden => f.write_str("iden")?,
                 Inner::Unit => f.write_str("unit")?,
-                Inner::InjL(_) => f.write_str("injl (")?,
-                Inner::InjR(_) => f.write_str("injr (")?,
-                Inner::Take(_) => f.write_str("take (")?,
-                Inner::Drop(_) => f.write_str("drop (")?,
+                Inner::InjL(_) => f.write_str("injl")?,
+                Inner::InjR(_) => f.write_str("injr")?,
+                Inner::Take(_) => f.write_str("take")?,
+                Inner::Drop(_) => f.write_str("drop")?,
                 Inner::Comp(_, _) => f.write_str("comp (")?,
                 Inner::Case(_, _) => f.write_str("case (")?,
-                Inner::AssertL(_, _) => f.write_str("assertl (")?,
-                Inner::AssertR(_, _) => f.write_str("assertl (")?,
+                Inner::AssertL(_, _) => f.write_str("assertl")?,
+                Inner::AssertR(_, _) => f.write_str("assertl")?,
                 Inner::Pair(_, _) => f.write_str("pair (")?,
                 Inner::Disconnect(_, _) => f.write_str("disconnect (")?,
                 Inner::Witness(_) => f.write_str("witness")?,
