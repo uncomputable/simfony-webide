@@ -1,14 +1,15 @@
 use std::fmt;
 use std::sync::Arc;
 
+use simplicity::jet::Elements;
 use simplicity::node::Inner;
+use simplicity::RedeemNode;
 
-use crate::util::Expression;
 use crate::value::{Bytes, ExtValue};
 
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct State {
-    pub expression: Expression,
+    pub expression: Arc<RedeemNode<Elements>>,
     pub input: Arc<ExtValue>,
 }
 
@@ -65,8 +66,8 @@ impl Error {
 #[derive(Debug, Clone, Eq, PartialEq)]
 enum Task {
     Execute(State),
-    ExecuteComp(Expression),
-    ExecuteDisconnect(Expression),
+    ExecuteComp(Arc<RedeemNode<Elements>>),
+    ExecuteDisconnect(Arc<RedeemNode<Elements>>),
     MakeLeft,
     MakeRight,
     MakeProduct,
@@ -79,11 +80,11 @@ pub struct Runner {
 }
 
 impl Runner {
-    pub fn for_program(program: Expression) -> Self {
+    pub fn for_program(program: Arc<RedeemNode<Elements>>) -> Self {
         Self::for_expression(program, ExtValue::unit())
     }
 
-    fn for_expression(expression: Expression, input: Arc<ExtValue>) -> Self {
+    fn for_expression(expression: Arc<RedeemNode<Elements>>, input: Arc<ExtValue>) -> Self {
         let initial_state = State { expression, input };
         Self {
             input: vec![Task::Execute(initial_state)],
@@ -137,7 +138,7 @@ impl Runner {
     }
 
     fn execute_state(&mut self, state: State) -> Result<(), Error> {
-        let inner = state.expression.0.inner();
+        let inner = state.expression.inner();
         match inner {
             Inner::Iden => {
                 self.output.push(state.input);
@@ -148,7 +149,7 @@ impl Runner {
             Inner::InjL(t) => {
                 self.input.push(Task::MakeLeft);
                 let t_state = State {
-                    expression: Expression(t.clone()),
+                    expression: t.clone(),
                     input: state.input,
                 };
                 self.input.push(Task::Execute(t_state));
@@ -156,7 +157,7 @@ impl Runner {
             Inner::InjR(t) => {
                 self.input.push(Task::MakeRight);
                 let t_state = State {
-                    expression: Expression(t.clone()),
+                    expression: t.clone(),
                     input: state.input,
                 };
                 self.input.push(Task::Execute(t_state));
@@ -167,7 +168,7 @@ impl Runner {
                     .split_product()
                     .ok_or_else(|| Error::new(ErrorKind::ExpectedProduct, state.clone()))?;
                 let t_state = State {
-                    expression: Expression(t.clone()),
+                    expression: t.clone(),
                     input: a,
                 };
                 self.input.push(Task::Execute(t_state));
@@ -178,15 +179,15 @@ impl Runner {
                     .split_product()
                     .ok_or_else(|| Error::new(ErrorKind::ExpectedProduct, state.clone()))?;
                 let t_state = State {
-                    expression: Expression(t.clone()),
+                    expression: t.clone(),
                     input: b,
                 };
                 self.input.push(Task::Execute(t_state));
             }
             Inner::Comp(s, t) => {
-                self.input.push(Task::ExecuteComp(Expression(t.clone())));
+                self.input.push(Task::ExecuteComp(t.clone()));
                 let s_state = State {
-                    expression: Expression(s.clone()),
+                    expression: s.clone(),
                     input: state.input,
                 };
                 self.input.push(Task::Execute(s_state));
@@ -194,12 +195,12 @@ impl Runner {
             Inner::Pair(s, t) => {
                 self.input.push(Task::MakeProduct);
                 let t_state = State {
-                    expression: Expression(t.clone()),
+                    expression: t.clone(),
                     input: state.input.clone(),
                 };
                 self.input.push(Task::Execute(t_state));
                 let s_state = State {
-                    expression: Expression(s.clone()),
+                    expression: s.clone(),
                     input: state.input,
                 };
                 self.input.push(Task::Execute(s_state));
@@ -214,7 +215,7 @@ impl Runner {
                     match inner {
                         Inner::Case(s, _) | Inner::AssertL(s, _) => {
                             let s_state = State {
-                                expression: Expression(s.clone()),
+                                expression: s.clone(),
                                 input: ExtValue::product(a.clone(), c),
                             };
                             self.input.push(Task::Execute(s_state));
@@ -228,7 +229,7 @@ impl Runner {
                     match inner {
                         Inner::Case(_, t) | Inner::AssertR(_, t) => {
                             let t_state = State {
-                                expression: Expression(t.clone()),
+                                expression: t.clone(),
                                 input: ExtValue::product(b.clone(), c),
                             };
                             self.input.push(Task::Execute(t_state));
@@ -247,12 +248,11 @@ impl Runner {
             }
             Inner::Disconnect(s, t) => {
                 self.input.push(Task::MakeProduct);
-                self.input
-                    .push(Task::ExecuteDisconnect(Expression(t.clone())));
+                self.input.push(Task::ExecuteDisconnect(t.clone()));
 
                 let t_cmr = ExtValue::bytes(Bytes::from_slice(t.cmr()));
                 let s_state = State {
-                    expression: Expression(s.clone()),
+                    expression: s.clone(),
                     input: ExtValue::product(t_cmr, state.input),
                 };
                 self.input.push(Task::Execute(s_state));
@@ -279,7 +279,7 @@ mod tests {
     #[test]
     fn test() {
         for (name, human) in examples::NAMED_PROGRAMS {
-            let program = Expression(util::program_from_string(human).unwrap());
+            let program = util::program_from_string(human).unwrap();
             let mut runner = Runner::for_program(program);
             let ret = runner.run();
 

@@ -27,7 +27,7 @@ pub fn App() -> impl IntoView {
             Ok(program) => program,
             Err(_) => return,
         };
-        let mut runner = Runner::for_program(util::Expression(program));
+        let mut runner = Runner::for_program(program);
         match runner.run() {
             Ok(_) => {
                 set_program_success.set("✅ Program success".to_string());

@@ -5,7 +5,7 @@ use std::sync::Arc;
 use simplicity::dag::{Dag, DagLike, NoSharing};
 use simplicity::jet::Elements;
 use simplicity::node::Inner;
-use simplicity::{RedeemNode};
+use simplicity::{node, RedeemNode};
 
 use crate::value::ExtValue;
 
@@ -19,12 +19,20 @@ pub fn program_from_string(s: &str) -> Result<Arc<RedeemNode<Elements>>, String>
         .map_err(|e| e.to_string())
 }
 
-#[derive(Clone, Eq, PartialEq)]
-pub struct Expression(pub Arc<RedeemNode<Elements>>);
+pub struct DisplayExpression<'a, M: node::Marker>(&'a node::Node<M>);
 
-impl fmt::Display for Expression {
+impl<'a, M: node::Marker> From<&'a node::Node<M>> for DisplayExpression<'a, M> {
+    fn from(node: &'a node::Node<M>) -> Self {
+        Self(node)
+    }
+}
+
+impl<'a, M: node::Marker> fmt::Display for DisplayExpression<'a, M>
+where
+    &'a node::Node<M>: DagLike,
+{
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        for data in self.0.clone().verbose_pre_order_iter::<NoSharing>() {
+        for data in self.0.verbose_pre_order_iter::<NoSharing>() {
             match data.n_children_yielded {
                 1 => {
                     match data.node.inner().as_dag() {
@@ -73,7 +81,10 @@ impl fmt::Display for Expression {
     }
 }
 
-impl fmt::Debug for Expression {
+impl<'a, M: node::Marker> fmt::Debug for DisplayExpression<'a, M>
+where
+    &'a node::Node<M>: DagLike,
+{
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt::Display::fmt(self, f)
     }
