@@ -81,6 +81,14 @@ impl Bits {
             None
         }
     }
+
+    pub fn bit_length(&self) -> usize {
+        self.len
+    }
+
+    pub fn iter_bits(&self) -> impl ExactSizeIterator<Item = bool> + '_ {
+        self.bits.iter().copied()
+    }
 }
 
 /// # Error
@@ -179,6 +187,19 @@ impl Bytes {
             "Length of byte sequence must be a power of 2"
         );
         Self::from_bytes(bytes.as_ref().to_vec())
+    }
+
+    pub fn byte_length(&self) -> usize {
+        self.len
+    }
+
+    pub fn iter_bytes(&self) -> impl ExactSizeIterator<Item = u8> + '_ {
+        self.bytes.iter().copied()
+    }
+
+    pub fn iter_bits(&self) -> impl Iterator<Item = bool> + '_ {
+        self.iter_bytes()
+            .flat_map(|byte| (0..8).map(move |i| byte & (1 << (7 - i)) != 0))
     }
 }
 
@@ -343,6 +364,30 @@ impl ExtValue {
             },
             _ => None,
         }
+    }
+
+    pub fn bit_width(&self) -> usize {
+        self.pre_order_iter::<NoSharing>()
+            .map(|inner| match inner {
+                ExtValue::Unit | ExtValue::Product(..) => 0,
+                ExtValue::Left(..) | ExtValue::Right(..) => 1,
+                ExtValue::Bits(bits) => bits.bit_length(),
+                ExtValue::Bytes(bytes) => bytes.byte_length() * 8,
+            })
+            .sum()
+    }
+
+    pub fn iter_bits(&self) -> impl Iterator<Item = bool> + '_ {
+        self.pre_order_iter::<NoSharing>()
+            .flat_map(|inner| match inner {
+                ExtValue::Unit | ExtValue::Product(..) => {
+                    Box::new(std::iter::empty()) as Box<dyn Iterator<Item = bool>>
+                }
+                ExtValue::Left(..) => Box::new(std::iter::once(false)),
+                ExtValue::Right(..) => Box::new(std::iter::once(true)),
+                ExtValue::Bits(bits) => Box::new(bits.iter_bits()),
+                ExtValue::Bytes(bytes) => Box::new(bytes.iter_bits()),
+            })
     }
 }
 
