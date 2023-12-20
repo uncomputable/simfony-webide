@@ -1,16 +1,14 @@
 use std::fmt;
 use std::sync::Arc;
 
-use simplicity::jet::Elements;
 use simplicity::node::Inner;
-use simplicity::RedeemNode;
 
-use crate::util::DisplayExpression;
+use crate::util::{DisplayExpression, Expression};
 use crate::value::{Bytes, ExtValue};
 
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct State {
-    pub expression: Arc<RedeemNode<Elements>>,
+    pub expression: Arc<Expression>,
     pub input: Arc<ExtValue>,
 }
 
@@ -68,8 +66,8 @@ impl Error {
 #[derive(Debug, Clone, Eq, PartialEq)]
 enum Task {
     Execute(State),
-    ExecuteComp(Arc<RedeemNode<Elements>>),
-    ExecuteDisconnect(Arc<RedeemNode<Elements>>),
+    ExecuteComp(Arc<Expression>),
+    ExecuteDisconnect(Arc<Expression>),
     MakeLeft,
     MakeRight,
     MakeProduct,
@@ -82,11 +80,11 @@ pub struct Runner {
 }
 
 impl Runner {
-    pub fn for_program(program: Arc<RedeemNode<Elements>>) -> Self {
+    pub fn for_program(program: Arc<Expression>) -> Self {
         Self::for_expression(program, ExtValue::unit())
     }
 
-    fn for_expression(expression: Arc<RedeemNode<Elements>>, input: Arc<ExtValue>) -> Self {
+    fn for_expression(expression: Arc<Expression>, input: Arc<ExtValue>) -> Self {
         let initial_state = State { expression, input };
         Self {
             input: vec![Task::Execute(initial_state)],

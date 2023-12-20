@@ -9,7 +9,9 @@ use simplicity::{node, RedeemNode};
 
 use crate::value::ExtValue;
 
-pub fn program_from_string(s: &str) -> Result<Arc<RedeemNode<Elements>>, String> {
+pub type Expression = RedeemNode<Elements>;
+
+pub fn program_from_string(s: &str) -> Result<Arc<Expression>, String> {
     let empty_witness = HashMap::new();
     let forest = simplicity::human_encoding::Forest::parse(s).map_err(|e| e.to_string())?;
     forest

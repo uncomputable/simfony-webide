@@ -2,13 +2,11 @@ use leptos::*;
 use std::sync::Arc;
 
 use simplicity::dag::DagLike;
-use simplicity::jet::Elements;
-use simplicity::RedeemNode;
 
-use crate::util::DisplayInner;
+use crate::util::{DisplayInner, Expression};
 
 #[component]
-pub fn Merkle(program: Signal<Result<Arc<RedeemNode<Elements>>, String>>) -> impl IntoView {
+pub fn Merkle(program: Signal<Result<Arc<Expression>, String>>) -> impl IntoView {
     view! {
         <div>
         {
@@ -23,7 +21,7 @@ pub fn Merkle(program: Signal<Result<Arc<RedeemNode<Elements>>, String>>) -> imp
 }
 
 #[component]
-fn MerkleRec(expression: Arc<RedeemNode<Elements>>) -> impl IntoView {
+fn MerkleRec(expression: Arc<Expression>) -> impl IntoView {
     let inner = DisplayInner::from(expression.as_ref()).to_string();
     let maybe_s = expression.left_child();
     let maybe_t = expression.right_child();
