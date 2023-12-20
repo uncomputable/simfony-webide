@@ -17,7 +17,7 @@ pub(crate) const NAME_TO_DESCRIPTION: [(&str, &str); 2] = [
     ("iden", IDEN_DESCRIPTION)
 ];
 
-pub fn get_names() -> impl Iterator<Item = &'static str> {
+pub fn get_names() -> impl ExactSizeIterator<Item = &'static str> {
     NAME_TO_PROGRAM.iter().map(|(name, _)| *name)
 }
 
@@ -61,3 +61,14 @@ pub const ASSERTL_FAILURE: &str = r#"input := pair (const 0b1) unit : 1 -> 2 * 1
 output := assertl unit #{unit} : 2 * 1 -> 1
 main := comp input output : 1 -> 1"#;
 pub const JET_VERSION_FAILURE: &str = r#"main := comp jet_version unit : 1 -> 1"#;
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::collections::HashSet;
+
+    #[test]
+    fn name_primary_key() {
+        assert_eq!(get_names().len(), get_names().collect::<HashSet<_>>().len());
+    }
+}
