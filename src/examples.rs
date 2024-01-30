@@ -1,5 +1,5 @@
 // Names must be unique because they serve as primary keys
-pub(crate) const NAME_TO_PROGRAM: [(&str, &str); 9] = [
+pub(crate) const NAME_TO_PROGRAM: [(&str, &str); 10] = [
     ("unit", UNIT),
     ("iden", IDEN),
     ("not", NOT),
@@ -9,12 +9,14 @@ pub(crate) const NAME_TO_PROGRAM: [(&str, &str); 9] = [
     ("assertr", ASSERTR),
     ("assertl failure", ASSERTL_FAILURE),
     ("jet_one failure", JET_ONE_FAILURE),
+    ("byte equality failure", BYTE_EQUALITY),
 ];
 
 #[rustfmt::skip]
-pub(crate) const NAME_TO_DESCRIPTION: [(&str, &str); 2] = [
+pub(crate) const NAME_TO_DESCRIPTION: [(&str, &str); 3] = [
     ("unit", UNIT_DESCRIPTION),
-    ("iden", IDEN_DESCRIPTION)
+    ("iden", IDEN_DESCRIPTION),
+    ("byte equality failure", BYTE_EQUALITY_DESCRIPTION),
 ];
 
 pub fn get_names() -> impl ExactSizeIterator<Item = &'static str> {
@@ -61,6 +63,11 @@ pub const ASSERTL_FAILURE: &str = r#"input := pair (const 0b1) unit : 1 -> 2 * 1
 output := assertl unit #{unit} : 2 * 1 -> 1
 main := comp input output : 1 -> 1"#;
 pub const JET_ONE_FAILURE: &str = r#"main := comp jet_one_8 unit : 1 -> 1"#;
+
+pub const BYTE_EQUALITY: &str = r#"a := const 0x00
+b := const 0x00
+main := comp (comp (pair a b) jet_eq_8) jet_verify"#;
+const BYTE_EQUALITY_DESCRIPTION: &str = r#"Succeeds if a and b are equal and fails otherwise."#;
 
 #[cfg(test)]
 mod tests {
