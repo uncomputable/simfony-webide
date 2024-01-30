@@ -8,7 +8,7 @@ pub(crate) const NAME_TO_PROGRAM: [(&str, &str); 9] = [
     ("assertl", ASSERTL),
     ("assertr", ASSERTR),
     ("assertl failure", ASSERTL_FAILURE),
-    ("jet_version failure", JET_VERSION_FAILURE),
+    ("jet_one failure", JET_ONE_FAILURE),
 ];
 
 #[rustfmt::skip]
@@ -60,7 +60,7 @@ main := comp input output : 1 -> 1"#;
 pub const ASSERTL_FAILURE: &str = r#"input := pair (const 0b1) unit : 1 -> 2 * 1
 output := assertl unit #{unit} : 2 * 1 -> 1
 main := comp input output : 1 -> 1"#;
-pub const JET_VERSION_FAILURE: &str = r#"main := comp jet_version unit : 1 -> 1"#;
+pub const JET_ONE_FAILURE: &str = r#"main := comp jet_one_8 unit : 1 -> 1"#;
 
 #[cfg(test)]
 mod tests {
