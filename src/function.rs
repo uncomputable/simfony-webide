@@ -1,6 +1,8 @@
 use std::fmt;
 use std::sync::Arc;
 
+use crate::jet;
+use crate::jet::JetFailed;
 use simplicity::node::Inner;
 
 use crate::util::{DisplayExpression, Expression};
@@ -26,7 +28,7 @@ impl fmt::Display for State {
 pub enum ErrorKind {
     AssertionFailed,
     FailNode,
-    JetsNotSupported,
+    JetFailed,
     ExpectedProduct,
     ExpectedSumInFirstComponent,
 }
@@ -36,7 +38,7 @@ impl fmt::Display for ErrorKind {
         match self {
             ErrorKind::AssertionFailed => f.write_str("Assertion failed"),
             ErrorKind::FailNode => f.write_str("A fail node was reached"),
-            ErrorKind::JetsNotSupported => f.write_str("Jets are currently not supported"),
+            ErrorKind::JetFailed => f.write_str("Jet failed during execution"),
             ErrorKind::ExpectedProduct => f.write_str("Expected a product value as input"),
             ErrorKind::ExpectedSumInFirstComponent => {
                 f.write_str("Expected a sum value in the first component of the input")
@@ -281,9 +283,14 @@ impl Runner {
             Inner::Fail(_) => {
                 return Err(Error::new(ErrorKind::FailNode, state));
             }
-            Inner::Jet(_) => {
-                return Err(Error::new(ErrorKind::JetsNotSupported, state));
-            }
+            Inner::Jet(jet) => match jet::execute_jet_no_env(state.input.clone(), jet) {
+                Ok(output) => {
+                    self.output.push(output);
+                }
+                Err(JetFailed) => {
+                    return Err(Error::new(ErrorKind::JetFailed, state));
+                }
+            },
             Inner::Word(value) => self.output.push(Arc::new(ExtValue::from(value.as_ref()))),
         };
 
