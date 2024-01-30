@@ -3,6 +3,7 @@ use std::sync::Arc;
 
 use hex_conservative::DisplayHex;
 use simplicity::dag::{Dag, DagLike, NoSharing};
+use simplicity::types::Final;
 use simplicity::Value;
 
 #[derive(Debug, Clone, Eq, PartialEq)]
@@ -388,6 +389,58 @@ impl ExtValue {
                 ExtValue::Bits(bits) => Box::new(bits.iter_bits()),
                 ExtValue::Bytes(bytes) => Box::new(bytes.iter_bits()),
             })
+    }
+
+    // FIXME: Take &Final
+    // Requires split_{sum,product} method of Final that returns references
+    pub fn from_bits<I: Iterator<Item = bool>>(ty: Arc<Final>, it: &mut I) -> Arc<Self> {
+        enum Task {
+            ReadType(Arc<Final>),
+            MakeLeft,
+            MakeRight,
+            MakeProduct,
+        }
+
+        let mut task_stack = vec![Task::ReadType(ty)];
+        let mut result_stack = vec![];
+
+        while let Some(task) = task_stack.pop() {
+            match task {
+                Task::ReadType(ty) => {
+                    if ty.is_unit() {
+                        result_stack.push(ExtValue::unit());
+                    } else if let Some((left, right)) = ty.split_sum() {
+                        if !it.next().expect("enough bits") {
+                            task_stack.push(Task::MakeLeft);
+                            task_stack.push(Task::ReadType(left));
+                        } else {
+                            task_stack.push(Task::MakeRight);
+                            task_stack.push(Task::ReadType(right));
+                        }
+                    } else if let Some((left, right)) = ty.split_product() {
+                        task_stack.push(Task::MakeProduct);
+                        task_stack.push(Task::ReadType(right));
+                        task_stack.push(Task::ReadType(left));
+                    }
+                }
+                Task::MakeLeft => {
+                    let inner = result_stack.pop().unwrap();
+                    result_stack.push(ExtValue::left(inner));
+                }
+                Task::MakeRight => {
+                    let inner = result_stack.pop().unwrap();
+                    result_stack.push(ExtValue::right(inner));
+                }
+                Task::MakeProduct => {
+                    let right = result_stack.pop().unwrap();
+                    let left = result_stack.pop().unwrap();
+                    result_stack.push(ExtValue::product(left, right));
+                }
+            }
+        }
+
+        debug_assert!(result_stack.len() == 1);
+        result_stack.pop().unwrap()
     }
 }
 
