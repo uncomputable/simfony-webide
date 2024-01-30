@@ -446,6 +446,7 @@ mod tests {
     use simplicity::Cmr;
 
     #[test]
+    #[wasm_bindgen_test::wasm_bindgen_test]
     fn split_bits() {
         let bits = Bits::from_byte(0b01101111);
         assert_eq!("0b01101111", bits.to_string().as_str());
@@ -466,6 +467,7 @@ mod tests {
     }
 
     #[test]
+    #[wasm_bindgen_test::wasm_bindgen_test]
     fn get_bit() {
         assert_eq!(Some(false), Bits::from_bit(false).get_bit());
         assert_eq!(Some(true), Bits::from_bit(true).get_bit());
@@ -473,6 +475,7 @@ mod tests {
     }
 
     #[test]
+    #[wasm_bindgen_test::wasm_bindgen_test]
     fn split_bytes() {
         let bytes = Bytes::from_bytes(vec![0b01101111, 0xff, 0xff, 0xff]);
         assert_eq!("0x6fffffff", bytes.to_string().as_str());
@@ -491,6 +494,7 @@ mod tests {
     }
 
     #[test]
+    #[wasm_bindgen_test::wasm_bindgen_test]
     fn display_value() {
         let value = ExtValue::product(
             ExtValue::left(ExtValue::right(ExtValue::unit())),
@@ -506,6 +510,7 @@ mod tests {
     }
 
     #[test]
+    #[wasm_bindgen_test::wasm_bindgen_test]
     fn extvalue_from_value() {
         let output_input = vec![
             (ExtValue::unit(), Value::unit()),

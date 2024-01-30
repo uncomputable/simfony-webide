@@ -277,6 +277,7 @@ mod tests {
     use crate::{examples, util};
 
     #[test]
+    #[wasm_bindgen_test::wasm_bindgen_test]
     fn test() {
         for (name, human) in examples::NAME_TO_PROGRAM {
             let program = util::program_from_string(human).unwrap();

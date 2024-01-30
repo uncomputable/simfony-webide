@@ -68,6 +68,7 @@ mod tests {
     use std::collections::HashSet;
 
     #[test]
+    #[wasm_bindgen_test::wasm_bindgen_test]
     fn name_primary_key() {
         assert_eq!(get_names().len(), get_names().collect::<HashSet<_>>().len());
     }
