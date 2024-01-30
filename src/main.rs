@@ -1,6 +1,7 @@
 mod components;
 mod examples;
 mod function;
+mod jet;
 mod util;
 mod value;
 
