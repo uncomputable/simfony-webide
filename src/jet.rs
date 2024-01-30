@@ -90,3 +90,11 @@ pub fn execute_jet_no_env(input: Arc<ExtValue>, jet: &Core) -> Result<Arc<ExtVal
         Ok(value_from_frame(output_type, &mut output_buffer))
     }
 }
+
+#[cfg(test)]
+mod tests {
+    #[wasm_bindgen_test::wasm_bindgen_test]
+    fn wasm_sanity_checks() {
+        assert!(simplicity::ffi::c_jets::sanity_checks());
+    }
+}
