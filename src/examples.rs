@@ -8,21 +8,21 @@ pub(crate) const NAME_TO_PROGRAM: [(&str, &str); 13] = [
     ("assertl", ASSERTL),
     ("assertr", ASSERTR),
     ("assertl failure", ASSERTL_FAILURE),
-    ("jet_one failure", JET_ONE_FAILURE),
-    ("byte equality failure", BYTE_EQUALITY),
-    ("Schnorr signature failure", SCHNORR),
-    ("Bit flip failure", BIT_FLIP),
-    ("SHA failure", SHA),
+    ("jet_one", JET_ONE),
+    ("byte equality", BYTE_EQUALITY),
+    ("Schnorr signature", SCHNORR),
+    ("Bit flip", BIT_FLIP),
+    ("SHA", SHA),
 ];
 
 #[rustfmt::skip]
 pub(crate) const NAME_TO_DESCRIPTION: [(&str, &str); 6] = [
     ("unit", UNIT_DESCRIPTION),
     ("iden", IDEN_DESCRIPTION),
-    ("byte equality failure", BYTE_EQUALITY_DESCRIPTION),
-    ("Schnorr signature failure", SCHNORR_DESCRIPTION),
-    ("Bit flip failure", BIT_FLIP_DESCRIPTION),
-    ("SHA failure", SHA_DESCRIPTION),
+    ("byte equality", BYTE_EQUALITY_DESCRIPTION),
+    ("Schnorr signature", SCHNORR_DESCRIPTION),
+    ("Bit flip", BIT_FLIP_DESCRIPTION),
+    ("SHA", SHA_DESCRIPTION),
 ];
 
 pub fn get_names() -> impl ExactSizeIterator<Item = &'static str> {
@@ -68,7 +68,7 @@ main := comp input output : 1 -> 1"#;
 pub const ASSERTL_FAILURE: &str = r#"input := pair (const 0b1) unit : 1 -> 2 * 1
 output := assertl unit #{unit} : 2 * 1 -> 1
 main := comp input output : 1 -> 1"#;
-pub const JET_ONE_FAILURE: &str = r#"main := comp jet_one_8 unit : 1 -> 1"#;
+pub const JET_ONE: &str = r#"main := comp jet_one_8 unit : 1 -> 1"#;
 
 pub const BYTE_EQUALITY: &str = r#"a := const 0x00
 b := const 0x00
