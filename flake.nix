@@ -38,33 +38,39 @@
           "rust-src"
         ];
       };
-      leptos-min = [
+      inputs-min = [
         rust-min
         pkgs.trunk
       ];
-      leptos-dev = [
+      inputs-dev = [
         rust-dev
-        pkgs.gdb
         pkgs.trunk
-      ];
-      wasm-tests = with pkgs; [
-        wasm-pack
-        wasm-bindgen-cli
-        nodejs
+        pkgs.gdb
+        pkgs.llvm
+        pkgs.just
+        pkgs.wasm-pack
+        pkgs.wasm-bindgen-cli
       ];
       deploy = pkgs.callPackage ./deploy.nix {
         rust = rust-min;
       };
+      CC_wasm32_unknown_unknown = "${pkgs.llvmPackages_16.clang-unwrapped}/bin/clang-16";
+      AR_wasm32_unknown_unknown = "${pkgs.llvmPackages_16.libllvm}/bin/llvm-ar";
+      CFLAGS_wasm32_unknown_unknown = "-I ${pkgs.llvmPackages_16.libclang.lib}/lib/clang/16/include/";
     in
     {
       devShells = {
         default = pkgs.mkShell.override {
           stdenv = pkgs.clang16Stdenv;
         } {
-          buildInputs = leptos-dev ++ wasm-tests;
+          buildInputs = inputs-dev;
 
-          CC_wasm32_unknown_unknown = "${pkgs.llvmPackages_16.clang-unwrapped}/bin/clang-16";
-          CFLAGS_wasm32_unknown_unknown = "-I ${pkgs.llvmPackages_16.libclang.lib}/lib/clang/16/include/";
+          # Constants for compiler
+          inherit CC_wasm32_unknown_unknown;
+          inherit AR_wasm32_unknown_unknown;
+          inherit CFLAGS_wasm32_unknown_unknown;
+
+          # Constants for IDE setup
           RUST_TOOLCHAIN = "${rust-dev}/bin";
           RUST_STDLIB = "${rust-dev}/lib/rustlib/src/rust";
           DEBUGGER = "${pkgs.gdb}";
@@ -73,9 +79,10 @@
         deploy = pkgs.mkShell.override {
           stdenv = pkgs.clang16Stdenv;
         } {
-          buildInputs = leptos-min;
-          CC_wasm32_unknown_unknown = "${pkgs.llvmPackages_16.clang-unwrapped}/bin/clang-16";
-          CFLAGS_wasm32_unknown_unknown = "-I ${pkgs.llvmPackages_16.libclang.lib}/lib/clang/16/include/";
+          buildInputs = inputs-min;
+          inherit CC_wasm32_unknown_unknown;
+          inherit AR_wasm32_unknown_unknown;
+          inherit CFLAGS_wasm32_unknown_unknown;
         };
       };
     }
