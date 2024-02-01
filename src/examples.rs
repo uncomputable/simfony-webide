@@ -1,5 +1,5 @@
 // Names must be unique because they serve as primary keys
-pub(crate) const NAME_TO_PROGRAM: [(&str, &str); 11] = [
+pub(crate) const NAME_TO_PROGRAM: [(&str, &str); 13] = [
     ("unit", UNIT),
     ("iden", IDEN),
     ("not", NOT),
@@ -11,14 +11,18 @@ pub(crate) const NAME_TO_PROGRAM: [(&str, &str); 11] = [
     ("jet_one failure", JET_ONE_FAILURE),
     ("byte equality failure", BYTE_EQUALITY),
     ("Schnorr signature failure", SCHNORR),
+    ("Bit flip failure", BIT_FLIP),
+    ("SHA failure", SHA),
 ];
 
 #[rustfmt::skip]
-pub(crate) const NAME_TO_DESCRIPTION: [(&str, &str); 4] = [
+pub(crate) const NAME_TO_DESCRIPTION: [(&str, &str); 6] = [
     ("unit", UNIT_DESCRIPTION),
     ("iden", IDEN_DESCRIPTION),
     ("byte equality failure", BYTE_EQUALITY_DESCRIPTION),
     ("Schnorr signature failure", SCHNORR_DESCRIPTION),
+    ("Bit flip failure", BIT_FLIP_DESCRIPTION),
+    ("SHA failure", SHA_DESCRIPTION),
 ];
 
 pub fn get_names() -> impl ExactSizeIterator<Item = &'static str> {
@@ -79,6 +83,42 @@ out := jet_bip_0340_verify : 2^512 * 2^512 -> 1
 main := comp in out"#;
 const SCHNORR_DESCRIPTION: &str =
     r#"Succeeds if the Schnorr signature matches the public key and message, and fails otherwise."#;
+
+pub const BIT_FLIP: &str = r#"bit_0 := injl unit : 1 * 1 -> 2
+bit_1 := injr unit : 1 * 1 -> 2
+bit_out := case bit_1 bit_0 : 2 * 1 -> 2
+pad_r := pair iden unit : 2 -> 2 * 1
+bitflip := comp pad_r bit_out : 2 -> 2
+zerovfy := comp bitflip jet_verify : 2 -> 1
+input := const 0b0 : 1 -> 2
+main := comp input zerovfy : 1 -> 1"#;
+const BIT_FLIP_DESCRIPTION: &str = r#"Verify that the input bit is zero.
+
+Flips the input bit and uses the verify jet to assert "1".
+
+See https://blog.blockstream.com/simplicity-sharing-of-witness-and-disconnect/"#;
+
+pub const SHA: &str = r#"sha256_init : 2^256 -> _
+sha256_init := comp unit jet_sha_256_ctx_8_init
+
+sha256 : 2^256 -> 2^256
+sha256 := comp
+    comp
+        pair sha256_init iden
+        jet_sha_256_ctx_8_add_32
+    jet_sha_256_ctx_8_finalize
+
+preimage := const 0x0000000000000000000000000000000000000000000000000000000000000000
+image := const 0x66687aadf862bd776c8fc18b8e9f8e20089714856ee233b3902a591d0d5f2925
+
+main := comp
+    comp
+        pair (comp preimage sha256) image
+        jet_eq_256
+    jet_verify"#;
+pub const SHA_DESCRIPTION: &str = r#"Verify that the given preimage results in the given image.
+
+See https://blog.blockstream.com/simplicity-sharing-of-witness-and-disconnect/"#;
 
 #[cfg(test)]
 mod tests {
