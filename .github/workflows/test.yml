@@ -19,3 +19,23 @@ jobs:
 
     - name: Check flake
       run: nix flake check --all-systems
+
+  test-wasm:
+    name: Test WASM
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    - name: Install nix
+      uses: cachix/install-nix-action@v24
+      with:
+        github_access_token: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Enable Rust cache
+      uses: Swatinem/rust-cache@v2
+
+    - name: Run WASM tests
+      run: |
+        nix develop --command bash -c "wasm-pack test --headless --firefox"
