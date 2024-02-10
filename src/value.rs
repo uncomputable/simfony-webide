@@ -6,6 +6,11 @@ use simplicity::dag::{Dag, DagLike, NoSharing};
 use simplicity::types::Final;
 use simplicity::Value;
 
+/// Immutable sequence of bits whose length is a power of two.
+///
+/// The sequence can be split in half to produce (pointers) to the front and to the rear.
+///
+/// All methods assume big Endian (of the implied byte sequence).
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct Bits {
     bits: Arc<Vec<bool>>,
@@ -152,6 +157,11 @@ impl<'a> TryFrom<&'a Value> for Bits {
     }
 }
 
+/// Immutable sequence of bytes whose length is a power of two.
+///
+/// The sequence can be split in half to produce (pointers) to the front and to the rear.
+///
+/// All methods assume big Endian.
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct Bytes {
     bytes: Arc<Vec<u8>>,
@@ -202,9 +212,7 @@ impl Bytes {
         self.iter_bytes()
             .flat_map(|byte| (0..8).map(move |i| byte & (1 << (7 - i)) != 0))
     }
-}
 
-impl Bytes {
     pub fn split(&self) -> Result<(Self, Self), (Bits, Bits)> {
         debug_assert!(self.len.is_power_of_two());
         if self.len == 1 {
