@@ -359,7 +359,78 @@ impl ExtValue {
                 ExtValue::Bytes(bytes) => Box::new(bytes.iter_bits()),
             })
     }
+}
 
+fn bits_to_byte<A: AsRef<[bool]>>(bits: A) -> u8 {
+    assert_eq!(
+        bits.as_ref().len(),
+        8,
+        "Length of bit sequence must be exactly 8"
+    );
+
+    let mut byte: u8 = 0;
+
+    for bit in bits.as_ref().iter().copied() {
+        byte = byte << 1 | if bit { 1 } else { 0 };
+    }
+
+    byte
+}
+
+/// Stack item for conversions of bits to `ExtValue`.
+enum Item {
+    Value(ExtValue),
+    Bits(Vec<bool>),
+    Bytes(Vec<u8>),
+}
+
+impl Item {
+    pub fn into_extvalue(self) -> ExtValue {
+        match self {
+            Item::Value(left) => left,
+            Item::Bits(left) => ExtValue::Bits(Bits::from_bits(left)),
+            Item::Bytes(left) => ExtValue::Bytes(Bytes::from_bytes(left)),
+        }
+    }
+
+    pub fn into_left(self) -> Self {
+        match self {
+            Item::Value(ExtValue::Unit) => Item::Bits(vec![false]),
+            _ => Item::Value(ExtValue::Left(Arc::new(self.into_extvalue()))),
+        }
+    }
+
+    pub fn into_right(self) -> Self {
+        match self {
+            Item::Value(ExtValue::Unit) => Item::Bits(vec![true]),
+            _ => Item::Value(ExtValue::Right(Arc::new(self.into_extvalue()))),
+        }
+    }
+
+    pub fn into_product(self, left: Self) -> Self {
+        match (self, left) {
+            (Item::Bits(r_bits), Item::Bits(mut l_bits)) if r_bits.len() == l_bits.len() => {
+                l_bits.extend(r_bits);
+                if l_bits.len() == 8 {
+                    Item::Bytes(vec![bits_to_byte(l_bits)])
+                } else {
+                    Item::Bits(l_bits)
+                }
+            }
+            (Item::Bytes(r_bytes), Item::Bytes(mut l_bytes)) if r_bytes.len() == l_bytes.len() => {
+                l_bytes.extend(r_bytes);
+                Item::Bytes(l_bytes)
+            }
+            (right, left) => {
+                let left = Arc::new(left.into_extvalue());
+                let right = Arc::new(right.into_extvalue());
+                Item::Value(ExtValue::Product(left, right))
+            }
+        }
+    }
+}
+
+impl ExtValue {
     // FIXME: Take &Final
     // Requires split_{sum,product} method of Final that returns references
     pub fn from_bits<I: Iterator<Item = bool>>(
@@ -380,7 +451,7 @@ impl ExtValue {
             match task {
                 Task::ReadType(ty) => {
                     if ty.is_unit() {
-                        result_stack.push(ExtValue::unit());
+                        result_stack.push(Item::Value(ExtValue::Unit));
                     } else if let Some((left, right)) = ty.split_sum() {
                         if !it.next().ok_or("Not enough bits")? {
                             task_stack.push(Task::MakeLeft);
@@ -395,24 +466,27 @@ impl ExtValue {
                         task_stack.push(Task::ReadType(left));
                     }
                 }
+                // borrowck at its best :/
                 Task::MakeLeft => {
-                    let inner = result_stack.pop().unwrap();
-                    result_stack.push(ExtValue::left(inner));
+                    let tmp = result_stack.pop().unwrap().into_left();
+                    result_stack.push(tmp);
                 }
                 Task::MakeRight => {
-                    let inner = result_stack.pop().unwrap();
-                    result_stack.push(ExtValue::right(inner));
+                    let tmp = result_stack.pop().unwrap().into_right();
+                    result_stack.push(tmp);
                 }
                 Task::MakeProduct => {
-                    let right = result_stack.pop().unwrap();
-                    let left = result_stack.pop().unwrap();
-                    result_stack.push(ExtValue::product(left, right));
+                    let tmp = result_stack
+                        .pop()
+                        .unwrap()
+                        .into_product(result_stack.pop().unwrap());
+                    result_stack.push(tmp);
                 }
             }
         }
 
         debug_assert!(result_stack.len() == 1);
-        Ok(result_stack.pop().unwrap())
+        Ok(Arc::new(result_stack.pop().unwrap().into_extvalue()))
     }
 }
 
@@ -432,86 +506,25 @@ impl<'a> DagLike for &'a ExtValue {
     }
 }
 
-fn bits_to_byte<A: AsRef<[bool]>>(bits: A) -> u8 {
-    assert_eq!(
-        bits.as_ref().len(),
-        8,
-        "Length of bit sequence must be exactly 8"
-    );
-
-    let mut byte: u8 = 0;
-
-    for bit in bits.as_ref().iter().copied() {
-        byte = byte << 1 | if bit { 1 } else { 0 };
-    }
-
-    byte
-}
-
 // I would like to implement for Arc<ExtValue> but I can't
 impl<'a> From<&'a Value> for ExtValue {
     fn from(value: &'a Value) -> Self {
-        enum Item {
-            Value(ExtValue),
-            Bits(Vec<bool>),
-            Bytes(Vec<u8>),
-        }
-
-        impl Item {
-            fn into_extvalue(self) -> ExtValue {
-                match self {
-                    Item::Value(left) => left,
-                    Item::Bits(left) => ExtValue::Bits(Bits::from_bits(left)),
-                    Item::Bytes(left) => ExtValue::Bytes(Bytes::from_bytes(left)),
-                }
-            }
-        }
-
         let mut stack = vec![];
         for data in value.post_order_iter::<NoSharing>() {
             match data.node {
                 Value::Unit => stack.push(Item::Value(ExtValue::Unit)),
-                Value::SumL(..) => match stack.pop().unwrap() {
-                    Item::Value(ExtValue::Unit) => {
-                        stack.push(Item::Bits(vec![false]));
-                    }
-                    top => {
-                        let child = Arc::new(top.into_extvalue());
-                        stack.push(Item::Value(ExtValue::Left(child)));
-                    }
-                },
-                Value::SumR(..) => match stack.pop().unwrap() {
-                    Item::Value(ExtValue::Unit) => {
-                        stack.push(Item::Bits(vec![true]));
-                    }
-                    top => {
-                        let child = Arc::new(top.into_extvalue());
-                        stack.push(Item::Value(ExtValue::Right(child)));
-                    }
-                },
-                Value::Prod(..) => match (stack.pop().unwrap(), stack.pop().unwrap()) {
-                    (Item::Bits(right), Item::Bits(mut left)) => {
-                        debug_assert!(right.len() == left.len()); // FIXME: Doesn't always hold
-                        debug_assert!(right.len() == 1 || right.len() == 2 || right.len() == 4);
-                        left.extend(right);
-                        if left.len() == 8 {
-                            stack.push(Item::Bytes(vec![bits_to_byte(left)]));
-                        } else {
-                            stack.push(Item::Bits(left));
-                        }
-                    }
-                    (Item::Bytes(right), Item::Bytes(mut left)) => {
-                        debug_assert!(right.len() == left.len()); // FIXME: Doesn't always hold
-                        debug_assert!(!right.is_empty());
-                        left.extend(right);
-                        stack.push(Item::Bytes(left));
-                    }
-                    (right, left) => {
-                        let left = Arc::new(left.into_extvalue());
-                        let right = Arc::new(right.into_extvalue());
-                        stack.push(Item::Value(ExtValue::Product(left, right)));
-                    }
-                },
+                Value::SumL(..) => {
+                    let tmp = stack.pop().unwrap().into_left();
+                    stack.push(tmp)
+                }
+                Value::SumR(..) => {
+                    let tmp = stack.pop().unwrap().into_right();
+                    stack.push(tmp);
+                }
+                Value::Prod(..) => {
+                    let tmp = stack.pop().unwrap().into_product(stack.pop().unwrap());
+                    stack.push(tmp);
+                }
             }
         }
 
