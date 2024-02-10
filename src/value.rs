@@ -80,7 +80,6 @@ impl Bits {
     }
 
     pub fn get_bit(&self) -> Option<bool> {
-        debug_assert!(self.len.is_power_of_two());
         if self.len == 1 {
             Some(self.bits[self.start])
         } else {
