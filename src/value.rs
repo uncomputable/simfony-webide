@@ -536,6 +536,7 @@ impl<'a> From<&'a Value> for ExtValue {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use simplicity::jet::type_name::TypeName;
     use simplicity::Cmr;
 
     #[test]
@@ -639,6 +640,41 @@ mod tests {
 
         for (expected_output, input) in output_input {
             assert_eq!(expected_output.as_ref(), &ExtValue::from(input.as_ref()));
+        }
+    }
+
+    #[test]
+    #[wasm_bindgen_test::wasm_bindgen_test]
+    fn bits_iter_from_bits_roundtrip() {
+        let value_typename = [
+            (ExtValue::unit(), TypeName(b"1")),
+            (
+                ExtValue::left(ExtValue::bits(Bits::from_bit(false))),
+                TypeName(b"+21"),
+            ),
+            (
+                ExtValue::right(ExtValue::bits(Bits::from_bit(true))),
+                TypeName(b"+12"),
+            ),
+            (
+                ExtValue::product(ExtValue::unit(), ExtValue::unit()),
+                TypeName(b"*11"),
+            ),
+            (
+                ExtValue::bits(Bits::from_bits(vec![false, true])),
+                TypeName(b"*22"),
+            ),
+            (
+                ExtValue::bytes(Bytes::from_slice(Cmr::unit().as_ref())),
+                TypeName(b"h"),
+            ),
+        ];
+
+        for (value, typename) in value_typename {
+            let mut bits = value.iter_bits();
+            let ty = typename.to_final();
+            let value_from_bits = ExtValue::from_bits(ty, &mut bits).unwrap();
+            assert_eq!(value, value_from_bits);
         }
     }
 }
