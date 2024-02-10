@@ -362,7 +362,10 @@ impl ExtValue {
 
     // FIXME: Take &Final
     // Requires split_{sum,product} method of Final that returns references
-    pub fn from_bits<I: Iterator<Item = bool>>(ty: Arc<Final>, it: &mut I) -> Arc<Self> {
+    pub fn from_bits<I: Iterator<Item = bool>>(
+        ty: Arc<Final>,
+        it: &mut I,
+    ) -> Result<Arc<Self>, &'static str> {
         enum Task {
             ReadType(Arc<Final>),
             MakeLeft,
@@ -379,7 +382,7 @@ impl ExtValue {
                     if ty.is_unit() {
                         result_stack.push(ExtValue::unit());
                     } else if let Some((left, right)) = ty.split_sum() {
-                        if !it.next().expect("enough bits") {
+                        if !it.next().ok_or("Not enough bits")? {
                             task_stack.push(Task::MakeLeft);
                             task_stack.push(Task::ReadType(left));
                         } else {
@@ -409,7 +412,7 @@ impl ExtValue {
         }
 
         debug_assert!(result_stack.len() == 1);
-        result_stack.pop().unwrap()
+        Ok(result_stack.pop().unwrap())
     }
 }
 
