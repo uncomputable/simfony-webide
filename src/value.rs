@@ -467,8 +467,41 @@ impl<'a> DagLike for &'a ExtValue {
     }
 }
 
+fn bits_to_byte<A: AsRef<[bool]>>(bits: A) -> u8 {
+    assert_eq!(
+        bits.as_ref().len(),
+        8,
+        "Length of bit sequence must be exactly 8"
+    );
+
+    let mut byte: u8 = 0;
+
+    for bit in bits.as_ref().iter().copied() {
+        byte = byte << 1 | if bit { 1 } else { 0 };
+    }
+
+    byte
+}
+
+// I would like to implement for Arc<ExtValue> but I can't
 impl<'a> From<&'a Value> for ExtValue {
     fn from(value: &'a Value) -> Self {
+        enum Item {
+            Value(ExtValue),
+            Bits(Vec<bool>),
+            Bytes(Vec<u8>),
+        }
+
+        impl Item {
+            fn into_extvalue(self) -> ExtValue {
+                match self {
+                    Item::Value(left) => left,
+                    Item::Bits(left) => ExtValue::Bits(Bits::from_bits(left)),
+                    Item::Bytes(left) => ExtValue::Bytes(Bytes::from_bytes(left)),
+                }
+            }
+        }
+
         if let Ok(bytes) = Bytes::try_from(value) {
             ExtValue::Bytes(bytes)
         } else if let Ok(bits) = Bits::try_from(value) {
@@ -477,25 +510,53 @@ impl<'a> From<&'a Value> for ExtValue {
             let mut stack = vec![];
             for data in value.post_order_iter::<NoSharing>() {
                 match data.node {
-                    Value::Unit => stack.push(ExtValue::Unit),
-                    Value::SumL(..) => {
-                        let left = stack.pop().unwrap();
-                        stack.push(ExtValue::Left(Arc::new(left)));
-                    }
-                    Value::SumR(..) => {
-                        let right = stack.pop().unwrap();
-                        stack.push(ExtValue::Right(Arc::new(right)));
-                    }
-                    Value::Prod(..) => {
-                        let right = stack.pop().unwrap();
-                        let left = stack.pop().unwrap();
-                        stack.push(ExtValue::Product(Arc::new(left), Arc::new(right)))
-                    }
+                    Value::Unit => stack.push(Item::Value(ExtValue::Unit)),
+                    Value::SumL(..) => match stack.pop().unwrap() {
+                        Item::Value(ExtValue::Unit) => {
+                            stack.push(Item::Bits(vec![false]));
+                        }
+                        top => {
+                            let child = Arc::new(top.into_extvalue());
+                            stack.push(Item::Value(ExtValue::Left(child)));
+                        }
+                    },
+                    Value::SumR(..) => match stack.pop().unwrap() {
+                        Item::Value(ExtValue::Unit) => {
+                            stack.push(Item::Bits(vec![true]));
+                        }
+                        top => {
+                            let child = Arc::new(top.into_extvalue());
+                            stack.push(Item::Value(ExtValue::Right(child)));
+                        }
+                    },
+                    Value::Prod(..) => match (stack.pop().unwrap(), stack.pop().unwrap()) {
+                        (Item::Bits(right), Item::Bits(mut left)) => {
+                            debug_assert!(right.len() == left.len()); // FIXME: Doesn't always hold
+                            debug_assert!(right.len() == 1 || right.len() == 2 || right.len() == 4);
+                            left.extend(right);
+                            if left.len() == 8 {
+                                stack.push(Item::Bytes(vec![bits_to_byte(left)]));
+                            } else {
+                                stack.push(Item::Bits(left));
+                            }
+                        }
+                        (Item::Bytes(right), Item::Bytes(mut left)) => {
+                            debug_assert!(right.len() == left.len()); // FIXME: Doesn't always hold
+                            debug_assert!(!right.is_empty());
+                            left.extend(right);
+                            stack.push(Item::Bytes(left));
+                        }
+                        (right, left) => {
+                            let left = Arc::new(left.into_extvalue());
+                            let right = Arc::new(right.into_extvalue());
+                            stack.push(Item::Value(ExtValue::Product(left, right)));
+                        }
+                    },
                 }
             }
 
             debug_assert!(stack.len() == 1);
-            stack.pop().unwrap()
+            stack.pop().unwrap().into_extvalue()
         }
     }
 }
@@ -583,7 +644,7 @@ mod tests {
                 Value::sum_r(Value::unit()),
             ),
             (
-                ExtValue::left(ExtValue::right(ExtValue::unit())),
+                ExtValue::left(ExtValue::bits(Bits::from_bit(true))),
                 Value::sum_l(Value::sum_r(Value::unit())),
             ),
             (
@@ -593,6 +654,14 @@ mod tests {
             (
                 ExtValue::bytes(Bytes::from_slice(Cmr::unit())),
                 Value::u256_from_slice(Cmr::unit().as_ref()),
+            ),
+            (
+                ExtValue::bytes(Bytes::from_bytes(vec![0b01010101])),
+                Value::u8(0b01010101),
+            ),
+            (
+                ExtValue::bytes(Bytes::from_bytes(vec![0xab, 0xcd])),
+                Value::prod(Value::u8(0xab), Value::u8(0xcd)),
             ),
         ];
 
