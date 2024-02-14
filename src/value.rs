@@ -592,6 +592,29 @@ mod tests {
 
     #[test]
     #[wasm_bindgen_test::wasm_bindgen_test]
+    fn iter_bits() {
+        let value_bits = [
+            (ExtValue::unit(), vec![]),
+            (ExtValue::left(ExtValue::unit()), vec![false]),
+            (ExtValue::right(ExtValue::unit()), vec![true]),
+            (
+                ExtValue::bits(Bits::from_bits(vec![false, true])),
+                vec![false, true],
+            ),
+            (
+                ExtValue::bytes(Bytes::from_bytes(vec![0b01011111])),
+                vec![false, true, false, true, true, true, true, true],
+            ),
+        ];
+
+        for (value, expected_bits) in value_bits {
+            let bits: Vec<_> = value.iter_bits().collect();
+            assert_eq!(bits, expected_bits);
+        }
+    }
+
+    #[test]
+    #[wasm_bindgen_test::wasm_bindgen_test]
     fn extvalue_from_value() {
         let output_input = vec![
             (ExtValue::unit(), Value::unit()),
