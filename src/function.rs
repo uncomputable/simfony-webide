@@ -79,6 +79,14 @@ pub struct Runner {
     output: Vec<Arc<ExtValue>>,
 }
 
+#[derive(Debug, Clone, Eq, PartialEq)]
+pub enum Output {
+    /// Intermediate state
+    Intermediate(State),
+    /// Final output
+    Final(Arc<ExtValue>),
+}
+
 impl Runner {
     pub fn for_program(program: Arc<Expression>) -> Self {
         Self::for_expression(program, ExtValue::unit())
@@ -93,10 +101,20 @@ impl Runner {
     }
 
     pub fn run(&mut self) -> Result<Arc<ExtValue>, Error> {
+        loop {
+            match self.step()? {
+                Output::Intermediate(..) => {}
+                Output::Final(a) => return Ok(a),
+            }
+        }
+    }
+
+    fn step(&mut self) -> Result<Output, Error> {
         while let Some(task) = self.input.pop() {
             match task {
                 Task::Execute(state) => {
-                    self.execute_state(state)?;
+                    self.execute_state(state.clone())?;
+                    return Ok(Output::Intermediate(state));
                 }
                 Task::ExecuteComp(t) => {
                     let input = self.output.pop().unwrap();
@@ -104,7 +122,8 @@ impl Runner {
                         expression: t,
                         input,
                     };
-                    self.execute_state(state)?;
+                    self.execute_state(state.clone())?;
+                    return Ok(Output::Intermediate(state));
                 }
                 Task::ExecuteDisconnect(t) => {
                     let prod_b_c = self.output.pop().unwrap();
@@ -114,7 +133,8 @@ impl Runner {
                         expression: t,
                         input: c,
                     };
-                    self.execute_state(state)?;
+                    self.execute_state(state.clone())?;
+                    return Ok(Output::Intermediate(state));
                 }
                 Task::MakeLeft => {
                     let a = self.output.pop().unwrap();
@@ -134,7 +154,7 @@ impl Runner {
 
         debug_assert!(self.output.len() == 1);
         let a = self.output.pop().unwrap();
-        Ok(a)
+        Ok(Output::Final(a))
     }
 
     fn execute_state(&mut self, state: State) -> Result<(), Error> {
@@ -288,6 +308,23 @@ mod tests {
                 assert!(ret.is_err());
             } else {
                 assert!(ret.is_ok());
+            }
+        }
+    }
+
+    #[test]
+    fn trace_program() {
+        let program = util::program_from_string(examples::NOT).unwrap();
+        let mut runner = Runner::for_program(program);
+        loop {
+            match runner.step().unwrap() {
+                Output::Intermediate(state) => {
+                    println!("{}", state);
+                }
+                Output::Final(value) => {
+                    println!("{}", value);
+                    break;
+                }
             }
         }
     }
