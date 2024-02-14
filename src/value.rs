@@ -96,66 +96,6 @@ impl Bits {
     }
 }
 
-/// # Error
-///
-/// Input value is a left or right value that wraps something other than unit.
-///
-/// Input value is a product of unit.
-fn do_each_bit_strict<F>(value: &Value, mut f: F) -> Result<(), String>
-where
-    F: FnMut(bool),
-{
-    for data in value.pre_order_iter::<NoSharing>() {
-        match data {
-            Value::Unit => {}
-            Value::SumL(left) => {
-                if let Value::Unit = left.as_ref() {
-                    f(false);
-                } else {
-                    return Err(format!("Illegal left value: {data}"));
-                }
-            }
-            Value::SumR(right) => {
-                if let Value::Unit = right.as_ref() {
-                    f(true);
-                } else {
-                    return Err(format!("Illegal right value: {data}"));
-                }
-            }
-            Value::Prod(left, right) => {
-                if let (Value::Unit, Value::Unit) = (left.as_ref(), right.as_ref()) {
-                    return Err(format!("Illegal product value: {data}"));
-                }
-            }
-        }
-    }
-
-    Ok(())
-}
-
-impl<'a> TryFrom<&'a Value> for Bits {
-    type Error = String;
-
-    fn try_from(value: &'a Value) -> Result<Self, Self::Error> {
-        if !value.len().is_power_of_two() {
-            return Err("Length of bit sequence must a be a power of 2".to_string());
-        }
-
-        let mut bits = Vec::with_capacity(value.len());
-        let add_bit = |bit: bool| {
-            bits.push(bit);
-        };
-
-        do_each_bit_strict(value, add_bit)?;
-
-        Ok(Bits {
-            len: bits.len(),
-            bits: Arc::new(bits),
-            start: 0,
-        })
-    }
-}
-
 /// Immutable sequence of bytes whose length is a power of two.
 ///
 /// The sequence can be split in half to produce (pointers) to the front and to the rear.
