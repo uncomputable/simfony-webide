@@ -6,6 +6,8 @@ use simplicity::dag::{Dag, DagLike, NoSharing};
 use simplicity::types::Final;
 use simplicity::Value;
 
+use crate::util;
+
 /// Immutable sequence of bits whose length is a power of two.
 ///
 /// The sequence can be split in half to produce (pointers) to the front and to the rear.
@@ -246,6 +248,10 @@ impl ExtValue {
         Arc::new(Self::Bytes(bytes))
     }
 
+    pub fn is_unit(&self) -> bool {
+        matches!(self, ExtValue::Unit)
+    }
+
     pub fn split_left(&self) -> Option<Arc<Self>> {
         match self {
             Self::Left(left) => Some(left.clone()),
@@ -298,6 +304,41 @@ impl ExtValue {
                 ExtValue::Bits(bits) => Box::new(bits.iter_bits()),
                 ExtValue::Bytes(bytes) => Box::new(bytes.iter_bits()),
             })
+    }
+
+    pub fn iter_bits_with_padding(self: Arc<Self>, ty: Arc<Final>) -> impl Iterator<Item = bool> {
+        let mut bits = Vec::with_capacity(ty.bit_width());
+        let mut stack = vec![(self, ty)];
+
+        while let Some((value, ty)) = stack.pop() {
+            if ty.is_unit() {
+                assert!(
+                    value.is_unit(),
+                    "Value {value} is not of expected type unit"
+                );
+            } else if let Some((l_ty, r_ty)) = ty.split_sum() {
+                if let Some(l_value) = value.split_left() {
+                    bits.push(false);
+                    bits.extend(std::iter::repeat(false).take(util::pad_left(&l_ty, &r_ty)));
+                    stack.push((l_value, l_ty));
+                } else if let Some(r_value) = value.split_right() {
+                    bits.push(true);
+                    bits.extend(std::iter::repeat(false).take(util::pad_right(&l_ty, &r_ty)));
+                    stack.push((r_value, r_ty));
+                } else {
+                    panic!("Value {value} is not of expected type {ty}");
+                }
+            } else if let Some((l_ty, r_ty)) = ty.split_product() {
+                if let Some((l_value, r_value)) = value.split_product() {
+                    stack.push((r_value, r_ty));
+                    stack.push((l_value, l_ty));
+                } else {
+                    panic!("Value {value} is not of expected type {ty}");
+                }
+            }
+        }
+
+        bits.into_iter()
     }
 }
 
@@ -373,7 +414,7 @@ impl Item {
 impl ExtValue {
     // FIXME: Take &Final
     // Requires split_{sum,product} method of Final that returns references
-    pub fn from_bits<I: Iterator<Item = bool>>(
+    pub fn from_bits_with_padding<I: Iterator<Item = bool>>(
         ty: Arc<Final>,
         it: &mut I,
     ) -> Result<Arc<Self>, &'static str> {
@@ -392,18 +433,24 @@ impl ExtValue {
                 Task::ReadType(ty) => {
                     if ty.is_unit() {
                         result_stack.push(Item::Value(ExtValue::Unit));
-                    } else if let Some((left, right)) = ty.split_sum() {
+                    } else if let Some((l_ty, r_ty)) = ty.split_sum() {
                         if !it.next().ok_or("Not enough bits")? {
+                            for _ in 0..util::pad_left(&l_ty, &r_ty) {
+                                let _padding = it.next().ok_or("Not enough bits")?;
+                            }
                             task_stack.push(Task::MakeLeft);
-                            task_stack.push(Task::ReadType(left));
+                            task_stack.push(Task::ReadType(l_ty));
                         } else {
+                            for _ in 0..util::pad_right(&l_ty, &r_ty) {
+                                let _padding = it.next().ok_or("Not enough bits")?;
+                            }
                             task_stack.push(Task::MakeRight);
-                            task_stack.push(Task::ReadType(right));
+                            task_stack.push(Task::ReadType(r_ty));
                         }
-                    } else if let Some((left, right)) = ty.split_product() {
+                    } else if let Some((l_ty, r_ty)) = ty.split_product() {
                         task_stack.push(Task::MakeProduct);
-                        task_stack.push(Task::ReadType(right));
-                        task_stack.push(Task::ReadType(left));
+                        task_stack.push(Task::ReadType(r_ty));
+                        task_stack.push(Task::ReadType(l_ty));
                     }
                 }
                 // borrowck at its best :/
@@ -611,9 +658,9 @@ mod tests {
         ];
 
         for (value, typename) in value_typename {
-            let mut bits = value.iter_bits();
             let ty = typename.to_final();
-            let value_from_bits = ExtValue::from_bits(ty, &mut bits).unwrap();
+            let mut bits = value.clone().iter_bits_with_padding(ty.clone());
+            let value_from_bits = ExtValue::from_bits_with_padding(ty, &mut bits).unwrap();
             assert_eq!(value, value_from_bits);
         }
     }
