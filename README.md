@@ -23,13 +23,13 @@ nix develop
 Use trunk to compile the project and deploy a local website.
 
 ```bash
-trunk serve
+just serve
 ```
 
-Trunk can open a browser if one is available.
+You can instruct trunk to open a the browser.
 
 ```bash
-trunk serve --open
+just open
 ```
 
 Trunk will keep running in the background and make live updates to the website as you change the code.
