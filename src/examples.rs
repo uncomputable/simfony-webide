@@ -57,8 +57,8 @@ pub const WORD: &str = r#"input := const 0xff : 1 -> 2^8
 output := unit : 2^8 -> 1
 main := comp input output: 1 -> 1"#;
 pub const DISCONNECT: &str = r#"id1 := iden : 2^256 * 1 -> 2^256 * 1
-disc1 := unit : 1 * 1 -> 1
-main := comp (disconnect id1 ?hole) unit : 1 -> 1"#;
+main := comp (disconnect id1 ?hole) unit : 1 -> 1
+hole := unit : 1 * 1 -> 1"#;
 pub const ASSERTL: &str = r#"input := pair (const 0b0) unit : 1 -> 2 * 1
 output := assertl unit #{unit} : 2 * 1 -> 1
 main := comp input output : 1 -> 1"#;
