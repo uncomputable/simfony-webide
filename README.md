@@ -10,26 +10,38 @@ Take a look at the example programs.
 
 ## Develop the project
 
-### Enter the development environment
+First install nix.
 
-Enter the provided developer shell.
+```bash
+curl --proto '=https' --tlsv1.2 -sSf -L https://install.determinate.systems/nix | sh -s -- install
+```
+
+_You might need to open a new terminal for the changes to take effect._
+
+Then enter the nix developer environment.
 
 ```bash
 nix develop
 ```
 
+Now you can use all `just` commands.
+
+```bash
+just --list
+```
+
 ### Deploy a local website
 
-Use trunk to compile the project and deploy a local website.
+Compile the website and serve it on localhost.
 
 ```bash
 just serve
 ```
 
-You can instruct trunk to open a the browser.
+You can instruct the compiler to open the website on the default browser.
 
 ```bash
 just open
 ```
 
-Trunk will keep running in the background and make live updates to the website as you change the code.
+The compiler will keep running in the background and make live updates to the website as you change the code.
