@@ -1,0 +1,39 @@
+
+body {
+    background-color: #0D0F11;
+    color: white;
+    font-family: sans-serif;
+
+}
+a {
+    color: #7973F4;
+}
+p {
+    margin: 0;
+    line-height: 1.5;
+}
+.container{
+    width: 1200px;
+    max-width: 100%;
+    margin: 50px auto;
+}
+
+// program input box
+.program-input{
+    background-color: #1b1f24;
+    padding: 10px;
+
+    &-header{
+        margin-bottom: 10px;
+    }
+
+    h3 {
+        margin: 6px 0;
+    }
+
+    &-field{
+        width: 100%;
+        background-color: #0d0f11;
+        border: none;
+    }
+}
