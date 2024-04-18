@@ -2,6 +2,7 @@ use leptos::*;
 
 use super::examples::{ExampleProgramDescription, SelectExampleProgram};
 use super::merkle::Merkle;
+use super::program_analysis::Analysis;
 
 use crate::function::Runner;
 use crate::util;
@@ -41,7 +42,7 @@ pub fn App() -> impl IntoView {
             <div class="container center">
                 <h1>Simfony Plaground:<br /> Simplicity Frontend</h1>
                 <p class="text-grey">Write and execute Simplicity programs in the browser!<br />
-                "The IDE uses the "<a href="https://github.com/BlockstreamResearch/rust-simplicity/blob/master/src/human_encoding/README.md">human encoding</a>" to serialize Simplicity."</p>
+                "The IDE uses the "<a href="https://github.com/BlockstreamResearch/rust-simplicity/blob/master/src/human_encoding/README.md" target="blank">human encoding</a>" to serialize Simplicity."</p>
             </div>
             <div class="container">
                 <div class="status-notification">
@@ -54,10 +55,10 @@ pub fn App() -> impl IntoView {
                 </div>
 
                 <div class="program-input">
-                    <div class="flex program-input-header">
-                        <div>
-                            <h3>Program</h3>
-                            <p class="text-grey">Select a program, upload a json, or enter your own program below.</p>
+                    <div class="program-input-header">
+                        <div class="program-input-intro">
+                            <h2>Program</h2>
+                            <p>Select a program, upload a json, or enter your own program below.</p>
                         </div>
                         <SelectExampleProgram update_human=update_human set_name=set_name/>
                     </div>
@@ -67,16 +68,23 @@ pub fn App() -> impl IntoView {
                         on:input=move |event| update_human(event_target_value(&event))
                         placeholder="Enter your program here"
                         rows="10" cols="80"
+                        spellcheck="false"
                     />
 
-                    <div>
-                        <button on:click=move |_| run_program()>
-                            "Run program"
-                        </button>
+                    <div class="flex program-input-footer">
+                        <ExampleProgramDescription name=name/>
+
+                        <div class="run-button">
+                            <button on:click=move |_| run_program()>
+                                "Run program"
+                            </button>
+                        </div>
+
                     </div>
                 </div>
 
-                <ExampleProgramDescription name=name/>
+                <Analysis />
+                
                 <Merkle program=program/>
             </div>
         </div>
