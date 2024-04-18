@@ -8,7 +8,7 @@ use simplicity::dag::DagLike;
 #[component]
 pub fn Merkle(program: Signal<Result<Arc<Expression>, String>>) -> impl IntoView {
     view! {
-        <div>
+        <div class="merkle">
         {
             move || program.get().ok().map(|t| view! {
                 <h2>Merkle tree</h2>

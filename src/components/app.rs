@@ -42,14 +42,14 @@ pub fn App() -> impl IntoView {
             <div class="container center">
                 <h1>Simfony IDE</h1>
                 <p class="text-grey">
-                    <a href="https://github.com/BlockstreamResearch/simfony">Simfony</a>
+                    <a href="https://github.com/BlockstreamResearch/simfony" target="blank">Simfony</a>
                     " is a high-level language for writing Bitcoin smart contracts."
                 </p>
                 <p class="text-grey">
                     "Simfony looks and feels like "
-                    <a href="https://www.rust-lang.org">Rust</a>
+                    <a href="https://www.rust-lang.org" target="blank">Rust</a>
                     ". Just how Rust compiles down to assembly language, Simfony compiles down to "
-                    <a href="https://github.com/BlockstreamResearch/simplicity">Simplicity</a>
+                    <a href="https://github.com/BlockstreamResearch/simplicity" target="blank">Simplicity</a>
                     " bytecode. Developers write Simfony, full nodes execute Simplicity."
                 </p>
             </div>
@@ -64,10 +64,10 @@ pub fn App() -> impl IntoView {
                 </div>
 
                 <div class="program-input">
-                    <div class="flex program-input-header">
-                        <div>
-                            <h3>Program</h3>
-                            <p class="text-grey">Select a program, upload a json, or enter your own program below.</p>
+                    <div class="program-input-header">
+                        <div class="program-input-intro">
+                            <h2>Program</h2>
+                            <p>Select a program, upload a json, or enter your own program below.</p>
                         </div>
                         <SelectExampleProgram update_program_str=update_program_str set_name=set_name/>
                     </div>
@@ -77,16 +77,21 @@ pub fn App() -> impl IntoView {
                         on:input=move |event| update_program_str(event_target_value(&event))
                         placeholder="Enter your program here"
                         rows="15" cols="80"
+                        spellcheck="false"
                     />
 
-                    <div>
-                        <button on:click=move |_| run_program()>
-                            "Run program"
-                        </button>
+                    <div class="flex program-input-footer">
+                        <ExampleProgramDescription name=name/>
+
+                        <div class="run-button">
+                            <button on:click=move |_| run_program()>
+                                "Run program"
+                            </button>
+                        </div>
+
                     </div>
                 </div>
 
-                <ExampleProgramDescription name=name/>
                 <Analysis program=program/>
                 <Merkle program=program/>
             </div>

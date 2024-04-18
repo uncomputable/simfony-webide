@@ -1,10 +1,16 @@
+@import 'helpers.scss';
 
 body {
-    background-color: #0D0F11;
-    color: white;
-    font-family: sans-serif;
+    background-color: $background-dark;;
+    color: $text-white;
+    font-family: 'inter', sans-serif;
 
 }
+
+h1, h2, h3, h4, h5, h6{
+    font-family: 'rigid-square';
+}
+
 a {
     color: #7973F4;
 }
@@ -13,27 +19,123 @@ p {
     line-height: 1.5;
 }
 .container{
-    width: 1200px;
+    width: 800px;
     max-width: 100%;
     margin: 50px auto;
 }
 
 // program input box
 .program-input{
-    background-color: #1b1f24;
+    background-color: $background-light;
     padding: 10px;
 
     &-header{
         margin-bottom: 10px;
+        position: relative;
+
+        .program-input-intro {
+            margin-right: 200px;
+        }
+
+        h2 {
+            margin: 6px 0;
+        }
+
+        p{
+            color: $text-grey;
+        }
     }
 
-    h3 {
-        margin: 6px 0;
+
+    &-footer {
+        min-height: 50px;
+        padding: 10px 5px 0px 5px;
+        position: relative;
+
+        .program-details {
+            margin-right: 200px;
+
+            .program-title {
+                margin: 0 0 5px 0;
+            }
+
+            .program-description {
+                color: $text-grey;
+            }
+        }
+    }
+
+    .run-button { 
+        position: absolute;
+        bottom: 0;
+        right: 0;
+
+        button {
+            color: white;
+            background-color: #363cff;
+            width: 200px;
+            padding: 15px;
+            border: none;
+        }
+    }
+
+    .example-program-select {
+        height: 40px;
+        padding-left: 10px;
+        color: $text-grey;
+        background-color: $background-dark;
+        width: 200px;
+        border: 1px solid #363636;
+        position: absolute;
+        bottom: 0;
+        right: 0;
+
+        -webkit-appearance: none;
+        -moz-appearance: none;
+
+        &:focus-visible {
+            outline: none;
+        }
     }
 
     &-field{
         width: 100%;
-        background-color: #0d0f11;
+        background-color: $background-dark;
         border: none;
+        color: #55ccff;
+        font-family: 'Roboto Mono';
+        font-size: 12px;
+        resize: none;
+
+        &:focus-visible {
+            outline: none;
+        }
+    }
+}
+
+// analysis
+.analysis {
+    margin-top: 40px;
+    padding: 10px;
+    background-color: $background-light;
+
+    .analysis-title {
+        margin: 0;
+    }
+}
+
+// merkle tree
+.merkle {
+    margin-top: 40px;
+    padding: 10px;
+    background-color: $background-light;
+
+    h2 {
+        margin: 6px 0;
+    }
+
+    li {
+        color: $text-grey;
+        word-wrap: break-word;
     }
 }

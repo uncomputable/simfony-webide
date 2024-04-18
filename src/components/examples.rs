@@ -23,6 +23,7 @@ where
 
     view! {
         <select
+            class="example-program-select"
             on:input=move |event| select_example_program(event_target_value(&event))
         >
             <option value="" disabled selected>Example programs</option>
@@ -31,6 +32,7 @@ where
                     .map(|name| view! { <option value={name}>{name}</option>})
                     .collect::<Vec<_>>()
             }
+            <i class="fa-solid fa-user"></i>
         </select>
     }
 }
@@ -38,11 +40,11 @@ where
 #[component]
 pub fn ExampleProgramDescription(name: ReadSignal<Option<String>>) -> impl IntoView {
     view! {
-        <div>
+        <div class="program-details">
         {
             move || name.get().map(|n| view! {
-                <h2>{name}</h2>
-                <p>
+                <h3 class="program-title">{name}</h3>
+                <p class="program-description">
                 {
                     move || examples::get_description(n.as_str()).map(|d| d.to_string())
                 }
