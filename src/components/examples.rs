@@ -17,6 +17,9 @@ where
         }
     };
 
+    // Select default example upon startup
+    select_example_program(examples::UNIT_NAME.to_string());
+
     view! {
         <select
             on:input=move |event| select_example_program(event_target_value(&event))
