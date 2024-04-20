@@ -15,7 +15,7 @@ use crate::util;
 /// All methods assume big Endian (of the implied byte sequence).
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct Bits {
-    bits: Arc<Vec<bool>>,
+    bits: Arc<[bool]>,
     start: usize,
     len: usize,
 }
@@ -34,14 +34,14 @@ impl fmt::Display for Bits {
 }
 
 impl Bits {
-    pub fn from_bits(bits: Vec<bool>) -> Self {
+    pub fn from_bits<A: AsRef<[bool]>>(bits: A) -> Self {
         assert!(
-            bits.len().is_power_of_two(),
+            bits.as_ref().len().is_power_of_two(),
             "Length of bit sequence must be a power of two"
         );
         Self {
-            len: bits.len(),
-            bits: Arc::new(bits),
+            len: bits.as_ref().len(),
+            bits: Arc::from(bits.as_ref()),
             start: 0,
         }
     }
@@ -49,14 +49,15 @@ impl Bits {
     pub fn from_bit(bit: bool) -> Self {
         Self {
             len: 1,
-            bits: Arc::new(vec![bit]),
+            bits: Arc::new([bit]),
             start: 0,
         }
     }
 
     pub fn from_byte(byte: u8) -> Self {
+        let bits: Vec<bool> = (0..8).map(|i| byte & (1 << (7 - i)) != 0).collect();
         Self {
-            bits: Arc::new((0..8).map(|i| byte & (1 << (7 - i)) != 0).collect()),
+            bits: Arc::from(bits.as_ref()),
             start: 0,
             len: 8,
         }
@@ -105,7 +106,7 @@ impl Bits {
 /// All methods assume big Endian.
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct Bytes {
-    bytes: Arc<Vec<u8>>,
+    bytes: Arc<[u8]>,
     start: usize,
     len: usize,
 }
@@ -121,24 +122,16 @@ impl fmt::Display for Bytes {
 }
 
 impl Bytes {
-    pub fn from_bytes(bytes: Vec<u8>) -> Self {
-        assert!(
-            bytes.len().is_power_of_two(),
-            "Length of byte sequence must be a power of 2"
-        );
-        Self {
-            len: bytes.len(),
-            bytes: Arc::new(bytes),
-            start: 0,
-        }
-    }
-
-    pub fn from_slice<A: AsRef<[u8]>>(bytes: A) -> Self {
+    pub fn from_bytes<A: AsRef<[u8]>>(bytes: A) -> Self {
         assert!(
             bytes.as_ref().len().is_power_of_two(),
             "Length of byte sequence must be a power of 2"
         );
-        Self::from_bytes(bytes.as_ref().to_vec())
+        Self {
+            len: bytes.as_ref().len(),
+            bytes: Arc::from(bytes.as_ref()),
+            start: 0,
+        }
     }
 
     pub fn byte_length(&self) -> usize {
@@ -635,7 +628,7 @@ mod tests {
                 Value::prod(Value::unit(), Value::unit()),
             ),
             (
-                ExtValue::bytes(Bytes::from_slice(Cmr::unit())),
+                ExtValue::bytes(Bytes::from_bytes(Cmr::unit())),
                 Value::u256_from_slice(Cmr::unit().as_ref()),
             ),
             (
@@ -675,7 +668,7 @@ mod tests {
                 TypeName(b"*22"),
             ),
             (
-                ExtValue::bytes(Bytes::from_slice(Cmr::unit().as_ref())),
+                ExtValue::bytes(Bytes::from_bytes(Cmr::unit())),
                 TypeName(b"h"),
             ),
         ];

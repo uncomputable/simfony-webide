@@ -272,7 +272,7 @@ impl Runner {
                 self.input.push(Task::MakeProduct);
                 self.input.push(Task::ExecuteDisconnect(t.clone()));
 
-                let t_cmr = ExtValue::bytes(Bytes::from_slice(t.cmr()));
+                let t_cmr = ExtValue::bytes(Bytes::from_bytes(t.cmr()));
                 let s_state = State {
                     expression: s.clone(),
                     input: ExtValue::product(t_cmr, state.input),
