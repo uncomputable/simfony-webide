@@ -1,5 +1,6 @@
 use leptos::*;
 
+use super::analysis::Analysis;
 use super::examples::{ExampleProgramDescription, SelectExampleProgram};
 use super::merkle::Merkle;
 
@@ -61,6 +62,7 @@ pub fn App() -> impl IntoView {
             </button>
         </div>
         <ExampleProgramDescription name=name/>
+        <Analysis program=program/>
         <Merkle program=program/>
     }
 }
