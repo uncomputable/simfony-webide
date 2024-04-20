@@ -245,7 +245,7 @@ impl ExtValue {
         matches!(self, ExtValue::Unit)
     }
 
-    pub fn split_left(&self) -> Option<Arc<Self>> {
+    pub fn to_left(&self) -> Option<Arc<Self>> {
         match self {
             Self::Left(left) => Some(left.clone()),
             Self::Bits(bits) => bits.get_bit().and_then(|b| (!b).then(ExtValue::unit)),
@@ -253,7 +253,7 @@ impl ExtValue {
         }
     }
 
-    pub fn split_right(&self) -> Option<Arc<Self>> {
+    pub fn to_right(&self) -> Option<Arc<Self>> {
         match self {
             Self::Right(right) => Some(right.clone()),
             Self::Bits(bits) => bits.get_bit().and_then(|b| b.then(ExtValue::unit)),
@@ -261,7 +261,7 @@ impl ExtValue {
         }
     }
 
-    pub fn split_product(&self) -> Option<(Arc<Self>, Arc<Self>)> {
+    pub fn to_product(&self) -> Option<(Arc<Self>, Arc<Self>)> {
         match self {
             Self::Product(left, right) => Some((left.clone(), right.clone())),
             Self::Bits(bits) => bits
@@ -310,11 +310,11 @@ impl ExtValue {
                     "Value {value} is not of expected type unit"
                 );
             } else if let Some((l_ty, r_ty)) = ty.split_sum() {
-                if let Some(l_value) = value.split_left() {
+                if let Some(l_value) = value.to_left() {
                     bits.push(false);
                     bits.extend(std::iter::repeat(false).take(util::pad_left(&l_ty, &r_ty)));
                     stack.push((l_value, l_ty));
-                } else if let Some(r_value) = value.split_right() {
+                } else if let Some(r_value) = value.to_right() {
                     bits.push(true);
                     bits.extend(std::iter::repeat(false).take(util::pad_right(&l_ty, &r_ty)));
                     stack.push((r_value, r_ty));
@@ -322,7 +322,7 @@ impl ExtValue {
                     panic!("Value {value} is not of expected type {ty}");
                 }
             } else if let Some((l_ty, r_ty)) = ty.split_product() {
-                if let Some((l_value, r_value)) = value.split_product() {
+                if let Some((l_value, r_value)) = value.to_product() {
                     stack.push((r_value, r_ty));
                     stack.push((l_value, l_ty));
                 } else {
