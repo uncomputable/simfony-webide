@@ -1,8 +1,8 @@
 use leptos::*;
 
+use super::analysis::Analysis;
 use super::examples::{ExampleProgramDescription, SelectExampleProgram};
 use super::merkle::Merkle;
-use super::program_analysis::Analysis;
 
 use crate::function::Runner;
 use crate::util;
@@ -87,7 +87,7 @@ pub fn App() -> impl IntoView {
                     </div>
                 </div>
 
-                <Analysis program_success=program_success program_status_message=program_status_message />
+                <Analysis program=program program_success=program_success program_status_message=program_status_message />
                 
                 <Merkle program=program/>
             </div>
