@@ -10,7 +10,7 @@ use crate::util;
 #[component]
 pub fn App() -> impl IntoView {
     let (program_str, set_program_str) = create_signal("".to_string());
-    let (run_success, set_run_success) = create_signal("".to_string());
+    let (run_result, set_run_result) = create_signal::<Option<Result<String, String>>>(None);
     let (name, set_name) = create_signal::<Option<String>>(None);
 
     let program = Signal::derive(move || util::program_from_string(&program_str.get()));
@@ -18,7 +18,7 @@ pub fn App() -> impl IntoView {
 
     let update_program_str = move |s: String| {
         set_program_str.set(s);
-        set_run_success.set("".to_string());
+        set_run_result.set(None);
         set_name.set(None);
     };
     let run_program = move || {
@@ -28,17 +28,17 @@ pub fn App() -> impl IntoView {
         };
         let mut runner = Runner::for_program(program);
         match runner.run() {
-            Ok(_) => {
-                set_run_success.set("✅ Program success".to_string());
-            }
-            Err(error) => {
-                set_run_success.set(format!("❌ {error}"));
-            }
+            Ok(_) => set_run_result.set(Some(Ok("Program success".to_string()))),
+            Err(error) => set_run_result.set(Some(Err(error.to_string()))),
         }
     };
 
     view! {
         <div class="input-page">
+            <div class="page-header">
+                <img class="header-icon" src="https://design.blockstream.com/assets/pages/simplicity/simplicity_logo_white_on_transparent_rgb.svg" />
+            </div>
+
             <div class="container center">
                 <h1>Simfony IDE</h1>
                 <p class="text-grey">
@@ -53,15 +53,11 @@ pub fn App() -> impl IntoView {
                     " bytecode. Developers write Simfony, full nodes execute Simplicity."
                 </p>
             </div>
+
             <div class="container">
-                <div class="status-notification">
-                    <pre>
-                        {parse_error}
-                    </pre>
-                    <p>
-                        {run_success}
-                    </p>
-                </div>
+                <pre>
+                    {parse_error}
+                </pre>
 
                 <div class="program-input">
                     <div class="program-input-header">
@@ -92,7 +88,8 @@ pub fn App() -> impl IntoView {
                     </div>
                 </div>
 
-                <Analysis program=program/>
+                <Analysis program=program run_result=run_result/>
+
                 <Merkle program=program/>
             </div>
         </div>
