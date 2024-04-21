@@ -10,15 +10,17 @@ use crate::util;
 #[component]
 pub fn App() -> impl IntoView {
     let (human, set_human) = create_signal("".to_string());
-    let (program_success, set_program_success) = create_signal("".to_string());
     let (name, set_name) = create_signal::<Option<String>>(None);
 
+    let (program_success, set_program_success) = create_signal(false);
+    let (program_status_message, set_program_status_message) = create_signal("".to_string());
+
     let program = Signal::derive(move || util::program_from_string(&human.get()));
-    let human_error = move || program.get().err().map(|error| format!("Error: {error}"));
+    let human_error = move || program.get().err().map(|error: String| format!("Error: {error}"));
 
     let update_human = move |new_human: String| {
         set_human.set(new_human);
-        set_program_success.set("".to_string());
+        set_program_status_message.set("".to_string());
         set_name.set(None);
     };
     let run_program = move || {
@@ -29,29 +31,31 @@ pub fn App() -> impl IntoView {
         let mut runner = Runner::for_program(program);
         match runner.run() {
             Ok(_) => {
-                set_program_success.set("✅ Program success".to_string());
+                set_program_status_message.set("Program success".to_string());
+                set_program_success.set(true);
             }
             Err(error) => {
-                set_program_success.set(format!("❌ {error}"));
+                set_program_status_message.set(format!("{error}"));
+                set_program_success.set(false);
             }
         }
     };
 
     view! {
         <div class="input-page">
+            <div class="page-header">
+                <img class="header-icon" src="https://design.blockstream.com/assets/pages/simplicity/simplicity_logo_white_on_transparent_rgb.svg" />
+            </div>
+
             <div class="container center">
                 <h1>Simfony Plaground:<br /> Simplicity Frontend</h1>
                 <p class="text-grey">Write and execute Simplicity programs in the browser!<br />
                 "The IDE uses the "<a href="https://github.com/BlockstreamResearch/rust-simplicity/blob/master/src/human_encoding/README.md" target="blank">human encoding</a>" to serialize Simplicity."</p>
             </div>
+
             <div class="container">
-                <div class="status-notification">
-                    <p>
-                        {human_error}
-                    </p>
-                    <p>
-                        {program_success}
-                    </p>
+                <div>
+                    {human_error}
                 </div>
 
                 <div class="program-input">
@@ -83,7 +87,7 @@ pub fn App() -> impl IntoView {
                     </div>
                 </div>
 
-                <Analysis />
+                <Analysis program_success=program_success program_status_message=program_status_message />
                 
                 <Merkle program=program/>
             </div>

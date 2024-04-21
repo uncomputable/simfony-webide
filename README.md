@@ -46,33 +46,3 @@ just open
 
 The compiler will keep running in the background and make live updates to the website as you change the code.
 
-### Deploy on Mac
-
-https://book.leptos.dev/getting_started/index.html
-
-```bash
-cargo install trunk
-
-# need the nightly build of rust
-rustup toolchain install nightly
-rustup default nightly
-
-cargo build
-rustup target add wasm32-unknown-unknown
-
-cargo install just
-just serve
-# see justfile for other commands
-# can also run trunk directly
-trunk serve --port 3000 --open
-```
-
-If there are errors compiling secp256k1 then:
-https://github.com/rust-bitcoin/rust-secp256k1/issues/283
-
-```bash
-brew install llvm
-export PATH="/usr/local/opt/llvm/bin/:$PATH"
-export CC=/usr/local/opt/llvm/bin/clang
-export AR=/usr/local/opt/llvm/bin/llvm-ar
-```
