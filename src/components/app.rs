@@ -1,8 +1,10 @@
 use leptos::*;
+use wasm_bindgen::prelude::wasm_bindgen;
 
 use super::analysis::Analysis;
 use super::examples::{ExampleProgramDescription, SelectExampleProgram};
 use super::merkle::Merkle;
+use super::parser::ParseError;
 
 use crate::function::Runner;
 use crate::util;
@@ -14,7 +16,7 @@ pub fn App() -> impl IntoView {
     let (name, set_name) = create_signal::<Option<String>>(None);
 
     let program = Signal::derive(move || util::program_from_string(&program_str.get()));
-    let parse_error = move || program.get().err();
+    let parse_error = Signal::derive(move || program.get().err());
 
     let update_program_str = move |s: String| {
         set_program_str.set(s);
@@ -33,10 +35,17 @@ pub fn App() -> impl IntoView {
         }
     };
 
+    // load js functions
+    #[wasm_bindgen(module = "/src/assets/js/d3_load.js")]
+    extern "C" {
+        fn update_d3();
+    }
+    update_d3();
+
     view! {
         <div class="input-page">
             <div class="page-header">
-                <img class="header-icon" src="https://design.blockstream.com/assets/pages/simplicity/simplicity_logo_white_on_transparent_rgb.svg" />
+                <img class="header-icon" src="/images/simplicity_logo.svg" />
             </div>
 
             <div class="container center">
@@ -55,9 +64,7 @@ pub fn App() -> impl IntoView {
             </div>
 
             <div class="container">
-                <pre>
-                    {parse_error}
-                </pre>
+                <ParseError maybe_error=parse_error/>
 
                 <div class="program-input">
                     <div class="program-input-header">

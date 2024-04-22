@@ -75,11 +75,13 @@ fn RunResult(run_result: Result<String, String>) -> impl IntoView {
     match run_result {
         Ok(success) => view! {
             <div class="program-status" class:is_error=false >
+                <i class="fal fa-check-circle"></i>
                 {success}
             </div>
         },
         Err(error) => view! {
             <div class="program-status" class:is_error=true >
+                <i class="fal fa-times-circle"></i>
                 {error}
             </div>
         },
