@@ -1,4 +1,5 @@
 use leptos::*;
+use crate::wasm_bindgen::prelude::wasm_bindgen;
 
 use super::analysis::Analysis;
 use super::examples::{ExampleProgramDescription, SelectExampleProgram};
@@ -41,10 +42,17 @@ pub fn App() -> impl IntoView {
         }
     };
 
+    // load js functions
+    #[wasm_bindgen(module = "/src/assets/js/d3_load.js")]
+    extern "C" {
+        fn update_d3();
+    }
+    update_d3();
+
     view! {
         <div class="input-page">
             <div class="page-header">
-                <img class="header-icon" src="https://design.blockstream.com/assets/pages/simplicity/simplicity_logo_white_on_transparent_rgb.svg" />
+                <img class="header-icon" src="/images/simplicity_logo.svg" />
             </div>
 
             <div class="container center">
@@ -54,9 +62,11 @@ pub fn App() -> impl IntoView {
             </div>
 
             <div class="container">
-                <div>
-                    {human_error}
-                </div>
+                // <Show when=move || {human_error != ""} >
+                    <div class="parsing-error-box">
+                        {human_error}
+                    </div>
+                // </Show>
 
                 <div class="program-input">
                     <div class="program-input-header">

@@ -37,6 +37,12 @@ fn AnalysisInner(expression: Arc<Expression>, program_success: ReadSignal<bool>,
                 <div class="flex analysis-header">
                     <h2 class="analysis-title">Program Analysis</h2>
                     <div class="program-status" class:is_error=move || !program_success.get() >
+                        {move || if program_success.get() {
+                           view! { <i class="fal fa-check-circle"></i> }
+                        } else {
+                            view! { <i class="fal fa-times-circle"></i> }
+                        }}
+                        
                         {program_status_message}
                     </div>
                 </div>

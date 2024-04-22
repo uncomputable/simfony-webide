@@ -21,18 +21,20 @@ where
     select_example_program(examples::UNIT_NAME.to_string());
 
     view! {
-        <select 
-            class="example-program-select"
-            on:input=move |event| select_example_program(event_target_value(&event))
-        >
-            <option value="" disabled selected>Example programs</option>
-            {
-                examples::get_names()
-                    .map(|name| view! { <option value={name}>{name}</option>})
-                    .collect::<Vec<_>>()
-            }
-            <i class="fa-solid fa-user"></i>
-        </select>
+        <div class="example-program-select-container">
+            <select 
+                class="example-program-select"
+                on:input=move |event| select_example_program(event_target_value(&event))
+            >
+                <option value="" disabled selected>Example programs</option>
+                {
+                    examples::get_names()
+                        .map(|name| view! { <option value={name}>{name}</option>})
+                        .collect::<Vec<_>>()
+                }
+            </select>
+            <i class="fas fa-angle-down"></i>
+        </div>
     }
 }
 
