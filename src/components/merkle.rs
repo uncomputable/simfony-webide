@@ -13,10 +13,11 @@ pub fn Merkle(program: Signal<Result<Arc<Expression>, String>>) -> impl IntoView
             move || program.get().ok().map(|t| view! {
                 <h2>Merkle tree</h2>
                 <p>A Simplicity program is a Merkle tree, which makes it easy to analyze.</p>
+
                 <MerkleRec expression=t/>
             })
         }
-         </div>
+        </div>
     }
 }
 
@@ -38,5 +39,22 @@ fn MerkleRec(expression: Arc<Expression>) -> impl IntoView {
                 }
             </li>
         </ul>
+    }
+}
+
+#[component]
+pub fn MerkleGraph(program: Signal<Result<Arc<Expression>, String>>) -> impl IntoView {
+    view! {
+        <div class="">
+        {
+            move || program.get().ok().map(|_| view! {
+                <h2>Merkle Graph</h2>
+
+                <div id="merkle_graph_holder">
+                    <svg></svg>
+                </div>
+            })
+        }
+        </div>
     }
 }

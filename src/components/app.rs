@@ -3,7 +3,7 @@ use wasm_bindgen::prelude::wasm_bindgen;
 
 use super::analysis::Analysis;
 use super::examples::{ExampleProgramDescription, SelectExampleProgram};
-use super::merkle::Merkle;
+use super::merkle::{Merkle, MerkleGraph};
 use super::parser::ParseError;
 
 use crate::function::Runner;
@@ -30,17 +30,21 @@ pub fn App() -> impl IntoView {
         };
         let mut runner = Runner::for_program(program);
         match runner.run() {
-            Ok(_) => set_run_result.set(Some(Ok("Program success".to_string()))),
-            Err(error) => set_run_result.set(Some(Err(error.to_string()))),
+            Ok(_) => {
+                set_run_result.set(Some(Ok("Program success".to_string())));
+                load_merkle_graph();
+            }
+            Err(error) => {
+                set_run_result.set(Some(Err(error.to_string())));
+            }
         }
     };
 
     // load js functions
-    #[wasm_bindgen(module = "/src/assets/js/d3_load.js")]
+    #[wasm_bindgen(module = "/src/assets/js/merkle_graph_d3.js")]
     extern "C" {
-        fn update_d3();
+        fn load_merkle_graph();
     }
-    update_d3();
 
     view! {
         <div class="input-page">
@@ -98,6 +102,7 @@ pub fn App() -> impl IntoView {
                 <Analysis program=program run_result=run_result/>
 
                 <Merkle program=program/>
+                <MerkleGraph program=program />
             </div>
         </div>
     }

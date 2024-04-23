@@ -1,0 +1,55 @@
+
+.analysis {
+    margin-top: 40px;
+    padding: 10px;
+    background-color: $background-light;
+
+    .analysis-header {
+        .analysis-title {
+            margin: 6px 0 14px 0;
+        }
+
+        .program-status{
+            border: 1px dotted #00ff00;
+            color: #00ff00;
+            padding: 8px 20px;
+            font-size: 13px;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            
+            &.is_error{
+                border: 1px dotted #ff0000;
+                color: #ff0000;
+            }
+        
+            i {
+                font-size: 20px;
+                margin-right: 10px;
+            }
+        }
+    }
+
+    .analysis-body {
+        display: flex;
+        flex-wrap: wrap;
+
+
+        .analysis-item {
+            display: flex;
+            justify-content: space-between;
+            flex: 0 0 50%;
+            
+            border: 1px solid #3d3d3d;
+            padding: 20px;
+            background-color: $background-dark;
+
+            .analysis-item-label {
+                color: $text-white;
+            }
+            .analysis-item-data {
+                color: $text-grey;
+            }
+        }
+    }
+}

@@ -1,0 +1,130 @@
+
+.program-input{
+    background-color: $background-light;
+    padding: 10px;
+
+    &-header{
+        margin-bottom: 10px;
+        position: relative;
+
+        .program-input-intro {
+            margin-right: 220px;
+        }
+
+        h2 {
+            margin: 6px 0;
+        }
+
+        p{
+            color: $text-grey;
+        }
+    }
+
+    @media only screen and (max-width: 600px) {
+        &-header{
+            display: flex;
+            flex-direction: column;
+
+            .example-program-select{
+                position: relative !important;
+                margin-top: 20px;
+            }
+        }
+
+        .program-input-intro {
+            margin-right: 0 !important;
+        }
+        
+    }
+
+    &-footer {
+        min-height: 50px;
+        padding: 10px 5px 0px 5px;
+        position: relative;
+
+        .program-details {
+            margin-right: 200px;
+
+            .program-title {
+                margin: 0 0 5px 0;
+            }
+
+            .program-description {
+                color: $text-grey;
+            }
+        }
+
+        @media only screen and (max-width: 600px) {
+            display: flex;
+            flex-direction: column;
+
+            .program-details {
+                margin-right: 0;
+            }
+
+            .run-button{
+                position: relative !important;
+                margin-top: 20px;
+            }
+        }
+    }
+
+    .run-button { 
+        position: absolute;
+        bottom: 0;
+        right: 0;
+
+        button {
+            color: white;
+            background-color: #363cff;
+            width: 200px;
+            padding: 15px;
+            border: none;
+        }
+    }
+
+    .example-program-select-container{
+        position: absolute;
+        bottom: 0;
+        right: 0;
+
+        .example-program-select {
+            height: 40px;
+            padding-left: 10px;
+            color: $text-grey;
+            background-color: $background-dark;
+            width: 200px;
+            border: 1px solid #363636;
+
+            -webkit-appearance: none;
+            -moz-appearance: none;
+
+            &:focus-visible {
+                outline: none;
+            }
+        }
+
+        i {
+            position: absolute;
+            right: 12px;
+            top: 8px;
+            font-weight: 100;
+            font-size: 26px;
+            color: $text-white;
+        }
+    }
+
+    &-field{
+        width: 100%;
+        background-color: $background-dark;
+        border: none;
+        color: #88ddff;
+        font-family: 'Roboto Mono';
+        font-size: 12px;
+        resize: none;
+
+        &:focus-visible {
+            outline: none;
+        }
+    }
+}

@@ -1,14 +1,18 @@
 @import 'helpers.scss';
+@import 'components/analysis.scss';
+@import 'components/program_input.scss';
+@import 'components/merkle.scss';
+@import 'components/merkle_graph.scss';
 
 * {
     box-sizing: border-box;
 }
 
 body {
-    background-color: $background-dark;;
+    background-color: $background-dark;
     color: $text-white;
     font-family: 'inter', sans-serif;
-    margin-bottom: 400px;
+    padding-bottom: 400px;
 }
 
 h1, h2, h3, h4, h5, h6{
@@ -38,213 +42,10 @@ p {
     }
 }
 
-// program input box
-.program-input{
-    background-color: $background-light;
-    padding: 10px;
-
-    &-header{
-        margin-bottom: 10px;
-        position: relative;
-
-        .program-input-intro {
-            margin-right: 220px;
-        }
-
-        h2 {
-            margin: 6px 0;
-        }
-
-        p{
-            color: $text-grey;
-        }
-    }
-
-    @media only screen and (max-width: 600px) {
-        &-header{
-            display: flex;
-            flex-direction: column;
-
-            .example-program-select{
-                position: relative !important;
-                margin-top: 20px;
-            }
-        }
-
-        .program-input-intro {
-            margin-right: 0 !important;
-        }
-        
-    }
-
-    &-footer {
-        min-height: 50px;
-        padding: 10px 5px 0px 5px;
-        position: relative;
-
-        .program-details {
-            margin-right: 200px;
-
-            .program-title {
-                margin: 0 0 5px 0;
-            }
-
-            .program-description {
-                color: $text-grey;
-            }
-        }
-
-        @media only screen and (max-width: 600px) {
-            display: flex;
-            flex-direction: column;
-
-            .program-details {
-                margin-right: 0;
-            }
-
-            .run-button{
-                position: relative !important;
-                margin-top: 20px;
-            }
-        }
-    }
-
-    .run-button { 
-        position: absolute;
-        bottom: 0;
-        right: 0;
-
-        button {
-            color: white;
-            background-color: #363cff;
-            width: 200px;
-            padding: 15px;
-            border: none;
-        }
-    }
-
-    .example-program-select-container{
-        position: absolute;
-        bottom: 0;
-        right: 0;
-
-        .example-program-select {
-            height: 40px;
-            padding-left: 10px;
-            color: $text-grey;
-            background-color: $background-dark;
-            width: 200px;
-            border: 1px solid #363636;
-
-            -webkit-appearance: none;
-            -moz-appearance: none;
-
-            &:focus-visible {
-                outline: none;
-            }
-        }
-
-        i {
-            position: absolute;
-            right: 12px;
-            top: 8px;
-            font-weight: 100;
-            font-size: 26px;
-            color: $text-white;
-        }
-    }
-
-    &-field{
-        width: 100%;
-        background-color: $background-dark;
-        border: none;
-        color: #88ddff;
-        font-family: 'Roboto Mono';
-        font-size: 12px;
-        resize: none;
-
-        &:focus-visible {
-            outline: none;
-        }
-    }
-}
-
-.program-status{
-    border: 1px dotted #00ff00;
-    color: #00ff00;
-    padding: 8px 20px;
-    font-size: 13px;
-    margin-bottom: 8px;
-    display: flex;
-    align-items: center;
-    
-    &.is_error{
-        border: 1px dotted #ff0000;
-        color: #ff0000;
-    }
-
-    i {
-        font-size: 20px;
-        margin-right: 10px;
-    }
-}
-
 .parsing-error-box {
     color: white;
     padding: 10px;
     background-color: #770000;
     font-weight: 200;
     margin-bottom: 10px;
-}
-
-// analysis
-.analysis {
-    margin-top: 40px;
-    padding: 10px;
-    background-color: $background-light;
-
-    .analysis-header {
-        .analysis-title {
-            margin: 6px 0 14px 0;
-        }
-    }
-
-    .analysis-body {
-        display: flex;
-        flex-wrap: wrap;
-
-
-        .analysis-item {
-            display: flex;
-            justify-content: space-between;
-            flex: 0 0 50%;
-            
-            border: 1px solid #3d3d3d;
-            padding: 20px;
-            background-color: $background-dark;
-
-            .analysis-item-label {
-                color: $text-white;
-            }
-            .analysis-item-data {
-                color: $text-grey;
-            }
-        }
-    }
-}
-
-// merkle tree
-.merkle {
-    margin-top: 40px;
-    padding: 10px;
-    background-color: $background-light;
-
-    h2 {
-        margin: 6px 0;
-    }
-
-    li {
-        color: $text-grey;
-        word-wrap: break-word;
-    }
 }
