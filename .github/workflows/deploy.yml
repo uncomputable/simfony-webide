@@ -26,9 +26,6 @@ jobs:
       run: |
         nix develop .#deploy --command bash -c "trunk build --release"
 
-    - name: Fix links
-      run: sh fix-links.sh
-
     - name: Deploy to GitHub pages
       uses: JamesIves/github-pages-deploy-action@v4
       with:
