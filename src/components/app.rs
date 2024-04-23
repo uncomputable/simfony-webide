@@ -4,6 +4,7 @@ use crate::wasm_bindgen::prelude::wasm_bindgen;
 use super::analysis::Analysis;
 use super::examples::{ExampleProgramDescription, SelectExampleProgram};
 use super::merkle::Merkle;
+use super::merkle_graph::MerkleGraph;
 
 use crate::function::Runner;
 use crate::util;
@@ -34,6 +35,7 @@ pub fn App() -> impl IntoView {
             Ok(_) => {
                 set_program_status_message.set("Program success".to_string());
                 set_program_success.set(true);
+                load_merkle_graph();
             }
             Err(error) => {
                 set_program_status_message.set(format!("{error}"));
@@ -43,12 +45,11 @@ pub fn App() -> impl IntoView {
     };
 
     // load js functions
-    #[wasm_bindgen(module = "/src/assets/js/d3_load.js")]
+    #[wasm_bindgen(module = "/src/assets/js/merkle_graph_d3.js")]
     extern "C" {
-        fn update_d3();
+        fn load_merkle_graph();
     }
-    update_d3();
-
+    
     view! {
         <div class="input-page">
             <div class="page-header">
@@ -62,11 +63,11 @@ pub fn App() -> impl IntoView {
             </div>
 
             <div class="container">
-                // <Show when=move || {human_error != ""} >
+                <Show when=move || {!human_error().is_none()} >
                     <div class="parsing-error-box">
                         {human_error}
                     </div>
-                // </Show>
+                </Show>
 
                 <div class="program-input">
                     <div class="program-input-header">
@@ -99,7 +100,11 @@ pub fn App() -> impl IntoView {
 
                 <Analysis program=program program_success=program_success program_status_message=program_status_message />
                 
-                <Merkle program=program/>
+                <Show when=move || program.get().is_ok() >
+                    <Merkle program=program/>
+                    <MerkleGraph program=program />
+                </Show>
+
             </div>
         </div>
     }

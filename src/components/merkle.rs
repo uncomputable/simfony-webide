@@ -13,6 +13,7 @@ pub fn Merkle(program: Signal<Result<Arc<Expression>, String>>) -> impl IntoView
             move || program.get().ok().map(|t| view! {
                 <h2>Merkle tree</h2>
                 <p>A Simplicity program is a Merkle tree, which makes it easy to analyze.</p>
+                
                 <MerkleRec expression=t/>
             })
         }
