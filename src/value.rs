@@ -6,6 +6,7 @@ use simplicity::dag::{Dag, DagLike, NoSharing};
 use simplicity::types::Final;
 use simplicity::Value;
 
+use crate::simplicity;
 use crate::util;
 
 /// Immutable sequence of bits whose length is a power of two.
@@ -299,7 +300,7 @@ impl ExtValue {
             })
     }
 
-    pub fn iter_bits_with_padding(self: Arc<Self>, ty: Arc<Final>) -> impl Iterator<Item = bool> {
+    pub fn iter_bits_with_padding(self: Arc<Self>, ty: &Final) -> impl Iterator<Item = bool> {
         let mut bits = Vec::with_capacity(ty.bit_width());
         let mut stack = vec![(self, ty)];
 
@@ -309,19 +310,19 @@ impl ExtValue {
                     value.is_unit(),
                     "Value {value} is not of expected type unit"
                 );
-            } else if let Some((l_ty, r_ty)) = ty.split_sum() {
+            } else if let Some((l_ty, r_ty)) = ty.as_sum() {
                 if let Some(l_value) = value.to_left() {
                     bits.push(false);
-                    bits.extend(std::iter::repeat(false).take(util::pad_left(&l_ty, &r_ty)));
+                    bits.extend(std::iter::repeat(false).take(util::pad_left(l_ty, r_ty)));
                     stack.push((l_value, l_ty));
                 } else if let Some(r_value) = value.to_right() {
                     bits.push(true);
-                    bits.extend(std::iter::repeat(false).take(util::pad_right(&l_ty, &r_ty)));
+                    bits.extend(std::iter::repeat(false).take(util::pad_right(l_ty, r_ty)));
                     stack.push((r_value, r_ty));
                 } else {
                     panic!("Value {value} is not of expected type {ty}");
                 }
-            } else if let Some((l_ty, r_ty)) = ty.split_product() {
+            } else if let Some((l_ty, r_ty)) = ty.as_product() {
                 if let Some((l_value, r_value)) = value.to_product() {
                     stack.push((r_value, r_ty));
                     stack.push((l_value, l_ty));
@@ -408,11 +409,11 @@ impl ExtValue {
     // FIXME: Take &Final
     // Requires split_{sum,product} method of Final that returns references
     pub fn from_bits_with_padding<I: Iterator<Item = bool>>(
-        ty: Arc<Final>,
+        ty: &Final,
         it: &mut I,
     ) -> Result<Arc<Self>, &'static str> {
-        enum Task {
-            ReadType(Arc<Final>),
+        enum Task<'a> {
+            ReadType(&'a Final),
             MakeLeft,
             MakeRight,
             MakeProduct,
@@ -426,21 +427,21 @@ impl ExtValue {
                 Task::ReadType(ty) => {
                     if ty.is_unit() {
                         result_stack.push(Item::Value(ExtValue::Unit));
-                    } else if let Some((l_ty, r_ty)) = ty.split_sum() {
+                    } else if let Some((l_ty, r_ty)) = ty.as_sum() {
                         if !it.next().ok_or("Not enough bits")? {
-                            for _ in 0..util::pad_left(&l_ty, &r_ty) {
+                            for _ in 0..util::pad_left(l_ty, r_ty) {
                                 let _padding = it.next().ok_or("Not enough bits")?;
                             }
                             task_stack.push(Task::MakeLeft);
                             task_stack.push(Task::ReadType(l_ty));
                         } else {
-                            for _ in 0..util::pad_right(&l_ty, &r_ty) {
+                            for _ in 0..util::pad_right(l_ty, r_ty) {
                                 let _padding = it.next().ok_or("Not enough bits")?;
                             }
                             task_stack.push(Task::MakeRight);
                             task_stack.push(Task::ReadType(r_ty));
                         }
-                    } else if let Some((l_ty, r_ty)) = ty.split_product() {
+                    } else if let Some((l_ty, r_ty)) = ty.as_product() {
                         task_stack.push(Task::MakeProduct);
                         task_stack.push(Task::ReadType(r_ty));
                         task_stack.push(Task::ReadType(l_ty));
@@ -516,6 +517,7 @@ impl<'a> From<&'a Value> for ExtValue {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::simplicity;
     use simplicity::jet::type_name::TypeName;
     use simplicity::Cmr;
 
@@ -675,8 +677,8 @@ mod tests {
 
         for (value, typename) in value_typename {
             let ty = typename.to_final();
-            let mut bits = value.clone().iter_bits_with_padding(ty.clone());
-            let value_from_bits = ExtValue::from_bits_with_padding(ty, &mut bits).unwrap();
+            let mut bits = value.clone().iter_bits_with_padding(&ty);
+            let value_from_bits = ExtValue::from_bits_with_padding(&ty, &mut bits).unwrap();
             assert_eq!(value, value_from_bits);
         }
     }

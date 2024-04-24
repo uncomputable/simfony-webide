@@ -6,6 +6,8 @@ mod jet;
 mod util;
 mod value;
 
+pub use simfony::simplicity;
+
 use components::App;
 use leptos::*;
 

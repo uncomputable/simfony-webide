@@ -1,6 +1,8 @@
 use std::sync::Arc;
 
+use crate::simplicity;
 use crate::value::ExtValue;
+
 use simplicity::ffi::c_jets::frame_ffi::{c_readBit, c_writeBit};
 use simplicity::ffi::c_jets::uword_width;
 use simplicity::ffi::ffi::UWORD;
@@ -17,14 +19,14 @@ pub struct JetFailed;
 /// ## Safety
 ///
 /// The returned frame must outlive its buffer or there is a dangling pointer.
-unsafe fn get_input_frame(input: Arc<ExtValue>, ty: Arc<Final>) -> (CFrameItem, Vec<UWORD>) {
+unsafe fn get_input_frame(input: Arc<ExtValue>, ty: &Final) -> (CFrameItem, Vec<UWORD>) {
     let uword_width = uword_width(ty.bit_width());
     let mut buffer = vec![0; uword_width];
 
     // Copy bits from value to input frame
     let buffer_end = buffer.as_mut_ptr().add(uword_width);
     let mut write_frame = CFrameItem::new_write(ty.bit_width(), buffer_end);
-    for bit in input.iter_bits_with_padding(ty.clone()) {
+    for bit in input.iter_bits_with_padding(ty) {
         c_writeBit(&mut write_frame, bit);
     }
 
@@ -58,7 +60,7 @@ unsafe fn get_output_frame(bit_width: usize) -> (CFrameItem, Vec<UWORD>) {
 /// ## Panics
 ///
 /// Buffer has fewer than bits than `ty` is wide (converted to UWORDs).
-fn value_from_frame(ty: Arc<Final>, buffer: &mut [UWORD]) -> Arc<ExtValue> {
+fn value_from_frame(ty: &Final, buffer: &mut [UWORD]) -> Arc<ExtValue> {
     assert!(uword_width(ty.bit_width()) <= buffer.len());
     let buffer_ptr = buffer.as_ptr();
     let mut read_frame = unsafe { CFrameItem::new_read(ty.bit_width(), buffer_ptr) };
@@ -78,7 +80,7 @@ pub fn execute_jet_with_env<J: Jet>(
     let input_type = jet.source_ty().to_final();
     let output_type = jet.target_ty().to_final();
 
-    let (input_read_frame, _input_buffer) = unsafe { get_input_frame(input, input_type) };
+    let (input_read_frame, _input_buffer) = unsafe { get_input_frame(input, &input_type) };
     let (mut output_write_frame, mut output_buffer) =
         unsafe { get_output_frame(output_type.bit_width()) };
 
@@ -89,12 +91,14 @@ pub fn execute_jet_with_env<J: Jet>(
     if !success {
         Err(JetFailed)
     } else {
-        Ok(value_from_frame(output_type, &mut output_buffer))
+        Ok(value_from_frame(&output_type, &mut output_buffer))
     }
 }
 
 #[cfg(test)]
 mod tests {
+    use super::*;
+
     #[wasm_bindgen_test::wasm_bindgen_test]
     fn wasm_sanity_checks() {
         assert!(simplicity::ffi::c_jets::sanity_checks());

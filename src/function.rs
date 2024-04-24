@@ -1,10 +1,11 @@
 use std::fmt;
 use std::sync::Arc;
 
-use crate::jet;
-use crate::jet::JetFailed;
 use simplicity::node::Inner;
 
+use crate::jet;
+use crate::jet::JetFailed;
+use crate::simplicity;
 use crate::util::{DisplayExpression, Expression};
 use crate::value::{Bytes, ExtValue};
 

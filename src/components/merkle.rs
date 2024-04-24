@@ -1,9 +1,9 @@
 use leptos::*;
 use std::sync::Arc;
 
-use simplicity::dag::DagLike;
-
+use crate::simplicity;
 use crate::util::{DisplayInner, Expression};
+use simplicity::dag::DagLike;
 
 #[component]
 pub fn Merkle(program: Signal<Result<Arc<Expression>, String>>) -> impl IntoView {

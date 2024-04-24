@@ -9,6 +9,8 @@ use simplicity::{
     Cmr,
 };
 
+use crate::simplicity;
+
 /// Return a dummy Elements environment
 pub fn dummy() -> ElementsEnv<Arc<elements::Transaction>> {
     let lock_time = elements::LockTime::ZERO;
