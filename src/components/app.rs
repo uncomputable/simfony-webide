@@ -52,13 +52,13 @@ pub fn App() -> impl IntoView {
                 <img class="header-icon" src="/images/simplicity_logo.svg" />
             </div>
 
-            <div class="container center">
-                <h1>Simfony IDE</h1>
-                <p class="text-grey">
+            <div class="container center intro">
+                <h1 class="intro-title">Simfony IDE</h1>
+                <p class="intro-text text-grey">
                     <a href="https://github.com/BlockstreamResearch/simfony" target="blank">Simfony</a>
                     " is a high-level language for writing Bitcoin smart contracts."
                 </p>
-                <p class="text-grey">
+                <p class="intro-text text-grey">
                     "Simfony looks and feels like "
                     <a href="https://www.rust-lang.org" target="blank">Rust</a>
                     ". Just how Rust compiles down to assembly language, Simfony compiles down to "

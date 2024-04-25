@@ -37,8 +37,32 @@ p {
 .page-header {
     .header-icon {
         width: 300px;
+        max-width: 100%;
         margin-top: -30px;
         margin-bottom: -30px;
+
+        @media only screen and (max-width: 600px) {
+            margin-left: -20px;
+            width: 240px;
+        }
+    }
+}
+
+.intro{
+    .intro-title {
+        font-size: 32px;
+    }
+    .intro-text {
+        font-size: 16px;
+    }
+
+    @media only screen and (max-width: 600px) {
+        .intro-title {
+            font-size: 24px;
+        }
+        .intro-text {
+            font-size: 12px;
+        }
     }
 }
 
