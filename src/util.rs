@@ -1,9 +1,7 @@
-use std::collections::HashMap;
 use std::fmt;
 use std::sync::Arc;
 
 use simplicity::dag::{Dag, DagLike, NoSharing};
-use simplicity::human_encoding::Forest;
 use simplicity::jet::Elements;
 use simplicity::node::Inner;
 use simplicity::types::Final;
@@ -15,13 +13,12 @@ use crate::value::ExtValue;
 pub type Expression = RedeemNode<Elements>;
 
 pub fn program_from_string(s: &str) -> Result<Arc<Expression>, String> {
-    let empty_witness = HashMap::new();
-    let forest = Forest::parse(s).map_err(|e| e.to_string())?;
-    forest
-        .to_witness_node(&empty_witness)
-        .ok_or("Main root is missing".to_string())?
-        .finalize()
-        .map_err(|e| e.to_string())
+    let s_arc = Arc::from(s);
+    let empty_witness = simfony::Witness::default();
+    simfony::Compiler::new()
+        .with_program(s_arc)
+        .with_witness(empty_witness)
+        .get_redeem()
 }
 
 pub struct DisplayInner<'a, M: node::Marker>(&'a node::Node<M>);
