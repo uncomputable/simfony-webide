@@ -63,7 +63,7 @@ pub fn App() -> impl IntoView {
             prop:value=move || program_str.get()
             on:input=move |event| update_program_str(event_target_value(&event))
             placeholder="Enter your program here"
-            rows="10" cols="80"
+            rows="15" cols="80"
         />
         <div>
             <button on:click=move |_| run_program()>
