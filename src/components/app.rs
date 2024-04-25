@@ -14,7 +14,7 @@ pub fn App() -> impl IntoView {
     let (name, set_name) = create_signal::<Option<String>>(None);
 
     let program = Signal::derive(move || util::program_from_string(&human.get()));
-    let human_error = move || program.get().err().map(|error| format!("Error: {error}"));
+    let human_error = move || program.get().err();
 
     let update_human = move |new_human: String| {
         set_human.set(new_human);
@@ -51,9 +51,9 @@ pub fn App() -> impl IntoView {
             " bytecode. Developers write Simfony, full nodes execute Simplicity."
         </p>
         <div>
-            <p>
+            <pre>
                 {human_error}
-            </p>
+            </pre>
             <p>
                 {program_success}
             </p>
