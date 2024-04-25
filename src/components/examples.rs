@@ -11,14 +11,15 @@ where
     F: Fn(String) + 'static,
 {
     let select_example_program = move |name: String| {
-        if let Some(new_human) = examples::get_program(&name) {
+        if let Some(new_human) = examples::get_program_str(&name) {
             update_program_str(new_human.to_string());
             set_name.set(Some(name));
         }
     };
 
     // Select default example upon startup
-    select_example_program(examples::UNIT_NAME.to_string());
+    // The name must exist inside examples::EXAMPLES
+    select_example_program("BIP 340 Schnorr".to_string());
 
     view! {
         <select

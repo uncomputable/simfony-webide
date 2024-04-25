@@ -1,156 +1,225 @@
-// Names must be unique because they serve as primary keys
-pub(crate) const NAME_TO_PROGRAM: [(&str, &str); 13] = [
-    (UNIT_NAME, UNIT),
-    (IDEN_NAME, IDEN),
-    (NOT_NAME, NOT),
-    (WORD_NAME, WORD),
-    (DISCONNECT_NAME, DISCONNECT),
-    (ASSERTL_NAME, ASSERTL),
-    (ASSERTR_NAME, ASSERTR),
-    (ASSERTL_FAILURE_NAME, ASSERTL_FAILURE),
-    (JET_NAME, JET),
-    (BYTE_EQUALITY_NAME, BYTE_EQUALITY),
-    (SCHNORR_NAME, SCHNORR),
-    (BIT_FLIP_NAME, BIT_FLIP),
-    (SHA_NAME, SHA),
+/// Constant map of example names, descriptions and program strings.
+///
+/// Names must be unique because they serve as primary keys.
+const EXAMPLES: [(&str, &str, &str); 11] = [
+    (
+        "Empty",
+        r#"The empty string is a valid program.
+It does nothing and immediately unlocks its coins."#,
+        r#""#,
+    ),
+    (
+        "Block expressions",
+        r#"Use blocks expressions to give your programs more structure.
+Each block returns a value at its end."#,
+        r#"let a: u32 = 10;
+let b = {
+    let c: u32 = 2;
+    let d: u32 = 3;
+    jet_verify(jet_eq_32(a, 10)); // Use variables from outer copes
+    let a: u32 = 7; // Shadow variables from outer scopes
+    jet_max_32(jet_max_32(c, d), a) // Missing ; because the block returns a value
+};
+jet_verify(jet_eq_32(b, 7));"#,
+    ),
+    (
+        "Match expressions",
+        r#"Use match expressions to choose between multiple execution paths.
+Unused code is removed inside the Simplicity target code and will never touch the blockchain."#,
+        r#"let bit: u1 = match Left(11) {
+    Left(x) => jet_le_32(10, x),
+    Right(y) => jet_le_32(y, 10),
+};
+jet_verify(bit);
+let bit: u1 = match Some(11) {
+    Some(x) => jet_le_32(10, x),
+    None => 0,
+};
+jet_verify(bit);
+let bit: bool = match true {
+    true => 1,
+    false => 0,
+};
+jet_verify(bit);"#,
+    ),
+    (
+        "Functions",
+        r#"Use functions to encapsulate repetitive code.
+Functions are compressed inside the Simplicity target code."#,
+        r#"fn forty_two() {
+    42
+};
+let a = forty_two();
+let b = 42;
+jet_verify(jet_eq_32(a, b));
+fn checked_add_32(x, y) {
+    let (carry, sum) = jet_add_32(x, y);
+    jet_verify(jet_complement_1(carry));
+    sum
+};
+let a = 1;
+let b = 4294967294;
+let c = checked_add_32(a, b);
+let d = 4294967295;
+jet_verify(jet_eq_32(c, d));
+fn first() {
+    1
+};
+fn second() {
+    checked_add_32(first(), first())
+};
+fn third() {
+    checked_add_32(first(), second())
+};
+let a = third();
+let b = 3;
+jet_verify(jet_eq_32(a, b));"#,
+    ),
+    (
+        "List sum",
+        r#"Sum the elements of a list.
+The length of the list is between one (inclusive) and a maximum (exclusive)."#,
+        r#"fn checked_add_32(el, acc) {
+    let (carry, sum) = jet_add_32(el, acc);
+    // assert_eq!(carry, 0)
+    jet_verify(jet_complement_1(carry));
+    sum
+};
+
+// Sum 1 element
+let list: List<u32, 2> = list![1];
+let sum: u32 = fold::<2>(list, 0, checked_add_32);
+jet_verify(jet_eq_32(1, sum));
+
+// Sum 2 elements
+let list: List<u32, 4> = list![1, 2];
+let sum: u32 = fold::<4>(list, 0, checked_add_32);
+jet_verify(jet_eq_32(3, sum));
+
+// Sum 3 elements
+let list: List<u32, 4> = list![1, 2, 3];
+let sum: u32 = fold::<4>(list, 0, checked_add_32);
+jet_verify(jet_eq_32(6, sum));
+
+// Sum 4 elements
+let list: List<u32, 8> = list![1, 2, 3, 4];
+let sum: u32 = fold::<8>(list, 0, checked_add_32);
+jet_verify(jet_eq_32(10, sum));"#,
+    ),
+    (
+        "Byte hash loop 🧨",
+        r#"Hash bytes 0x00 to 0xff in a loop.
+🧨 This program is quite large, currently slow and might break your browser."#,
+        r#"// Add counter to streaming hash and finalize when the loop exists
+fn hash_counter_8(cnt, acc) {
+    let new_acc = jet_sha_256_ctx_8_add_1(acc, cnt);
+    match jet_all_8(cnt) {
+        true => Left(jet_sha_256_ctx_8_finalize(new_acc)),
+        false => Right(new_acc),
+    }
+};
+
+// Hash bytes 0x00 to 0xff
+let ctx: (List<u8, 64>, (u64, u256)) = jet_sha_256_ctx_8_init();
+let c: Either<u256, (List<u8, 64>, (u64, u256))> = forWhile::<256>(ctx, hash_counter_8);
+let expected: u256 = 0x40aff2e9d2d8922e47afd4648e6967497158785fbd1da870e7110266bf944880;
+jet_verify(jet_eq_256(expected, unwrap_left(c)));"#,
+    ),
+    (
+        "BIP 340 Schnorr",
+        r#"Verify a Schnorr signature.
+Because the signed message is arbitrary, the program is as powerful as OP_CHECKSIGFROMSTACKVERIFY."#,
+        r#"let pk: u256 = 0xf9308a019258c31049344f85f89d5229b531c845836f99b08601f113bce036f9;
+let sig: (u256, u256) = 0xe907831f80848d1069a5371b402410364bdf1c5f8307b0084c55f1ce2dca821525f66a4a85ea8b71e482a74f382d2ce5ebeee8fdb2172f477df4900d310536c0;
+let msg: u256 = 0x0000000000000000000000000000000000000000000000000000000000000000;
+jet_bip_0340_verify(pk, msg, sig);"#,
+    ),
+    (
+        "OP_CAT",
+        r#"Concatenate some bytes and verify the result."#,
+        r#"let a = 0x10;
+let b = 0x01;
+let ab: u16 = (a, b);
+let c = 0x1001;
+jet_verify(jet_eq_16(ab, c));"#,
+    ),
+    (
+        "Recursive covenant ❌",
+        r#"The world's simplest recursive covenant:
+The scriptPubKey of the UTXO must be repeated in the first output of the spending transaction.
+❌ This program currently fails because the transaction does not satisfy the covenant."#,
+        "let utxo_hash:  u256 = jet_current_script_hash();
+let spend_hash: u256 = unwrap(jet_output_script_hash(0));
+jet_verify(jet_eq_256(utxo_hash, spend_hash));",
+    ),
+    (
+        "OP_CTV ❌",
+        r#"Verify an OP_CTV hash.
+Instead of specifying the template hash as in BIP CTV,
+we require the user to specify all the components of the sighash
+that they want to commit.
+❌ This program currently fails because the expected hash is incorrect."#,
+        r#"let ctx = jet_sha_256_ctx_8_init();
+let ctx = jet_sha_256_ctx_8_add_4(ctx, jet_version());
+let ctx = jet_sha_256_ctx_8_add_4(ctx, jet_lock_time());
+let ctx = jet_sha_256_ctx_8_add_32(ctx, jet_input_script_sigs_hash());
+let ctx = jet_sha_256_ctx_8_add_4(ctx, jet_num_inputs());
+let ctx = jet_sha_256_ctx_8_add_32(ctx, jet_input_sequences_hash());
+let ctx = jet_sha_256_ctx_8_add_4(ctx, jet_num_outputs());
+let ctx = jet_sha_256_ctx_8_add_32(ctx, jet_outputs_hash());
+let ctx = jet_sha_256_ctx_8_add_4(ctx, jet_current_index());
+let ctv_hash: u256 = jet_sha_256_ctx_8_finalize(ctx);
+
+let expected_hash: u256 = 0x126a5c6e2d95fdf8fa0ac2927803de62fbca645527f514e523ac1d3d39afcc68;
+jet_verify(jet_eq_256(ctv_hash, expected_hash));"#,
+    ),
+    (
+        "SIGHASH_NONE ❌",
+        r#"Verify a Schnorr signature based on SIGHASH_NONE of the spending transaction
+❌ This program currently fails because the signature is incorrect."#,
+        r#"let ctx = jet_sha_256_ctx_8_init();
+// Blockchain
+let ctx = jet_sha_256_ctx_8_add_32(ctx, jet_genesis_block_hash());
+let ctx = jet_sha_256_ctx_8_add_32(ctx, jet_genesis_block_hash());
+// Transaction
+let ctx = jet_sha_256_ctx_8_add_4(ctx, jet_version());
+let ctx = jet_sha_256_ctx_8_add_4(ctx, jet_lock_time());
+let ctx = jet_sha_256_ctx_8_add_32(ctx, jet_tap_env_hash());
+// All inputs
+let ctx = jet_sha_256_ctx_8_add_32(ctx, jet_inputs_hash());
+let ctx = jet_sha_256_ctx_8_add_32(ctx, jet_input_utxos_hash());
+// No outputs
+// Current index
+let ctx = jet_sha_256_ctx_8_add_4(ctx, jet_current_index());
+// Message
+let msg = jet_sha_256_ctx_8_finalize(ctx);
+
+let pk: u256 = 0xf57f15937068d3054a4f437ac95cba65bae3c1b0529a84caa29d40200bf49c85;
+let sig: (u256, u256) = 0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000;
+jet_bip_0340_verify(pk, msg, sig);"#,
+    ),
 ];
 
-pub(crate) const NAME_TO_DESCRIPTION: [(&str, &str); 13] = [
-    (UNIT_NAME, UNIT_DESCRIPTION),
-    (IDEN_NAME, IDEN_DESCRIPTION),
-    (NOT_NAME, NOT_DESCRIPTION),
-    (WORD_NAME, WORD_DESCRIPTION),
-    (DISCONNECT_NAME, DISCONNECT_DESCRIPTION),
-    (ASSERTL_NAME, ASSERTL_DESCRIPTION),
-    (ASSERTR_NAME, ASSERTR_DESCRIPTION),
-    (ASSERTL_FAILURE_NAME, ASSERTL_FAILURE_DESCRIPTION),
-    (JET_NAME, JET_DESCRIPTION),
-    (BYTE_EQUALITY_NAME, BYTE_EQUALITY_DESCRIPTION),
-    (SCHNORR_NAME, SCHNORR_DESCRIPTION),
-    (BIT_FLIP_NAME, BIT_FLIP_DESCRIPTION),
-    (SHA_NAME, SHA_DESCRIPTION),
-];
-
+/// Iterate over the example names.
 pub fn get_names() -> impl ExactSizeIterator<Item = &'static str> {
-    NAME_TO_PROGRAM.iter().map(|(name, _)| *name)
+    EXAMPLES.iter().map(|entry| entry.0)
 }
 
-pub fn get_program(name: &str) -> Option<&'static str> {
-    NAME_TO_PROGRAM
-        .iter()
-        .find(|(program_name, _)| &name == program_name)
-        .map(|(_, human)| *human)
-}
-
+/// Take an example name and return the example description.
 pub fn get_description(name: &str) -> Option<&'static str> {
-    NAME_TO_DESCRIPTION
+    EXAMPLES
         .iter()
-        .find(|(program_name, _)| &name == program_name)
-        .map(|(_, description)| *description)
+        .find(|entry| entry.0 == name)
+        .map(|entry| entry.1)
 }
 
-pub const UNIT_NAME: &str = "NOP (version 1)";
-pub const UNIT: &str = r#"main := unit : 1 -> 1"#;
-pub const UNIT_DESCRIPTION: &str = r#"Immediately succeeds and unlock the coins."#;
-
-pub const IDEN_NAME: &str = "NOP (version 2)";
-pub const IDEN: &str = r#"main := iden : 1 -> 1"#;
-pub const IDEN_DESCRIPTION: &str = r#"Immediately succeed and unlock the coins."#;
-
-pub const NOT_NAME: &str = "Bit negation";
-pub const NOT: &str = r#"not := comp (pair iden unit) (case (injr unit) (injl unit)) : 2 -> 2
-input := injl unit : 1 -> 2
-output := unit : 2 -> 1
-main := comp input (comp not output) : 1 -> 1"#;
-pub const NOT_DESCRIPTION: &str = "Negate the input bit and then succeed.";
-
-pub const WORD_NAME: &str = "Constant";
-pub const WORD: &str = r#"input := const 0xff : 1 -> 2^8
-output := unit : 2^8 -> 1
-main := comp input output: 1 -> 1"#;
-pub const WORD_DESCRIPTION: &str = "Write a byte and then succeed.";
-
-pub const DISCONNECT_NAME: &str = "Delegation";
-pub const DISCONNECT: &str = r#"id1 := iden : 2^256 * 1 -> 2^256 * 1
-main := comp (disconnect id1 ?hole) unit : 1 -> 1
-hole := unit : 1 * 1 -> 1"#;
-pub const DISCONNECT_DESCRIPTION: &str = "Do some delegation that has no effect and then succeed.";
-
-pub const ASSERTL_NAME: &str = "Left assertion";
-pub const ASSERTL: &str = r#"input := pair (const 0b0) unit : 1 -> 2 * 1
-output := assertl unit #{unit} : 2 * 1 -> 1
-main := comp input output : 1 -> 1"#;
-pub const ASSERTL_DESCRIPTION: &str = "Verify that the input bit is false.";
-
-pub const ASSERTR_NAME: &str = "Right assertion";
-pub const ASSERTR: &str = r#"input := pair (const 0b1) unit : 1 -> 2 * 1
-output := assertr #{unit} unit : 2 * 1 -> 1
-main := comp input output : 1 -> 1"#;
-pub const ASSERTR_DESCRIPTION: &str = "Verify that the input bit is true.";
-
-pub const ASSERTL_FAILURE_NAME: &str = "Left assertion (failure)";
-pub const ASSERTL_FAILURE: &str = r#"input := pair (const 0b1) unit : 1 -> 2 * 1
-output := assertl unit #{unit} : 2 * 1 -> 1
-main := comp input output : 1 -> 1"#;
-pub const ASSERTL_FAILURE_DESCRIPTION: &str = "Verify that the input bit is false (it isn't).";
-
-pub const JET_NAME: &str = "Jet";
-pub const JET: &str = r#"main := comp jet_one_8 unit : 1 -> 1"#;
-pub const JET_DESCRIPTION: &str = "Call a jet and then succeed.";
-
-pub const BYTE_EQUALITY_NAME: &str = "Byte equality";
-pub const BYTE_EQUALITY: &str = r#"a := const 0x00
-b := const 0x00
-main := comp (comp (pair a b) jet_eq_8) jet_verify"#;
-pub const BYTE_EQUALITY_DESCRIPTION: &str = r#"Verify thay a and b are equal."#;
-
-pub const SCHNORR_NAME: &str = "Schnorr signature";
-pub const SCHNORR: &str = r#"sig := const 0xe907831f80848d1069a5371b402410364bdf1c5f8307b0084c55f1ce2dca821525f66a4a85ea8b71e482a74f382d2ce5ebeee8fdb2172f477df4900d310536c0 : 1 -> 2^512
-pk := const 0xf9308a019258c31049344f85f89d5229b531c845836f99b08601f113bce036f9 : 1 -> 2^256
-msg := const 0x0000000000000000000000000000000000000000000000000000000000000000 : 1 -> 2^256
-in := pair (pair pk msg) sig : 1 -> 2^512 * 2^512
-out := jet_bip_0340_verify : 2^512 * 2^512 -> 1
-main := comp in out"#;
-pub const SCHNORR_DESCRIPTION: &str =
-    r#"Verify that the Schnorr signature matches the public key and message."#;
-
-pub const BIT_FLIP_NAME: &str = "Bit flip";
-pub const BIT_FLIP: &str = r#"bit_0 := injl unit : 1 * 1 -> 2
-bit_1 := injr unit : 1 * 1 -> 2
-bit_out := case bit_1 bit_0 : 2 * 1 -> 2
-pad_r := pair iden unit : 2 -> 2 * 1
-bitflip := comp pad_r bit_out : 2 -> 2
-zerovfy := comp bitflip jet_verify : 2 -> 1
-input := const 0b0 : 1 -> 2
-main := comp input zerovfy : 1 -> 1"#;
-pub const BIT_FLIP_DESCRIPTION: &str = r#"Verify that the input bit is zero.
-
-Flips the input bit and uses the verify jet to assert "1".
-
-See https://blog.blockstream.com/simplicity-sharing-of-witness-and-disconnect/"#;
-
-pub const SHA_NAME: &str = "SHA-256";
-pub const SHA: &str = r#"sha256_init : 2^256 -> _
-sha256_init := comp unit jet_sha_256_ctx_8_init
-
-sha256 : 2^256 -> 2^256
-sha256 := comp
-    comp
-        pair sha256_init iden
-        jet_sha_256_ctx_8_add_32
-    jet_sha_256_ctx_8_finalize
-
-preimage := const 0x0000000000000000000000000000000000000000000000000000000000000000
-image := const 0x66687aadf862bd776c8fc18b8e9f8e20089714856ee233b3902a591d0d5f2925
-
-main := comp
-    comp
-        pair (comp preimage sha256) image
-        jet_eq_256
-    jet_verify"#;
-pub const SHA_DESCRIPTION: &str = r#"Verify that the preimages hashes to the image.
-
-See https://blog.blockstream.com/simplicity-sharing-of-witness-and-disconnect/"#;
+/// Take an example name and return the example program string.
+pub fn get_program_str(name: &str) -> Option<&'static str> {
+    EXAMPLES
+        .iter()
+        .find(|entry| entry.0 == name)
+        .map(|entry| entry.2)
+}
 
 #[cfg(test)]
 mod tests {

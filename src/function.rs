@@ -309,12 +309,13 @@ mod tests {
     #[test]
     #[wasm_bindgen_test::wasm_bindgen_test]
     fn test() {
-        for (name, human) in examples::NAME_TO_PROGRAM {
-            let program = util::program_from_string(human).unwrap();
+        for name in examples::get_names() {
+            let program_str = examples::get_program_str(name).unwrap();
+            let program = util::program_from_string(program_str).unwrap();
             let mut runner = Runner::for_program(program);
             let ret = runner.run();
 
-            if name.contains("failure") {
+            if name.contains('❌') {
                 assert!(ret.is_err());
             } else {
                 assert!(ret.is_ok());
@@ -324,7 +325,8 @@ mod tests {
 
     #[test]
     fn trace_program() {
-        let program = util::program_from_string(examples::NOT).unwrap();
+        let program_str = examples::get_program_str("BIP 340 Schnorr").unwrap();
+        let program = util::program_from_string(program_str).unwrap();
         let mut runner = Runner::for_program(program);
         loop {
             match runner.step().unwrap() {
