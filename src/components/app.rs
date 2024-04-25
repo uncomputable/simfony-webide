@@ -38,9 +38,18 @@ pub fn App() -> impl IntoView {
     };
 
     view! {
-        <h1>Simplicity Web IDE</h1>
-        <p>Write and execute Simplicity programs in the browser!</p>
-        <p>"The IDE uses the "<a href="https://github.com/BlockstreamResearch/rust-simplicity/blob/master/src/human_encoding/README.md">human encoding</a>" to serialize Simplicity."</p>
+        <h1>Simfony Web IDE</h1>
+        <p>
+            <a href="https://github.com/BlockstreamResearch/simfony">Simfony</a>
+            " is a high-level language for writing Bitcoin smart contracts."
+        </p>
+        <p>
+            "Simfony looks and feels like "
+            <a href="https://www.rust-lang.org">Rust</a>
+            ". Just how Rust compiles down to assembly language, Simfony compiles down to "
+            <a href="https://github.com/BlockstreamResearch/simplicity">Simplicity</a>
+            " bytecode. Developers write Simfony, full nodes execute Simplicity."
+        </p>
         <div>
             <p>
                 {human_error}
