@@ -4,7 +4,7 @@ use crate::examples;
 
 #[component]
 pub fn SelectExampleProgram<F>(
-    update_human: F,
+    update_program_str: F,
     set_name: WriteSignal<Option<String>>,
 ) -> impl IntoView
 where
@@ -12,7 +12,7 @@ where
 {
     let select_example_program = move |name: String| {
         if let Some(new_human) = examples::get_program(&name) {
-            update_human(new_human.to_string());
+            update_program_str(new_human.to_string());
             set_name.set(Some(name));
         }
     };

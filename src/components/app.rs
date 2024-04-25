@@ -9,16 +9,16 @@ use crate::util;
 
 #[component]
 pub fn App() -> impl IntoView {
-    let (human, set_human) = create_signal("".to_string());
-    let (program_success, set_program_success) = create_signal("".to_string());
+    let (program_str, set_program_str) = create_signal("".to_string());
+    let (run_success, set_run_success) = create_signal("".to_string());
     let (name, set_name) = create_signal::<Option<String>>(None);
 
-    let program = Signal::derive(move || util::program_from_string(&human.get()));
-    let human_error = move || program.get().err();
+    let program = Signal::derive(move || util::program_from_string(&program_str.get()));
+    let parse_error = move || program.get().err();
 
-    let update_human = move |new_human: String| {
-        set_human.set(new_human);
-        set_program_success.set("".to_string());
+    let update_program_str = move |s: String| {
+        set_program_str.set(s);
+        set_run_success.set("".to_string());
         set_name.set(None);
     };
     let run_program = move || {
@@ -29,10 +29,10 @@ pub fn App() -> impl IntoView {
         let mut runner = Runner::for_program(program);
         match runner.run() {
             Ok(_) => {
-                set_program_success.set("✅ Program success".to_string());
+                set_run_success.set("✅ Program success".to_string());
             }
             Err(error) => {
-                set_program_success.set(format!("❌ {error}"));
+                set_run_success.set(format!("❌ {error}"));
             }
         }
     };
@@ -52,16 +52,16 @@ pub fn App() -> impl IntoView {
         </p>
         <div>
             <pre>
-                {human_error}
+                {parse_error}
             </pre>
             <p>
-                {program_success}
+                {run_success}
             </p>
-            <SelectExampleProgram update_human=update_human set_name=set_name/>
+            <SelectExampleProgram update_program_str=update_program_str set_name=set_name/>
         </div>
         <textarea
-            prop:value=move || human.get()
-            on:input=move |event| update_human(event_target_value(&event))
+            prop:value=move || program_str.get()
+            on:input=move |event| update_program_str(event_target_value(&event))
             placeholder="Enter your program here"
             rows="10" cols="80"
         />
