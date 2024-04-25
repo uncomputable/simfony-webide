@@ -56,9 +56,9 @@ pub fn App() -> impl IntoView {
                 <img class="header-icon" src="/images/simplicity_logo.svg" />
             </div>
 
-            <div class="container center">
-                <h1>Simfony Plaground:<br /> Simplicity Frontend</h1>
-                <p class="text-grey">Write and execute Simplicity programs in the browser!<br />
+            <div class="container center intro">
+                <h1 class="intro-title">Simfony Plaground:<br /> Simplicity Frontend</h1>
+                <p class="intro-text text-grey">Write and execute Simplicity programs in the browser!<br />
                 "The IDE uses the "<a href="https://github.com/BlockstreamResearch/rust-simplicity/blob/master/src/human_encoding/README.md" target="blank">human encoding</a>" to serialize Simplicity."</p>
             </div>
 
