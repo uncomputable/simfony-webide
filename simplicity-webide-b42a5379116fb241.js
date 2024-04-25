@@ -495,12 +495,12 @@ imports.wbg.__wbindgen_debug_string = function(arg0, arg1) {
 imports.wbg.__wbindgen_throw = function(arg0, arg1) {
     throw new Error(getStringFromWasm0(arg0, arg1));
 };
-imports.wbg.__wbindgen_closure_wrapper800 = function(arg0, arg1, arg2) {
-    const ret = makeMutClosure(arg0, arg1, 203, __wbg_adapter_18);
+imports.wbg.__wbindgen_closure_wrapper811 = function(arg0, arg1, arg2) {
+    const ret = makeMutClosure(arg0, arg1, 185, __wbg_adapter_18);
     return addHeapObject(ret);
 };
-imports.wbg.__wbindgen_closure_wrapper7065 = function(arg0, arg1, arg2) {
-    const ret = makeMutClosure(arg0, arg1, 2233, __wbg_adapter_21);
+imports.wbg.__wbindgen_closure_wrapper7932 = function(arg0, arg1, arg2) {
+    const ret = makeMutClosure(arg0, arg1, 2581, __wbg_adapter_21);
     return addHeapObject(ret);
 };
 
@@ -541,7 +541,7 @@ async function __wbg_init(input) {
     if (wasm !== undefined) return wasm;
 
     if (typeof input === 'undefined') {
-        input = new URL('simplicity-webide-6d6ee639daaa644e_bg.wasm', import.meta.url);
+        input = new URL('simplicity-webide-b42a5379116fb241_bg.wasm', import.meta.url);
     }
     const imports = __wbg_get_imports();
 
