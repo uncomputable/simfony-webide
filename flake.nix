@@ -41,10 +41,12 @@
       inputs-min = [
         rust-min
         pkgs.trunk
+        pkgs.dart-sass
       ];
       inputs-dev = [
         rust-dev
         pkgs.trunk
+        pkgs.dart-sass
         pkgs.gdb
         pkgs.llvm
         pkgs.just
