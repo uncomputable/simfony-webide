@@ -1,13 +1,12 @@
 use std::sync::Arc;
 
+use crate::value::ExtValue;
 use simplicity::ffi::c_jets::frame_ffi::{c_readBit, c_writeBit};
 use simplicity::ffi::c_jets::uword_width;
 use simplicity::ffi::ffi::UWORD;
 use simplicity::ffi::CFrameItem;
-use simplicity::jet::{Core, Jet};
+use simplicity::jet::Jet;
 use simplicity::types::Final;
-
-use crate::value::ExtValue;
 
 pub struct JetFailed;
 
@@ -70,10 +69,12 @@ fn value_from_frame(ty: Arc<Final>, buffer: &mut [UWORD]) -> Arc<ExtValue> {
         .expect("Jets return values that fit their output type")
 }
 
-/// Execute a jet on the given input and return the output.
-///
-/// Only Core jets are supported.
-pub fn execute_jet_no_env(input: Arc<ExtValue>, jet: &Core) -> Result<Arc<ExtValue>, JetFailed> {
+/// Execute a jet on an input and inside an environment. Return the output.
+pub fn execute_jet_with_env<J: Jet>(
+    jet: &J,
+    input: Arc<ExtValue>,
+    env: &J::Environment,
+) -> Result<Arc<ExtValue>, JetFailed> {
     let input_type = jet.source_ty().to_final();
     let output_type = jet.target_ty().to_final();
 
@@ -82,7 +83,8 @@ pub fn execute_jet_no_env(input: Arc<ExtValue>, jet: &Core) -> Result<Arc<ExtVal
         unsafe { get_output_frame(output_type.bit_width()) };
 
     let jet_fn = jet.c_jet_ptr();
-    let success = jet_fn(&mut output_write_frame, input_read_frame, &());
+    let c_env = jet.c_jet_env(env);
+    let success = jet_fn(&mut output_write_frame, input_read_frame, c_env);
 
     if !success {
         Err(JetFailed)

@@ -3,14 +3,14 @@ use std::fmt;
 use std::sync::Arc;
 
 use simplicity::dag::{Dag, DagLike, NoSharing};
-use simplicity::jet::Core;
+use simplicity::jet::Elements;
 use simplicity::node::Inner;
 use simplicity::types::Final;
 use simplicity::{node, RedeemNode};
 
 use crate::value::ExtValue;
 
-pub type Expression = RedeemNode<Core>;
+pub type Expression = RedeemNode<Elements>;
 
 pub fn program_from_string(s: &str) -> Result<Arc<Expression>, String> {
     let empty_witness = HashMap::new();

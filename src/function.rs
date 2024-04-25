@@ -283,14 +283,16 @@ impl Runner {
             Inner::Fail(_) => {
                 return Err(Error::new(ErrorKind::FailNode, state));
             }
-            Inner::Jet(jet) => match jet::execute_jet_no_env(state.input.clone(), jet) {
-                Ok(output) => {
-                    self.output.push(output);
+            Inner::Jet(jet) => {
+                match jet::execute_jet_with_env(jet, state.input.clone(), &crate::env::dummy()) {
+                    Ok(output) => {
+                        self.output.push(output);
+                    }
+                    Err(JetFailed) => {
+                        return Err(Error::new(ErrorKind::JetFailed, state));
+                    }
                 }
-                Err(JetFailed) => {
-                    return Err(Error::new(ErrorKind::JetFailed, state));
-                }
-            },
+            }
             Inner::Word(value) => self.output.push(Arc::new(ExtValue::from(value.as_ref()))),
         };
 
