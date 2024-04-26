@@ -29,8 +29,8 @@ p {
 }
 
 .container{
-    width: 800px;
-    max-width: 100%;
+    max-width: 1160px;
+    width: 100%;
     margin: 0px auto 50px auto;
 }
 
@@ -41,7 +41,7 @@ p {
         margin-top: -30px;
         margin-bottom: -30px;
 
-        @media only screen and (max-width: 600px) {
+        @media only screen and (max-width: 800px) {
             margin-left: -20px;
             width: 240px;
         }
@@ -51,17 +51,30 @@ p {
 .intro{
     .intro-title {
         font-size: 32px;
+        font-size: 48px;
+        font-style: normal;
+        font-weight: 700;
+        line-height: 60px;
+        color: #FFF;
+        text-align: center;
     }
     .intro-text {
-        font-size: 16px;
+        color: #B5BDC2;
+        text-align: center;
+        font-size: 18px;
+        font-style: normal;
+        font-weight: 400;
+        line-height: 27px;
     }
 
-    @media only screen and (max-width: 600px) {
+    @media only screen and (max-width: 800px) {
         .intro-title {
-            font-size: 24px;
+            padding: 0 20px;
+            text-align: center;
         }
         .intro-text {
-            font-size: 12px;
+            padding: 0 20px;
+            text-align: center;
         }
     }
 }
@@ -72,4 +85,8 @@ p {
     background-color: #770000;
     font-weight: 200;
     margin-bottom: 10px;
+
+    overflow-x: auto;
+    scrollbar-color: #770000 #aa6600;
+    scrollbar-width: thin;
 }

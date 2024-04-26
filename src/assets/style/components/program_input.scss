@@ -1,7 +1,7 @@
 
 .program-input{
     background-color: $background-light;
-    padding: 10px;
+    padding: 30px;
 
     &-header{
         margin-bottom: 10px;
@@ -13,14 +13,23 @@
 
         h2 {
             margin: 6px 0;
+            font-size: 28px;
+            font-style: normal;
+            font-weight: 700;
+            line-height: 24px;
+            margin-bottom: 14px;
         }
 
         p{
             color: $text-grey;
+            font-size: 18px;
+            font-style: normal;
+            font-weight: 400;
+            line-height: normal;
         }
     }
 
-    @media only screen and (max-width: 600px) {
+    @media only screen and (max-width: 800px) {
         &-header{
             display: flex;
             flex-direction: column;
@@ -38,23 +47,31 @@
     }
 
     &-footer {
-        min-height: 50px;
-        padding: 10px 5px 0px 5px;
+        min-height: 80px;
+        padding-top: 30px;
         position: relative;
 
         .program-details {
-            margin-right: 200px;
+            margin-right: 300px;
 
             .program-title {
-                margin: 0 0 5px 0;
+                margin: 0 0 7px 0;
+                font-size: 20px;
+                font-style: normal;
+                font-weight: 700;
+                line-height: normal;
             }
 
             .program-description {
                 color: $text-grey;
+                font-size: 16px;
+                font-style: normal;
+                font-weight: 400;
+                line-height: normal;
             }
         }
 
-        @media only screen and (max-width: 600px) {
+        @media only screen and (max-width: 800px) {
             display: flex;
             flex-direction: column;
 
@@ -76,11 +93,24 @@
         max-width: 100%;
 
         button {
-            color: white;
-            background-color: #363cff;
-            width: 200px;
-            padding: 15px;
+            display: flex;
+            width: 256px;
+            min-height: 47px;
+            padding: 16px 32px;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            color: #fff;
+            background: #5134E0;
             border: none;
+            font-family: 'rigid-square';
+            font-size: 16px;
+            font-style: normal;
+            font-weight: 700;
+            line-height: 24px;
+            &:hover {
+                cursor: pointer;
+            }
         }
     }
 
@@ -122,14 +152,19 @@
     &-field{
         width: 100%;
         background-color: $background-dark;
-        border: none;
+        border-radius: 7.5px;
+        border: 1px solid rgba(255, 255, 255, 0.10);
         color: #88ddff;
         font-family: 'Roboto Mono';
         font-size: 12px;
         resize: none;
-
+        padding: 12px;
         &:focus-visible {
             outline: none;
         }
+
+        // overflow-x: auto;
+        scrollbar-color: $background-dark #424242;
+        scrollbar-width: thin;
     }
 }
