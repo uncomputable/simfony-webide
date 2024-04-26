@@ -1,14 +1,14 @@
-# Simplicity Web IDE
+# Simfony Web IDE
 
-[Simplicity](https://github.com/BlockstreamResearch/simplicity) development in the browser!
+[Simfony](https://github.com/BlockstreamResearch/simfony) is a high-level language for writing Bitcoin smart contracts.
 
-Write and execute Simplicity programs.
+Simfony looks and feels like [Rust](https://www.rust-lang.org). Just how Rust compiles down to assembly language, Simfony compiles down to Simplicity bytecode. Developers write Simfony, full nodes execute Simplicity.
 
-Take a look at the example programs.
-
-[A live demo is running on GitHub pages](https://uncomputable.github.io/simplicity-webide/).
+[A live demo is running on GitHub pages](https://ide.simp-lang.com).
 
 ## Develop the project
+
+### Install dependencies
 
 First install nix.
 
