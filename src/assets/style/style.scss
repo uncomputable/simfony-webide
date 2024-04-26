@@ -1,0 +1,75 @@
+@import 'helpers.scss';
+@import 'components/analysis.scss';
+@import 'components/program_input.scss';
+@import 'components/merkle.scss';
+@import 'components/merkle_graph.scss';
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    background-color: $background-dark;
+    color: $text-white;
+    font-family: 'inter', sans-serif;
+    padding-bottom: 400px;
+}
+
+h1, h2, h3, h4, h5, h6{
+    font-family: 'rigid-square';
+}
+
+a {
+    color: #7973F4;
+}
+
+p {
+    margin: 0;
+    line-height: 1.5;
+}
+
+.container{
+    width: 800px;
+    max-width: 100%;
+    margin: 0px auto 50px auto;
+}
+
+.page-header {
+    .header-icon {
+        width: 300px;
+        max-width: 100%;
+        margin-top: -30px;
+        margin-bottom: -30px;
+
+        @media only screen and (max-width: 600px) {
+            margin-left: -20px;
+            width: 240px;
+        }
+    }
+}
+
+.intro{
+    .intro-title {
+        font-size: 32px;
+    }
+    .intro-text {
+        font-size: 16px;
+    }
+
+    @media only screen and (max-width: 600px) {
+        .intro-title {
+            font-size: 24px;
+        }
+        .intro-text {
+            font-size: 12px;
+        }
+    }
+}
+
+.parsing-error-box {
+    color: white;
+    padding: 10px;
+    background-color: #770000;
+    font-weight: 200;
+    margin-bottom: 10px;
+}

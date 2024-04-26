@@ -1,0 +1,18 @@
+
+#merkle_graph_holder{
+    svg {
+        background-color: $background-light;
+    }
+    text {
+        stroke: white;
+    }
+    path{
+        fill: none;
+        stroke: #4090ff;
+    }
+    rect {
+        fill: $background-dark;
+        stroke: #4f4f4f;
+        stroke-width: 1;
+    }
+}
