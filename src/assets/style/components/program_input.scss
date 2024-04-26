@@ -1,7 +1,7 @@
 
 .program-input{
     background-color: $background-light;
-    padding: 10px;
+    padding: 30px;
 
     &-header{
         margin-bottom: 10px;
@@ -13,10 +13,19 @@
 
         h2 {
             margin: 6px 0;
+            font-size: 28px;
+            font-style: normal;
+            font-weight: 700;
+            line-height: 24px;
+            margin-bottom: 14px;
         }
 
         p{
             color: $text-grey;
+            font-size: 18px;
+            font-style: normal;
+            font-weight: 400;
+            line-height: normal;
         }
     }
 
@@ -39,7 +48,7 @@
 
     &-footer {
         min-height: 50px;
-        padding: 10px 5px 0px 5px;
+        padding-top: 30px;
         position: relative;
 
         .program-details {
@@ -76,11 +85,24 @@
         max-width: 100%;
 
         button {
-            color: white;
-            background-color: #363cff;
-            width: 200px;
-            padding: 15px;
+            display: flex;
+            width: 256px;
+            min-height: 47px;
+            padding: 16px 32px;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            color: #fff;
+            background: #5134E0;
             border: none;
+            font-family: 'rigid-square';
+            font-size: 16px;
+            font-style: normal;
+            font-weight: 700;
+            line-height: 24px;
+            &:hover {
+                cursor: pointer;
+            }
         }
     }
 

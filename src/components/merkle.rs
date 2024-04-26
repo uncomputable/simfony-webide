@@ -47,7 +47,7 @@ pub fn MerkleGraph(program: Signal<Result<Arc<Expression>, String>>) -> impl Int
     view! {
         {
             move || program.get().ok().map(|_| view! {
-                <div class="">
+                <div class="merkle_graph">
                     <h2>Merkle Graph</h2>
 
                     <div id="merkle_graph_holder">
