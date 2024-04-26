@@ -74,7 +74,7 @@ pub fn App() -> impl IntoView {
                     <div class="program-input-header">
                         <div class="program-input-intro">
                             <h2>Program</h2>
-                            <p>Select a program, upload a json, or enter your own program below.</p>
+                            <p>Select an example program or enter your own program below.</p>
                         </div>
                         <SelectExampleProgram update_program_str=update_program_str set_name=set_name/>
                     </div>
