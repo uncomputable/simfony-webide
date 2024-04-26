@@ -35,7 +35,7 @@ fn AnalysisInner(expression: Arc<Expression>, run_result: Result<String, String>
     let weight = milli_weight.saturating_add(999) / 1000;
     let virtual_size = weight.div_ceil(4);
     let size = weight; // Simplicity programs are Taproot witness data
-    let max_milliseconds = f64::from(weight) * MILLISECONDS_PER_WU;
+    let max_milliseconds = format!("{:.3}", f64::from(weight) * MILLISECONDS_PER_WU);
     let max_bytes = bounds.extra_cells.div_ceil(8);
 
     view! {
