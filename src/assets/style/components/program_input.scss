@@ -29,7 +29,7 @@
         }
     }
 
-    @media only screen and (max-width: 600px) {
+    @media only screen and (max-width: 800px) {
         &-header{
             display: flex;
             flex-direction: column;
@@ -47,12 +47,12 @@
     }
 
     &-footer {
-        min-height: 50px;
+        min-height: 80px;
         padding-top: 30px;
         position: relative;
 
         .program-details {
-            margin-right: 200px;
+            margin-right: 300px;
 
             .program-title {
                 margin: 0 0 7px 0;
@@ -71,7 +71,7 @@
             }
         }
 
-        @media only screen and (max-width: 600px) {
+        @media only screen and (max-width: 800px) {
             display: flex;
             flex-direction: column;
 
@@ -162,5 +162,9 @@
         &:focus-visible {
             outline: none;
         }
+
+        // overflow-x: auto;
+        scrollbar-color: $background-dark #424242;
+        scrollbar-width: thin;
     }
 }

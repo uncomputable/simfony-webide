@@ -42,7 +42,9 @@ fn AnalysisInner(expression: Arc<Expression>, run_result: Result<String, String>
         <div class="analysis">
             <div class="flex analysis-header">
                 <h2 class="analysis-title">Program Analysis</h2>
-                <RunResult run_result=run_result/>
+                <RunResult run_result=run_result.clone()/>
+
+
             </div>
             <div class="analysis-body">
                 <div class="analysis-item">
@@ -66,6 +68,9 @@ fn AnalysisInner(expression: Arc<Expression>, run_result: Result<String, String>
                     <div class="analysis-item-data">{max_milliseconds}ms</div>
                 </div>
             </div>
+
+            <RunResultMessage run_result=run_result/>
+
         </div>
     }
 }
@@ -73,15 +78,29 @@ fn AnalysisInner(expression: Arc<Expression>, run_result: Result<String, String>
 #[component]
 fn RunResult(run_result: Result<String, String>) -> impl IntoView {
     match run_result {
-        Ok(success) => view! {
-            <div class="program-status" class:is_error=false >
+        Ok(_) => view! {
+            <div class="program-status">
                 <i class="fal fa-check-circle"></i>
-                {success}
+                Program success
             </div>
         },
-        Err(error) => view! {
-            <div class="program-status" class:is_error=true >
+        Err(_) => view! {
+            <div class="program-status is_error">
                 <i class="fal fa-times-circle"></i>
+                Program failure
+            </div>
+        },
+    }
+}
+
+#[component]
+fn RunResultMessage(run_result: Result<String, String>) -> impl IntoView {
+    match run_result {
+        Ok(_) => view! {
+            <div></div>
+        },
+        Err(error) => view! {
+            <div class="program-status-error-message">
                 {error}
             </div>
         },

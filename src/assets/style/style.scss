@@ -41,7 +41,7 @@ p {
         margin-top: -30px;
         margin-bottom: -30px;
 
-        @media only screen and (max-width: 600px) {
+        @media only screen and (max-width: 800px) {
             margin-left: -20px;
             width: 240px;
         }
@@ -67,7 +67,7 @@ p {
         line-height: 27px;
     }
 
-    @media only screen and (max-width: 600px) {
+    @media only screen and (max-width: 800px) {
         .intro-title {
             padding: 0 20px;
             text-align: center;
@@ -85,4 +85,8 @@ p {
     background-color: #770000;
     font-weight: 200;
     margin-bottom: 10px;
+
+    overflow-x: auto;
+    scrollbar-color: #770000 #aa6600;
+    scrollbar-width: thin;
 }

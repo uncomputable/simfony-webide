@@ -13,7 +13,7 @@
             line-height: 24px;
         }
 
-        @media only screen and (max-width: 600px) {
+        @media only screen and (max-width: 800px) {
             flex-direction: column;
         }
 
@@ -42,7 +42,7 @@
         display: flex;
         flex-wrap: wrap;
         
-        @media only screen and (max-width: 600px) {
+        @media only screen and (max-width: 800px) {
             flex-direction: column;
         }
 
@@ -71,5 +71,15 @@
                 line-height: normal;
             }
         }
+
+       
+    }
+
+    .program-status-error-message{
+        border: 1px dotted #ff0000;
+        color: #ff0000;
+        word-break: break-word;
+        margin-top: 10px;
+        padding: 10px;
     }
 }
