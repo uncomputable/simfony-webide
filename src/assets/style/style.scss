@@ -69,10 +69,12 @@ p {
 
     @media only screen and (max-width: 600px) {
         .intro-title {
-            font-size: 24px;
+            padding: 0 20px;
+            text-align: center;
         }
         .intro-text {
-            font-size: 12px;
+            padding: 0 20px;
+            text-align: center;
         }
     }
 }

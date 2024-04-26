@@ -7,6 +7,10 @@
     .analysis-header {
         .analysis-title {
             margin: 6px 0 14px 0;
+            font-size: 28px;
+            font-style: normal;
+            font-weight: 700;
+            line-height: 24px;
         }
 
         @media only screen and (max-width: 600px) {
@@ -47,15 +51,24 @@
             justify-content: space-between;
             flex: 0 0 50%;
             
-            border: 1px solid #3d3d3d;
+            border: 1px solid rgba(255, 255, 255, 0.10);
             padding: 20px;
             background-color: $background-dark;
 
             .analysis-item-label {
+                font-family: 'rigid-square';
                 color: $text-white;
+                font-size: 20px;
+                font-style: normal;
+                font-weight: 700;
+                line-height: normal;
             }
             .analysis-item-data {
                 color: $text-grey;
+                font-size: 16px;
+                font-style: normal;
+                font-weight: 400;
+                line-height: normal;
             }
         }
     }
