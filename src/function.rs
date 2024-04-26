@@ -38,8 +38,8 @@ impl fmt::Display for ErrorKind {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             ErrorKind::AssertionFailed => f.write_str("Assertion failed"),
-            ErrorKind::FailNode => f.write_str("A fail node was reached"),
-            ErrorKind::JetFailed => f.write_str("Jet failed during execution"),
+            ErrorKind::FailNode => f.write_str("Universal fail"),
+            ErrorKind::JetFailed => f.write_str("Jet failed"),
             ErrorKind::ExpectedProduct => f.write_str("Expected a product value as input"),
             ErrorKind::ExpectedSumInFirstComponent => {
                 f.write_str("Expected a sum value in the first component of the input")
@@ -56,7 +56,7 @@ pub struct Error {
 
 impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "Evaluation failed: {}\n{}", self.kind, self.state)
+        write!(f, "{} {}", self.kind, self.state)
     }
 }
 
