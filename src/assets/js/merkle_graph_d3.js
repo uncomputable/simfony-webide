@@ -1,42 +1,11 @@
 
-export function load_merkle_graph_js(passed_fake_data){
-
-    console.log(passed_fake_data)
-
-    let fake_data = {
-        hash: 'hash 1-1',
-        hash_label: "hash 1-1",
-        children: [
-            {
-                hash: 'hash 1-1',
-                hash_label: "hash 1-1",
-                children: [
-                    {
-                        hash: 'hash 1-1',
-                        hash_label: "hash 1-1",
-                        children: []
-                    },
-                    {
-                        hash: 'hash 1-1',
-                        hash_label: "hash 1-1",
-                        children: []
-                    }
-                ]
-            },
-            {
-                hash: 'hash 1-1',
-                hash_label: "hash 1-1",
-                children: []
-            }
-        ]
-    }
+export function load_merkle_graph_js(tree_data){
 
     let svg_holder = document.getElementById("merkle_graph_holder")
-    let width = svg_holder.clientWidth;
-    svg_holder.style.height = `${width / 2}px`; // make height same as width
-    let height = svg_holder.clientHeight;
 
-    console.log(svg_holder)
+    let width = svg_holder.clientWidth;
+    svg_holder.style.height = `${width}px`;
+    let height = svg_holder.clientHeight;
 
     let margin = {top: 50, right: 0, bottom: 50, left: 0}
     let innerWidth = width - margin.left - margin.right
@@ -45,15 +14,14 @@ export function load_merkle_graph_js(passed_fake_data){
     let svg = d3.select('#merkle_graph_holder svg')
         .attr('width', width)
         .attr('height', height)
-
-    let zoom_g = svg
-        .append('g')
     
-    let svg_g = zoom_g.append('g')
-        .attr('transform', `translate(${margin.left},${margin.top})`)
+    svg.selectAll("*").remove()
+
+    let zoom_g = svg.append('g')
+    let svg_g = zoom_g.append('g').attr('transform', `translate(${margin.left},${margin.top})`)
 
     let tree = d3.tree().size([innerWidth, innerHeight])
-    let root = d3.hierarchy(passed_fake_data)
+    let root = d3.hierarchy(tree_data)
     let links = tree(root).links()
 
     svg.call(d3.zoom().on('zoom', (e) => {

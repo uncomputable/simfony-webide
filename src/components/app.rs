@@ -27,11 +27,11 @@ pub fn App() -> impl IntoView {
             Ok(program) => program,
             Err(_) => return,
         };
-        let mut runner = Runner::for_program(program);
+        let mut runner = Runner::for_program(program.clone());
         match runner.run() {
             Ok(_) => {
                 set_run_result.set(Some(Ok("Program success".to_string())));
-                reload_graph();
+                reload_graph(program);
             }
             Err(error) => {
                 set_run_result.set(Some(Err(error.to_string())));

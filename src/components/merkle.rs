@@ -64,44 +64,40 @@ extern "C" {
     fn load_merkle_graph_js(dat: JsValue);
 }
 
-pub fn reload_graph(){
+pub fn reload_graph(expression: Arc<Expression>){
     
     #[derive(Serialize, Deserialize)]
     #[wasm_bindgen]
-    struct Dat {
+    struct Node {
         text: String,
-        children: Vec<Dat>
+        children: Vec<Node>
     }
 
-    // fake data **********
-    let mut dat = Dat {
-        text: String::from("root node"),
-        children: Vec::new()
-    };
+    fn merkle_data(expression: Arc<Expression>) -> Node{
+        let inner = DisplayInner::from(expression.as_ref()).to_string();
+        let maybe_s = expression.left_child();
+        let maybe_t = expression.right_child();
 
-    dat.children.push(Dat {
-        text: String::from("node 1"),
-        children: Vec::new()
-    });
+        let mut node = Node {
+            text: inner,
+            children: Vec::new()
+        };
 
-    dat.children.push(Dat {
-        text: String::from("node 2"),
-        children: Vec::new()
-    });
+        match maybe_s {
+            Some(x) => node.children.push(merkle_data(x)),
+            None => ()
+        };
 
-    dat.children[0].children.push(Dat {
-        text: String::from("node 3"),
-        children: Vec::new()
-    });
-
-    dat.children[0].children.push(Dat {
-        text: String::from("node 4"),
-        children: Vec::new()
-    });
-    // *********************
-
-    let d = serde_wasm_bindgen::to_value(&dat).unwrap();
-
-    load_merkle_graph_js(d);
+        match maybe_t {
+            Some(x) => node.children.push(merkle_data(x)),
+            None => ()
+        };
+        
+        return node;
+    }
+    
+    let tree = merkle_data(expression);
+    let data = serde_wasm_bindgen::to_value(&tree).unwrap();
+    load_merkle_graph_js(data);
 }
 
