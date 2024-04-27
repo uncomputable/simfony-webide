@@ -1,6 +1,9 @@
 
-export function load_merkle_graph(){
-    let data = {
+export function load_merkle_graph_js(passed_fake_data){
+
+    console.log(passed_fake_data)
+
+    let fake_data = {
         hash: 'hash 1-1',
         hash_label: "hash 1-1",
         children: [
@@ -33,6 +36,8 @@ export function load_merkle_graph(){
     svg_holder.style.height = `${width / 2}px`; // make height same as width
     let height = svg_holder.clientHeight;
 
+    console.log(svg_holder)
+
     let margin = {top: 50, right: 0, bottom: 50, left: 0}
     let innerWidth = width - margin.left - margin.right
     let innerHeight = height - margin.top - margin.bottom
@@ -48,7 +53,7 @@ export function load_merkle_graph(){
         .attr('transform', `translate(${margin.left},${margin.top})`)
 
     let tree = d3.tree().size([innerWidth, innerHeight])
-    let root = d3.hierarchy(data)
+    let root = d3.hierarchy(passed_fake_data)
     let links = tree(root).links()
 
     svg.call(d3.zoom().on('zoom', (e) => {
@@ -83,19 +88,19 @@ export function load_merkle_graph(){
         .join('text')
             .attr('x', d => d.x)
             .attr('y', d => innerHeight - d.y)
-            .text(d => d.data.hash)
+            .text(d => d.data.text)
             .attr('text-anchor', 'middle')
             .attr('dominant-baseline', "middle")
             .attr('dy', '-13px')
 
-    svg_g.selectAll('hash')
-        .data(root.descendants())
-        .join('text')
-            .attr('x', d => d.x)
-            .attr('y', d => innerHeight - d.y)
-            .text(d => d.data.hash_label)
-            .attr('text-anchor', 'middle')
-            .attr('dominant-baseline', "middle")
-            .attr('dy', '+13px')
+    // svg_g.selectAll('hash')
+    //     .data(root.descendants())
+    //     .join('text')
+    //         .attr('x', d => d.x)
+    //         .attr('y', d => innerHeight - d.y)
+    //         .text(d => d.data.hash_label)
+    //         .attr('text-anchor', 'middle')
+    //         .attr('dominant-baseline', "middle")
+    //         .attr('dy', '+13px')
         
 }
