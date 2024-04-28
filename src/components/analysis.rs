@@ -99,10 +99,14 @@ fn RunResultMessage(run_result: Result<String, String>) -> impl IntoView {
         Ok(_) => view! {
             <div></div>
         },
-        Err(error) => view! {
-            <div class="program-status-error-message">
-                {error}
-            </div>
-        },
+        Err(error) => {
+            view! {
+                <div class="program-status-error-message">
+                    <pre>
+                        {error}
+                    </pre>
+                </div>
+            }
+        }
     }
 }
