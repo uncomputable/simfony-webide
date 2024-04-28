@@ -42,7 +42,7 @@ fn AnalysisInner(expression: Arc<Expression>, run_result: Result<String, String>
         <div class="analysis">
             <div class="flex analysis-header">
                 <h2 class="analysis-title">Program Analysis</h2>
-                <RunResult run_result=run_result.clone()/>
+                <RunSuccess run_success=run_result.is_ok()/>
 
 
             </div>
@@ -76,15 +76,15 @@ fn AnalysisInner(expression: Arc<Expression>, run_result: Result<String, String>
 }
 
 #[component]
-fn RunResult(run_result: Result<String, String>) -> impl IntoView {
-    match run_result {
-        Ok(_) => view! {
+fn RunSuccess(run_success: bool) -> impl IntoView {
+    match run_success {
+        true => view! {
             <div class="program-status">
                 <i class="fal fa-check-circle"></i>
                 Program success
             </div>
         },
-        Err(_) => view! {
+        false => view! {
             <div class="program-status is_error">
                 <i class="fal fa-times-circle"></i>
                 Program failure
