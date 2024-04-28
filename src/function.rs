@@ -67,6 +67,46 @@ impl Error {
 }
 
 #[derive(Debug, Clone, Eq, PartialEq)]
+pub struct TraceError {
+    /// Error kind.
+    kind: ErrorKind,
+    /// List of executed states in order of execution.
+    ///
+    /// The currently executed state is included.
+    trace: Vec<State>,
+}
+
+impl fmt::Display for TraceError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        writeln!(f, "{}\n", self.kind)?;
+        writeln!(f, "Caused by:")?;
+        for (index, state) in self.trace.iter().rev().take(5).enumerate() {
+            writeln!(f, " {index:>4}: {state}")?;
+        }
+        if 5 < self.trace.len() {
+            writeln!(f, "    ...")?;
+        }
+
+        Ok(())
+    }
+}
+
+impl TraceError {
+    pub fn new(kind: ErrorKind, trace: Vec<State>) -> TraceError {
+        Self { kind, trace }
+    }
+
+    pub fn from_error(error: Error, trace: &[State]) -> TraceError {
+        let mut owned_trace = Vec::with_capacity(trace.len() + 1);
+        for state in trace.iter() {
+            owned_trace.push(state.clone());
+        }
+        owned_trace.push(error.state);
+        Self::new(error.kind, owned_trace)
+    }
+}
+
+#[derive(Debug, Clone, Eq, PartialEq)]
 enum Task {
     Execute(State),
     ExecuteComp(Arc<Expression>),
@@ -78,7 +118,13 @@ enum Task {
 
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct Runner {
+    /// Stack of tasks to run.
     input: Vec<Task>,
+    /// Stack of outputs produced.
+    trace: Vec<State>,
+    /// List of executed states in order of execution.
+    ///
+    /// The currently executed state is not included.
     output: Vec<Arc<ExtValue>>,
 }
 
@@ -98,16 +144,20 @@ impl Runner {
     fn for_expression(expression: Arc<Expression>, input: Arc<ExtValue>) -> Self {
         let initial_state = State { expression, input };
         Self {
-            input: vec![Task::Execute(initial_state)],
+            input: vec![Task::Execute(initial_state.clone())],
             output: vec![],
+            trace: vec![],
         }
     }
 
-    pub fn run(&mut self) -> Result<Arc<ExtValue>, Error> {
+    pub fn run(&mut self) -> Result<Arc<ExtValue>, TraceError> {
         loop {
-            match self.step()? {
-                Output::Intermediate(..) => {}
-                Output::Final(a) => return Ok(a),
+            match self.step() {
+                Ok(Output::Intermediate(new_state)) => {
+                    self.trace.push(new_state);
+                }
+                Ok(Output::Final(a)) => return Ok(a),
+                Err(error) => return Err(TraceError::from_error(error, &self.trace)),
             }
         }
     }
