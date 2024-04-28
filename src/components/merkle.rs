@@ -46,26 +46,23 @@ fn MerkleRec(expression: Arc<Expression>) -> impl IntoView {
 }
 
 #[component]
-pub fn MerkleGraph() -> impl IntoView {
-    view! {
-        <div class="">
-            <h2>Merkle Graph</h2>
-
-            <div id="merkle_graph_holder">
-                <svg></svg>
-            </div>
-         </div>
+pub fn MerkleGraph(run_result: Result<String, String>) -> impl IntoView {
+    match run_result {
+        Ok(_) => view! {
+            <div id="merkle_graph_holder"></div>
+        },
+        Err(_) => view! {
+            <div></div>
+        },
     }
 }
 
-// load js functions
 #[wasm_bindgen(module = "/src/assets/js/merkle_graph_d3.js")]
 extern "C" {
     fn load_merkle_graph_js(dat: JsValue);
 }
 
 pub fn reload_graph(expression: Arc<Expression>){
-    
     #[derive(Serialize, Deserialize)]
     #[wasm_bindgen]
     struct Node {

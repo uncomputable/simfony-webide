@@ -3,6 +3,7 @@ use std::str::FromStr;
 use std::sync::Arc;
 
 use crate::util::Expression;
+use super::merkle::{MerkleGraph};
 
 #[component]
 pub fn Analysis(
@@ -69,8 +70,8 @@ fn AnalysisInner(expression: Arc<Expression>, run_result: Result<String, String>
                 </div>
             </div>
 
-            <RunResultMessage run_result=run_result/>
-
+            <RunResultMessage run_result=run_result.clone()/>
+            <MerkleGraph run_result=run_result/>
         </div>
     }
 }

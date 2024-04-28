@@ -1,13 +1,15 @@
-.merkle_graph {
-    display: none;
-}
 
 #merkle_graph_holder{
+    border: 1px solid rgba(255, 255, 255, .1);
+    margin-top: 20px;
+
     svg {
         background-color: $background-light;
+        max-width: 100%;
+        max-height: 100%;
     }
     text {
-        stroke: white;
+        fill: white;
     }
     path{
         fill: none;
@@ -17,5 +19,25 @@
         fill: $background-dark;
         stroke: #4f4f4f;
         stroke-width: 1;
+    }
+
+    .node-full-text{
+        visibility: hidden;
+        stroke: $background-dark;
+        stroke-width: 4;
+        fill: white;
+        paint-order: stroke fill;
+    }
+
+    .node-main-text, .node-full-text{
+        pointer-events: none;
+    }
+
+    .node-rect:hover ~ .node-main-text{
+        visibility: hidden;
+    }
+
+    .node-rect:hover ~ .node-full-text{
+        visibility: visible;
     }
 }

@@ -2,7 +2,7 @@ use leptos::*;
 
 use super::analysis::Analysis;
 use super::examples::{ExampleProgramDescription, SelectExampleProgram};
-use super::merkle::{Merkle, MerkleGraph, reload_graph};
+use super::merkle::{Merkle, reload_graph};
 use super::parser::ParseError;
 
 use crate::function::Runner;
@@ -94,7 +94,6 @@ pub fn App() -> impl IntoView {
                 <Analysis program=program run_result=run_result/>
 
                 <Merkle program=program/>
-                <MerkleGraph />
             </div>
         </div>
     }
