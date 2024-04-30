@@ -365,6 +365,7 @@ mod tests {
             let mut runner = Runner::for_program(program);
             let ret = runner.run();
 
+            println!("{name}");
             if name.contains('❌') {
                 assert!(ret.is_err());
             } else {
