@@ -176,9 +176,11 @@ let expected_hash: u256 = 0xae3d019b30529c6044d2b3d7ee2e0ee5db51a7f05ed5db8f089c
 jet_verify(jet_eq_256(ctv_hash, expected_hash));"#,
     ),
     (
-        "SIGHASH_NONE ❌",
-        r#"Verify a Schnorr signature based on SIGHASH_NONE of the spending transaction
-❌ This program currently fails because the signature is incorrect."#,
+        "SIGHASH_NONE",
+        r#"Verify a Schnorr signature based on SIGHASH_NONE of the spending transaction.
+Here, the signature is backed into the program. This is just for demonstration purposes.
+In reality, the signature would live inside the witness.
+In a future version of the IDE, the witness data will be customizable."#,
         r#"let ctx = jet_sha_256_ctx_8_init();
 // Blockchain
 let ctx = jet_sha_256_ctx_8_add_32(ctx, jet_genesis_block_hash());
@@ -196,8 +198,8 @@ let ctx = jet_sha_256_ctx_8_add_4(ctx, jet_current_index());
 // Message
 let msg = jet_sha_256_ctx_8_finalize(ctx);
 
-let pk: u256 = 0xf57f15937068d3054a4f437ac95cba65bae3c1b0529a84caa29d40200bf49c85;
-let sig: (u256, u256) = 0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000;
+let pk: u256 = 0xf9308a019258c31049344f85f89d5229b531c845836f99b08601f113bce036f9;
+let sig: (u256, u256) = 0x346152583d5b60b972bb4c03ab672e339431060e2b09c447ab983c65dabc70a459f3beca7788bfa5da221cf99227b65b4ad3821a2045c847ee56d48df26aee9c;
 jet_bip_0340_verify(pk, msg, sig);"#,
     ),
 ];
