@@ -144,10 +144,11 @@ let c = 0x1001;
 jet_verify(jet_eq_16(ab, c));"#,
     ),
     (
-        "Recursive covenant ❌",
+        "Recursive covenant",
         r#"The world's simplest recursive covenant:
 The scriptPubKey of the UTXO must be repeated in the first output of the spending transaction.
-❌ This program currently fails because the transaction does not satisfy the covenant."#,
+The spending transaction is hardcoded to satisfy the covenant.
+In a future version of the IDE, the transaction will be customizable."#,
         "let utxo_hash:  u256 = jet_current_script_hash();
 let spend_hash: u256 = unwrap(jet_output_script_hash(0));
 jet_verify(jet_eq_256(utxo_hash, spend_hash));",
