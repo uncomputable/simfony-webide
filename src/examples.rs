@@ -154,12 +154,13 @@ let spend_hash: u256 = unwrap(jet_output_script_hash(0));
 jet_verify(jet_eq_256(utxo_hash, spend_hash));",
     ),
     (
-        "OP_CTV ❌",
+        "OP_CTV",
         r#"Verify an OP_CTV hash.
 Instead of specifying the template hash as in BIP CTV,
 we require the user to specify all the components of the sighash
 that they want to commit.
-❌ This program currently fails because the expected hash is incorrect."#,
+The spending transaction is hardcoded to satisfy the covenant.
+In a future version of the IDE, the transaction will be customizable."#,
         r#"let ctx = jet_sha_256_ctx_8_init();
 let ctx = jet_sha_256_ctx_8_add_4(ctx, jet_version());
 let ctx = jet_sha_256_ctx_8_add_4(ctx, jet_lock_time());
@@ -171,7 +172,7 @@ let ctx = jet_sha_256_ctx_8_add_32(ctx, jet_outputs_hash());
 let ctx = jet_sha_256_ctx_8_add_4(ctx, jet_current_index());
 let ctv_hash: u256 = jet_sha_256_ctx_8_finalize(ctx);
 
-let expected_hash: u256 = 0x126a5c6e2d95fdf8fa0ac2927803de62fbca645527f514e523ac1d3d39afcc68;
+let expected_hash: u256 = 0xae3d019b30529c6044d2b3d7ee2e0ee5db51a7f05ed5db8f089cd5d455f1fc5d;
 jet_verify(jet_eq_256(ctv_hash, expected_hash));"#,
     ),
     (
