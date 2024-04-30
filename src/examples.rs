@@ -109,7 +109,8 @@ jet_verify(jet_eq_32(10, sum));"#,
     (
         "Byte hash loop 🧨",
         r#"Hash bytes 0x00 to 0xff in a loop.
-🧨 This program is quite large, currently slow and might break your browser."#,
+🧨 This program is quite large, currently slow and might break your browser.
+The IDE currently compiles the entire program every time the program text is updated."#,
         r#"// Add counter to streaming hash and finalize when the loop exists
 fn hash_counter_8(cnt, acc) {
     let new_acc = jet_sha_256_ctx_8_add_1(acc, cnt);
@@ -128,7 +129,10 @@ jet_verify(jet_eq_256(expected, unwrap_left(c)));"#,
     (
         "BIP 340 Schnorr",
         r#"Verify a Schnorr signature.
-Because the signed message is arbitrary, the program is as powerful as OP_CHECKSIGFROMSTACKVERIFY."#,
+Because the signed message is arbitrary, the program is as powerful as OP_CHECKSIGFROMSTACKVERIFY.
+Here, the signature is backed into the program. This is just for demonstration purposes.
+In reality, the signature would live inside the witness.
+In a future version of the IDE, the witness data will be customizable."#,
         r#"let pk: u256 = 0xf9308a019258c31049344f85f89d5229b531c845836f99b08601f113bce036f9;
 let sig: (u256, u256) = 0xe907831f80848d1069a5371b402410364bdf1c5f8307b0084c55f1ce2dca821525f66a4a85ea8b71e482a74f382d2ce5ebeee8fdb2172f477df4900d310536c0;
 let msg: u256 = 0x0000000000000000000000000000000000000000000000000000000000000000;
