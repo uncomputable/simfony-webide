@@ -503,12 +503,12 @@ imports.wbg.__wbindgen_debug_string = function(arg0, arg1) {
 imports.wbg.__wbindgen_throw = function(arg0, arg1) {
     throw new Error(getStringFromWasm0(arg0, arg1));
 };
-imports.wbg.__wbindgen_closure_wrapper210 = function(arg0, arg1, arg2) {
-    const ret = makeMutClosure(arg0, arg1, 23, __wbg_adapter_18);
+imports.wbg.__wbindgen_closure_wrapper265 = function(arg0, arg1, arg2) {
+    const ret = makeMutClosure(arg0, arg1, 50, __wbg_adapter_18);
     return addHeapObject(ret);
 };
-imports.wbg.__wbindgen_closure_wrapper5649 = function(arg0, arg1, arg2) {
-    const ret = makeMutClosure(arg0, arg1, 1775, __wbg_adapter_21);
+imports.wbg.__wbindgen_closure_wrapper5664 = function(arg0, arg1, arg2) {
+    const ret = makeMutClosure(arg0, arg1, 1777, __wbg_adapter_21);
     return addHeapObject(ret);
 };
 imports['./snippets/simplicity-webide-6f80102749cba927/src/assets/js/merkle_graph_d3.js'] = __wbg_star0;
@@ -550,7 +550,7 @@ async function __wbg_init(input) {
     if (wasm !== undefined) return wasm;
 
     if (typeof input === 'undefined') {
-        input = new URL('simplicity-webide-48e1345df6035e15_bg.wasm', import.meta.url);
+        input = new URL('simplicity-webide-400e50b38a36f9b7_bg.wasm', import.meta.url);
     }
     const imports = __wbg_get_imports();
 
