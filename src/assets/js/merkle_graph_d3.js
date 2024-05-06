@@ -1,8 +1,10 @@
 
 export function load_merkle_graph_js(tree_data){
-
+    let horizontal = true;
     let nodeSize = [162, 40] // x, y
-    let nodeGap = [40, 10]
+    let nodeGap = [10, 40]
+    if (horizontal) 
+        nodeGap = [nodeGap[1], nodeGap[0]];
 
     let svg_holder = document.getElementById("merkle_graph_holder")
     let old_svg = document.querySelector('#merkle_graph_holder svg')
@@ -19,14 +21,14 @@ export function load_merkle_graph_js(tree_data){
         .attr('height', height)
 
     let zoom_g = svg.append('g')
-    zoom_g.selectAll("*").remove()
 
+    let centerGraph = horizontal ? `translate(${nodeSize[0]}, ${height / 2})` : `translate(${width / 2}, ${nodeSize[1]})`;
     let svg_g = zoom_g.append('g')
-        // .attr('transform',`translate(${width / 2}, ${nodeSize[1]})`); // centers graph horizontal layout
-        .attr('transform',`translate(${nodeSize[0]}, ${height / 2})`); // centers graph vertical layout
+        .attr('transform',centerGraph);
 
+    let nodePositions = horizontal ? [nodeSize[1] + nodeGap[1], nodeSize[0] + nodeGap[0]] : [nodeSize[0] + nodeGap[0], nodeSize[1] + nodeGap[1]]
     let tree = d3.tree()
-        .nodeSize([nodeSize[1] + nodeGap[1], nodeSize[0] + nodeGap[0]])
+        .nodeSize(nodePositions)
     let root = d3.hierarchy(tree_data)
     let links = tree(root).links()
 
@@ -38,10 +40,11 @@ export function load_merkle_graph_js(tree_data){
         .data(links)
         .enter()
         .append('path')
-            .attr('d', d => { // vertical layout
+            .attr('d', d => {
                 let halfway_y = (d.target.y + d.source.y) / 2
-                // return `M${d.source.x} ${d.source.y} ${d.source.x} ${halfway_y} ${d.target.x} ${halfway_y}  ${d.target.x} ${d.target.y}`
-                return `M${d.source.y} ${d.source.x} ${halfway_y} ${d.source.x} ${halfway_y} ${d.target.x} ${d.target.y} ${d.target.x}`
+                return horizontal
+                    ? `M${d.source.y} ${d.source.x} ${halfway_y} ${d.source.x} ${halfway_y} ${d.target.x} ${d.target.y} ${d.target.x}`
+                    : `M${d.source.x} ${d.source.y} ${d.source.x} ${halfway_y} ${d.target.x} ${halfway_y}  ${d.target.x} ${d.target.y}`
             })
 
     let node_groups = svg_g.selectAll('g')
@@ -49,8 +52,8 @@ export function load_merkle_graph_js(tree_data){
         .join("g")
         
     node_groups.append("rect")
-        .attr('x', d => d.y)
-        .attr('y', d => d.x)
+        .attr('x', d => horizontal ? d.y : d.x)
+        .attr('y', d => horizontal ? d.x : d.y)
         .attr('rx', 5)
         .attr('ry', 5)
         .attr('width', nodeSize[0])
@@ -59,8 +62,8 @@ export function load_merkle_graph_js(tree_data){
         .attr('class', 'node-rect')
 
     node_groups.append('text')
-        .attr('x', d => d.y)
-        .attr('y', d => d.x)
+        .attr('x', d => horizontal ? d.y : d.x)
+        .attr('y', d => horizontal ? d.x : d.y)
         .attr('text-anchor', 'middle')
         .attr('dominant-baseline', 'middle')
         .text(d => {
@@ -73,11 +76,10 @@ export function load_merkle_graph_js(tree_data){
 
     // hover elements
     node_groups.append('text')
-        .attr('x', d => d.y)
-        .attr('y', d => d.x)
+        .attr('x', d => horizontal ? d.y : d.x)
+        .attr('y', d => horizontal ? d.x : d.y)
         .attr('text-anchor', 'middle')
         .attr('dominant-baseline', 'middle')
         .attr('class', 'node-full-text')
         .text(d => d.data.text)
-        
 }
