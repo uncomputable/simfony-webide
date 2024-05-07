@@ -3,6 +3,7 @@
     margin-top: 40px;
     padding: 30px;
     background-color: $background-light;
+    border-radius: 7.5px;
 
     .analysis-header {
         .analysis-title {
@@ -18,9 +19,9 @@
         }
 
         .program-status{
-            border: 1px dotted #00ff00;
-            color: #00ff00;
-            padding: 8px 20px;
+            border: 1px dotted #7eff18;
+            color: #7eff18;
+            padding: 12px 20px;
             font-size: 13px;
             margin-bottom: 8px;
             display: flex;

@@ -95,7 +95,6 @@ pub fn App() -> impl IntoView {
                                 "Run program"
                             </button>
                         </div>
-
                     </div>
                 </div>
 
