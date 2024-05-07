@@ -8,8 +8,13 @@
     box-sizing: border-box;
 }
 
+html {
+    scrollbar-color: $background-dark #424242;
+    scrollbar-width: thin;
+}
+
 body {
-    background-color: $background-dark;
+    background-color: $body-background;
     color: $text-white;
     font-family: 'inter', sans-serif;
     padding-bottom: 400px;

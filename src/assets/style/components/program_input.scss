@@ -2,6 +2,7 @@
 .program-input{
     background-color: $background-light;
     padding: 30px;
+    border-radius: 7.5px;
 
     &-header{
         margin-bottom: 10px;
@@ -110,6 +111,7 @@
             line-height: 24px;
             &:hover {
                 cursor: pointer;
+                background: #7973f4;
             }
         }
     }
@@ -121,6 +123,9 @@
         max-width: 100%;
         display: inline-block;
         width: fit-content;
+        border-radius: 7.5px;
+        border: 1px solid #363636;
+        overflow: hidden;
 
         .example-program-select {
             max-width: 100%;
@@ -129,7 +134,7 @@
             color: $text-grey;
             background-color: $background-dark;
             width: 200px;
-            border: 1px solid #363636;
+            border: none;
 
             -webkit-appearance: none;
             -moz-appearance: none;
@@ -146,6 +151,13 @@
             font-weight: 100;
             font-size: 26px;
             color: $text-white;
+            pointer-events: none;
+
+            &.loading {
+                font-size: 20px;
+                top: 10px;
+                right: 14px;
+            }
         }
     }
 
@@ -154,7 +166,7 @@
         background-color: $background-dark;
         border-radius: 7.5px;
         border: 1px solid rgba(255, 255, 255, 0.10);
-        color: #88ddff;
+        color: #c2c2ff;
         font-family: 'Roboto Mono';
         font-size: 12px;
         resize: none;
@@ -163,8 +175,16 @@
             outline: none;
         }
 
-        // overflow-x: auto;
         scrollbar-color: $background-dark #424242;
         scrollbar-width: thin;
+    }
+
+    .rotate {
+        animation: rotate 1s infinite linear;
+    }
+
+    @keyframes rotate {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg) }
     }
 }
