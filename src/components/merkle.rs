@@ -6,7 +6,7 @@ use crate::util::{DisplayInner, Expression};
 use simplicity::dag::DagLike;
 
 use crate::wasm_bindgen::prelude::*;
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 
 #[component]
 pub fn Merkle(program: Signal<Result<Arc<Expression>, String>>) -> impl IntoView {
@@ -62,39 +62,36 @@ extern "C" {
     fn load_merkle_graph_js(dat: JsValue);
 }
 
-pub fn reload_graph(expression: Arc<Expression>){
+pub fn reload_graph(expression: Arc<Expression>) {
     #[derive(Serialize, Deserialize)]
     #[wasm_bindgen]
     struct Node {
         text: String,
-        children: Vec<Node>
+        children: Vec<Node>,
     }
 
-    fn merkle_data(expression: Arc<Expression>) -> Node{
+    fn merkle_data(expression: Arc<Expression>) -> Node {
         let inner = DisplayInner::from(expression.as_ref()).to_string();
         let maybe_s = expression.left_child();
         let maybe_t = expression.right_child();
 
         let mut node = Node {
             text: inner,
-            children: Vec::new()
+            children: Vec::new(),
         };
 
-        match maybe_s {
-            Some(x) => node.children.push(merkle_data(x)),
-            None => ()
-        };
+        if let Some(x) = maybe_s {
+            node.children.push(merkle_data(x))
+        }
 
-        match maybe_t {
-            Some(x) => node.children.push(merkle_data(x)),
-            None => ()
-        };
-        
-        return node;
+        if let Some(x) = maybe_t {
+            node.children.push(merkle_data(x))
+        }
+
+        node
     }
-    
+
     let tree = merkle_data(expression);
     let data = serde_wasm_bindgen::to_value(&tree).unwrap();
     load_merkle_graph_js(data);
 }
-

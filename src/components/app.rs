@@ -2,7 +2,7 @@ use leptos::*;
 
 use super::analysis::Analysis;
 use super::examples::{ExampleProgramDescription, SelectExampleProgram};
-use super::merkle::{Merkle, reload_graph};
+use super::merkle::{reload_graph, Merkle};
 use super::parser::ParseError;
 
 use crate::function::Runner;

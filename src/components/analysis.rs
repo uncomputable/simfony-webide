@@ -2,8 +2,8 @@ use leptos::*;
 use std::str::FromStr;
 use std::sync::Arc;
 
+use super::merkle::MerkleGraph;
 use crate::util::Expression;
-use super::merkle::{MerkleGraph};
 
 #[component]
 pub fn Analysis(
