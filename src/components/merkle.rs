@@ -9,10 +9,10 @@ use crate::wasm_bindgen::prelude::*;
 use serde::{Deserialize, Serialize};
 
 #[component]
-pub fn Merkle(program: Signal<Result<Arc<Expression>, String>>) -> impl IntoView {
+pub fn Merkle(program: Signal<Option<Arc<Expression>>>) -> impl IntoView {
     view! {
         {
-            move || program.get().ok().map(|t| view! {
+            move || program.get().map(|t| view! {
                 <div class="merkle">
                     <h2>Merkle tree</h2>
                     <p>A Simplicity program is a Merkle tree, which makes it easy to analyze.</p>

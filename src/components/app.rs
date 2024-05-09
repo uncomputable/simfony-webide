@@ -14,8 +14,9 @@ pub fn App() -> impl IntoView {
     let (run_result, set_run_result) = create_signal::<Option<Result<String, String>>>(None);
     let (name, set_name) = create_signal::<Option<String>>(None);
 
-    let program = Signal::derive(move || util::program_from_string(&program_str.get()));
-    let parse_error = Signal::derive(move || program.get().err());
+    let program_result = Signal::derive(move || util::program_from_string(&program_str.get()));
+    let program = Signal::derive(move || program_result.get().ok());
+    let parse_error = Signal::derive(move || program_result.get().err());
 
     let update_program_str = move |s: String| {
         set_program_str.set(s);
@@ -24,8 +25,8 @@ pub fn App() -> impl IntoView {
     };
     let run_program = move || {
         let program = match program.get() {
-            Ok(program) => program,
-            Err(_) => return,
+            Some(program) => program,
+            None => return,
         };
         let mut runner = Runner::for_program(program.clone());
         match runner.run() {

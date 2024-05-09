@@ -7,11 +7,11 @@ use crate::util::Expression;
 
 #[component]
 pub fn Analysis(
-    program: Signal<Result<Arc<Expression>, String>>,
+    program: Signal<Option<Arc<Expression>>>,
     run_result: ReadSignal<Option<Result<String, String>>>,
 ) -> impl IntoView {
     let maybe_input = move || match (program.get(), run_result.get()) {
-        (Ok(program), Some(run_result)) => Some((program, run_result)),
+        (Some(program), Some(run_result)) => Some((program, run_result)),
         _ => None,
     };
 
