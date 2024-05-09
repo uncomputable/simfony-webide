@@ -11,43 +11,6 @@ use crate::simplicity::dag::NoSharing;
 use crate::util::{DisplayInner, Expression};
 
 #[component]
-pub fn Merkle(program: Signal<Option<Arc<Expression>>>) -> impl IntoView {
-    view! {
-        {
-            move || program.get().map(|t| view! {
-                <div class="merkle">
-                    <h2>Merkle tree</h2>
-                    <p>A Simplicity program is a Merkle tree, which makes it easy to analyze.</p>
-
-                    <MerkleRec expression=t/>
-                </div>
-            })
-        }
-    }
-}
-
-#[component]
-fn MerkleRec(expression: Arc<Expression>) -> impl IntoView {
-    let inner = DisplayInner::from(expression.as_ref()).to_string();
-    let maybe_s = expression.left_child();
-    let maybe_t = expression.right_child();
-
-    view! {
-        <ul>
-            <li>
-                <span>{inner}</span>
-                {
-                    move || maybe_s.clone().map(|s| view! { <MerkleRec expression=s/> })
-                }
-                {
-                    move || maybe_t.clone().map(|t| view! { <MerkleRec expression=t/> })
-                }
-            </li>
-        </ul>
-    }
-}
-
-#[component]
 pub fn MerkleGraph(run_result: Result<String, String>) -> impl IntoView {
     match run_result {
         Ok(_) => view! {
