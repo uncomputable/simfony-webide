@@ -1,5 +1,6 @@
 
 export function load_merkle_graph_js(tree_data){
+
     let horizontal = true;
     let nodeSize = [162, 40] // x, y
     let nodeGap = [10, 40]
@@ -7,8 +8,17 @@ export function load_merkle_graph_js(tree_data){
         nodeGap = [nodeGap[1], nodeGap[0]];
 
     let svg_holder = document.getElementById("merkle_graph_holder")
-    let old_svg = document.querySelector('#merkle_graph_holder svg')
-    if (old_svg) old_svg.remove()
+    svg_holder.innerHTML = "";
+
+    let nodeCount = countNodes(tree_data)
+    if (nodeCount > 1200){
+        let div = document.createElement("div");
+        div.innerText = `Too many nodes to display graph. Node count: ${nodeCount}`;
+        div.classList.add("graph-error");
+        svg_holder.appendChild(div);
+        return
+    }
+
     let svg_el = document.createElementNS("http://www.w3.org/2000/svg", "svg");
     svg_holder.appendChild(svg_el);
 
@@ -82,4 +92,12 @@ export function load_merkle_graph_js(tree_data){
         .attr('dominant-baseline', 'middle')
         .attr('class', 'node-full-text')
         .text(d => d.data.text)
+}
+
+function countNodes(node, count = 0){
+    count++
+    for (let n of node.children){
+        count += countNodes(n)
+    }
+    return count
 }
