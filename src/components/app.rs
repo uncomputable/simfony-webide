@@ -2,7 +2,7 @@ use leptos::*;
 
 use super::analysis::Analysis;
 use super::examples::{ExampleProgramDescription, SelectExampleProgram};
-use super::merkle::reload_graph;
+use super::merkle;
 use super::parser::ParseError;
 
 use crate::function::Runner;
@@ -32,7 +32,7 @@ pub fn App() -> impl IntoView {
         match runner.run() {
             Ok(_) => {
                 set_run_result.set(Some(Ok("Program success".to_string())));
-                reload_graph(program);
+                merkle::reload_graph(program);
             }
             Err(error) => {
                 set_run_result.set(Some(Err(error.to_string())));
