@@ -5,6 +5,9 @@ use crate::simplicity;
 use crate::util::{DisplayInner, Expression};
 use simplicity::dag::DagLike;
 
+use crate::wasm_bindgen::prelude::*;
+use serde::{Deserialize, Serialize};
+
 #[component]
 pub fn Merkle(program: Signal<Result<Arc<Expression>, String>>) -> impl IntoView {
     view! {
@@ -43,18 +46,52 @@ fn MerkleRec(expression: Arc<Expression>) -> impl IntoView {
 }
 
 #[component]
-pub fn MerkleGraph(program: Signal<Result<Arc<Expression>, String>>) -> impl IntoView {
-    view! {
-        {
-            move || program.get().ok().map(|_| view! {
-                <div class="merkle_graph">
-                    <h2>Merkle Graph</h2>
-
-                    <div id="merkle_graph_holder">
-                        <svg></svg>
-                    </div>
-                </div>
-            })
-        }
+pub fn MerkleGraph(run_result: Result<String, String>) -> impl IntoView {
+    match run_result {
+        Ok(_) => view! {
+            <div id="merkle_graph_holder"></div>
+        },
+        Err(_) => view! {
+            <div></div>
+        },
     }
+}
+
+#[wasm_bindgen(module = "/src/assets/js/merkle_graph_d3.js")]
+extern "C" {
+    fn load_merkle_graph_js(dat: JsValue);
+}
+
+pub fn reload_graph(expression: Arc<Expression>) {
+    #[derive(Serialize, Deserialize)]
+    #[wasm_bindgen]
+    struct Node {
+        text: String,
+        children: Vec<Node>,
+    }
+
+    fn merkle_data(expression: Arc<Expression>) -> Node {
+        let inner = DisplayInner::from(expression.as_ref()).to_string();
+        let maybe_s = expression.left_child();
+        let maybe_t = expression.right_child();
+
+        let mut node = Node {
+            text: inner,
+            children: Vec::new(),
+        };
+
+        if let Some(x) = maybe_s {
+            node.children.push(merkle_data(x))
+        }
+
+        if let Some(x) = maybe_t {
+            node.children.push(merkle_data(x))
+        }
+
+        node
+    }
+
+    let tree = merkle_data(expression);
+    let data = serde_wasm_bindgen::to_value(&tree).unwrap();
+    load_merkle_graph_js(data);
 }
