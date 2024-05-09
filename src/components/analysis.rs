@@ -2,7 +2,6 @@ use leptos::*;
 use std::str::FromStr;
 use std::sync::Arc;
 
-use super::merkle::MerkleExplorer;
 use crate::util;
 use crate::util::Expression;
 
@@ -77,7 +76,6 @@ fn AnalysisInner(expression: Arc<Expression>, run_result: Result<String, String>
             </div>
 
             <RunResultMessage run_result=run_result.clone()/>
-            <MerkleExplorer run_result=run_result/>
         </div>
     }
 }
