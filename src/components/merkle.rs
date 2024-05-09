@@ -1,12 +1,14 @@
-use leptos::*;
 use std::sync::Arc;
 
-use crate::simplicity;
-use crate::util::{DisplayInner, Expression};
+use js_sys::{Array, Object};
+use leptos::*;
 use simplicity::dag::DagLike;
+use simplicity::node;
+use wasm_bindgen::prelude::*;
 
-use crate::wasm_bindgen::prelude::*;
-use serde::{Deserialize, Serialize};
+use crate::simplicity;
+use crate::simplicity::dag::NoSharing;
+use crate::util::{DisplayInner, Expression};
 
 #[component]
 pub fn Merkle(program: Signal<Option<Arc<Expression>>>) -> impl IntoView {
@@ -62,36 +64,28 @@ extern "C" {
     fn load_merkle_graph_js(dat: JsValue);
 }
 
+fn marshal_merkle_data<M: node::Marker>(expression: &node::Node<M>) -> JsValue {
+    let mut output = vec![];
+    for data in expression.post_order_iter::<NoSharing>() {
+        let text = JsValue::from(DisplayInner::from(data.node).to_string());
+        let children = Array::new();
+        if data.left_index.is_some() {
+            children.push(&output.pop().unwrap());
+        }
+        if data.right_index.is_some() {
+            children.push(&output.pop().unwrap());
+        }
+        let node_obj = Object::new();
+        js_sys::Reflect::set(&node_obj, &JsValue::from_str("text"), &text).unwrap();
+        js_sys::Reflect::set(&node_obj, &JsValue::from_str("children"), &children).unwrap();
+
+        output.push(JsValue::from(node_obj))
+    }
+    debug_assert!(output.len() == 1);
+    output.pop().unwrap()
+}
+
 pub fn reload_graph(expression: Arc<Expression>) {
-    #[derive(Serialize, Deserialize)]
-    #[wasm_bindgen]
-    struct Node {
-        text: String,
-        children: Vec<Node>,
-    }
-
-    fn merkle_data(expression: Arc<Expression>) -> Node {
-        let inner = DisplayInner::from(expression.as_ref()).to_string();
-        let maybe_s = expression.left_child();
-        let maybe_t = expression.right_child();
-
-        let mut node = Node {
-            text: inner,
-            children: Vec::new(),
-        };
-
-        if let Some(x) = maybe_s {
-            node.children.push(merkle_data(x))
-        }
-
-        if let Some(x) = maybe_t {
-            node.children.push(merkle_data(x))
-        }
-
-        node
-    }
-
-    let tree = merkle_data(expression);
-    let data = serde_wasm_bindgen::to_value(&tree).unwrap();
+    let data = marshal_merkle_data(&expression);
     load_merkle_graph_js(data);
 }
