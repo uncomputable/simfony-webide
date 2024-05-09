@@ -3,6 +3,7 @@ use std::str::FromStr;
 use std::sync::Arc;
 
 use super::merkle::MerkleGraph;
+use crate::util;
 use crate::util::Expression;
 
 #[component]
@@ -38,6 +39,7 @@ fn AnalysisInner(expression: Arc<Expression>, run_result: Result<String, String>
     let size = weight; // Simplicity programs are Taproot witness data
     let max_milliseconds = format!("{:.3}", f64::from(weight) * MILLISECONDS_PER_WU);
     let max_bytes = bounds.extra_cells.div_ceil(8);
+    let compression = util::get_compression_factor(&expression);
 
     view! {
         <div class="analysis">
@@ -67,6 +69,10 @@ fn AnalysisInner(expression: Arc<Expression>, run_result: Result<String, String>
                 <div class="analysis-item">
                     <div class="analysis-item-label">Maximum runtime:</div>
                     <div class="analysis-item-data">{max_milliseconds}ms</div>
+                </div>
+                <div class="analysis-item">
+                    <div class="analysis-item-label">Program compression:</div>
+                    <div class="analysis-item-data">{compression}x</div>
                 </div>
             </div>
 

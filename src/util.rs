@@ -1,7 +1,7 @@
 use std::fmt;
 use std::sync::Arc;
 
-use simplicity::dag::{Dag, DagLike, NoSharing};
+use simplicity::dag::{Dag, DagLike, MaxSharing, NoSharing};
 use simplicity::jet::Elements;
 use simplicity::node::Inner;
 use simplicity::types::Final;
@@ -19,6 +19,14 @@ pub fn program_from_string(s: &str) -> Result<Arc<Expression>, String> {
         .with_program(s_arc)
         .with_witness(empty_witness)
         .get_redeem()
+}
+
+pub fn get_compression_factor<M: node::Marker>(node: &node::Node<M>) -> usize {
+    let unshared_len = node.pre_order_iter::<NoSharing>().count();
+    let shared_len = node.pre_order_iter::<MaxSharing<M>>().count();
+    debug_assert!(0 < shared_len);
+    debug_assert!(shared_len <= unshared_len);
+    unshared_len / shared_len
 }
 
 pub struct DisplayInner<'a, M: node::Marker>(&'a node::Node<M>);
