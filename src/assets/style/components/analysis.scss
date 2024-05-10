@@ -87,4 +87,20 @@
         color: #ff0000;
         padding: 10px;
     }
+
+    .graph-toggle-holder{
+        display: flex;
+        align-items: center;
+        margin-top: 24px;
+
+        .graph-toggle-text{
+            color: #ccc;
+            font-size: 16px;
+        }
+
+        #graph-toggle-icon{
+            font-size: 26px;
+            margin-right: 14px;
+        }
+    }
 }
