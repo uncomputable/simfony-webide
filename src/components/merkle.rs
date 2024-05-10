@@ -11,10 +11,13 @@ use crate::simplicity::dag::NoSharing;
 use crate::util::{DisplayInner, Expression};
 
 #[component]
-pub fn MerkleExplorer(run_result: ReadSignal<Option<Result<String, String>>>) -> impl IntoView {
+pub fn MerkleExplorer(
+    run_result: ReadSignal<Option<Result<String, String>>>,
+    graph_toggle: ReadSignal<bool>,
+) -> impl IntoView {
     move || match run_result.get() {
         Some(Ok(_)) => view! {
-            <div class="analysis">
+            <div class:hidden=move || !graph_toggle.get() class="analysis">
                 <div class="flex analysis-header">
                     <h2 class="analysis-title">Merkle Explorer</h2>
                 </div>

@@ -95,7 +95,11 @@ fn AnalysisInner(
                     class:fa-toggle-on=move || graph_toggle.get()
                     class:fa-toggle-off=move || !graph_toggle.get()
                     class="far"></i>
-                <span class="graph-toggle-text">View merkle tree graph</span>
+                <span
+                    class:white-text=move || graph_toggle.get()
+                    class="graph-toggle-text">
+                        View merkle tree graph
+                </span>
             </div>
         </div>
     }
