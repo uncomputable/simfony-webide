@@ -1,5 +1,5 @@
 .run-button button {
-    $bubble-color: #5134E0;
+    $bubble-color: #00ff00;
     position: relative;
     
     &:before, &:after{
@@ -11,6 +11,7 @@
       left: -20%;
       transition: all ease-in-out 0.5s;
       background-repeat: no-repeat;
+      transform: scaleY(1.4);
     }
 
     &:before {
@@ -83,5 +84,21 @@
     100% {
         background-position: 0% 90%, 20% 90%, 45% 70%, 60% 110%, 75% 80%, 95% 70%, 110% 10%;
         background-size: 0% 0%, 0% 0%, 0% 0%, 0% 0%, 0% 0%, 0% 0%;
+    }
+}
+
+.animate-body-flash {
+    animation: screenFlash .5s ease-in-out;
+}
+
+@keyframes screenFlash {
+    0% {
+        background-color: $body-background;
+    }
+    50%{
+        background-color: #002d00;
+    }
+    100%{
+        background-color: $body-background;
     }
 }
