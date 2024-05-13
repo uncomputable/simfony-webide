@@ -20,3 +20,9 @@ $background-dark: #191C21;
     display: flex;
     justify-content: space-between;
 }
+.hidden{
+    display: none;
+}
+.white-text{
+    color: $text-white !important;
+}

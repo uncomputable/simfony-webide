@@ -13,6 +13,7 @@ pub fn App() -> impl IntoView {
     let (program_str, set_program_str) = create_signal("".to_string());
     let (run_result, set_run_result) = create_signal::<Option<Result<String, String>>>(None);
     let (name, set_name) = create_signal::<Option<String>>(None);
+    let (graph_toggle, set_graph_toggle) = create_signal(false);
 
     let program_result = Signal::derive(move || util::program_from_string(&program_str.get()));
     let program = Signal::derive(move || program_result.get().ok());
@@ -83,7 +84,6 @@ pub fn App() -> impl IntoView {
 
                     <div class="flex program-input-footer">
                         <ExampleProgramDescription name=name/>
-
                         <div class="run-button">
                             <button on:click=move |_| run_program()>
                                 "Run program"
@@ -92,8 +92,13 @@ pub fn App() -> impl IntoView {
                     </div>
                 </div>
 
-                <Analysis program=program run_result=run_result/>
-                <MerkleExplorer run_result=run_result/>
+                <Analysis
+                    program=program
+                    run_result=run_result/>
+                <MerkleExplorer
+                    run_result=run_result
+                    graph_toggle=graph_toggle
+                    set_graph_toggle=set_graph_toggle/>
             </div>
         </div>
     }

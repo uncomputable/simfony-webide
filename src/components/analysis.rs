@@ -19,7 +19,9 @@ pub fn Analysis(
         {
             move || maybe_input().map(|(program, run_result)| view! {
                 <div>
-                    <AnalysisInner expression=program run_result=run_result/>
+                    <AnalysisInner
+                        expression=program
+                        run_result=run_result/>
                 </div>
             })
         }
@@ -45,8 +47,6 @@ fn AnalysisInner(expression: Arc<Expression>, run_result: Result<String, String>
             <div class="flex analysis-header">
                 <h2 class="analysis-title">Program Analysis</h2>
                 <RunSuccess run_success=run_result.is_ok()/>
-
-
             </div>
             <div class="analysis-body">
                 <div class="analysis-item">

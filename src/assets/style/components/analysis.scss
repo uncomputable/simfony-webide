@@ -72,8 +72,6 @@
                 line-height: normal;
             }
         }
-
-       
     }
 
     .program-status-error-message{
@@ -82,5 +80,26 @@
         word-break: break-word;
         margin-top: 10px;
         padding: 10px;
+    }
+
+    .graph-error{
+        border: 1px dotted #ff0000;
+        color: #ff0000;
+        padding: 10px;
+    }
+
+    .graph-toggle-holder{
+        display: flex;
+        align-items: center;
+
+        .graph-toggle-text{
+            color: #ccc;
+            font-size: 16px;
+        }
+
+        #graph-toggle-icon{
+            font-size: 26px;
+            margin-right: 14px;
+        }
     }
 }
