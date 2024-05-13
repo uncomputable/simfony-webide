@@ -80,6 +80,10 @@
         word-break: break-word;
         margin-top: 10px;
         padding: 10px;
+        overflow-x: scroll;
+
+        scrollbar-color: $background-dark #b00000;
+        scrollbar-width: thin;
     }
 
     .graph-error{
