@@ -89,20 +89,24 @@
 }
 
 // *** background flash ***
-.animate-body-flash {
-    animation: screenFlash .5s ease-in-out;
+.flash-success {
+    animation: screen-flash-success .5s ease-in-out;
 }
 
-@keyframes screenFlash {
-    0% {
-        background-color: $body-background;
-    }
-    50%{
-        background-color: #002d00;
-    }
-    100%{
-        background-color: $body-background;
-    }
+.flash-fail {
+    animation: screen-flash-fail .5s ease-in-out;
+}
+
+@keyframes screen-flash-success {
+    0% {background-color: $body-background;}
+    50%{ background-color: #002d00; }
+    100%{background-color: $body-background;}
+}
+
+@keyframes screen-flash-fail {
+    0% {background-color: $body-background;}
+    50%{ background-color: #3d0000; }
+    100%{background-color: $body-background;}
 }
 
 // *** circle expand ***

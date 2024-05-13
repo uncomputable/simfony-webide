@@ -12,6 +12,7 @@ use crate::util;
 #[wasm_bindgen(module = "/src/assets/js/button_effects.js")]
 extern "C" {
     fn button_success_animation();
+    fn button_fail_animation();
 }
 
 #[component]
@@ -44,6 +45,7 @@ pub fn App() -> impl IntoView {
             }
             Err(error) => {
                 set_run_result.set(Some(Err(error.to_string())));
+                button_fail_animation();
             }
         }
     };

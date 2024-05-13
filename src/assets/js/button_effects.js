@@ -1,7 +1,11 @@
 export function button_success_animation(){
   bubbles()
-  flash_screen()
+  flash_screen('success')
   circle_expand()
+};
+
+export function button_fail_animation(){
+  flash_screen('fail')
 };
 
 async function bubbles(){
@@ -13,12 +17,12 @@ async function bubbles(){
   button.classList.remove('bubble-animation');
 }
 
- async function flash_screen(){
-    document.body.classList.remove("animate-body-flash");
-    document.body.classList.add("animate-body-flash");
-    await new Promise(res => setTimeout(res, 1000))
+ async function flash_screen(mode){
+  let flash_class = mode == 'success' ? "flash-success" : "flash-fail"
+  document.body.classList.add(flash_class);
+  await new Promise(res => setTimeout(res, 400))
 
-    document.body.classList.remove("animate-body-flash");
+  document.body.classList.remove(flash_class);
 }
 
 async function circle_expand(){
