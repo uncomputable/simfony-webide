@@ -9,9 +9,9 @@ use super::parser::ParseError;
 use crate::function::Runner;
 use crate::util;
 
-#[wasm_bindgen(module = "/src/assets/js/confetti.js")]
+#[wasm_bindgen(module = "/src/assets/js/button_effects.js")]
 extern "C" {
-    fn start_confetti();
+    fn button_success_animation();
 }
 
 #[component]
@@ -39,7 +39,7 @@ pub fn App() -> impl IntoView {
         match runner.run() {
             Ok(_) => {
                 set_run_result.set(Some(Ok("Program success".to_string())));
-                start_confetti();
+                button_success_animation();
                 merkle::reload_graph(program);
             }
             Err(error) => {

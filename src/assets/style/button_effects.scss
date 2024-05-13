@@ -1,3 +1,4 @@
+// *** bubbles ***
 .run-button button {
     $bubble-color: #00ff00;
     position: relative;
@@ -44,7 +45,7 @@
         background-size: 15% 15%, 20% 20%, 18% 18%, 20% 20%, 15% 15%, 10% 10%, 20% 20%;
     }
 
-    &.animate {
+    &.bubble-animation {
         &:before {
             display: block;
             animation: topBubbles ease-in-out 0.75s forwards;
@@ -87,6 +88,7 @@
     }
 }
 
+// *** background flash ***
 .animate-body-flash {
     animation: screenFlash .5s ease-in-out;
 }
@@ -101,4 +103,30 @@
     100%{
         background-color: $body-background;
     }
+}
+
+// *** circle expand ***
+$dark-green: #00ad03;
+$button-color: #5134E0;
+
+.run-button button {
+    background-size: 0% !important;
+    background-repeat:no-repeat !important;
+    background-position: center !important;
+}
+
+.run-button button.expand_start {
+    background-image: radial-gradient(circle at center, $dark-green 10%, $button-color 11%) !important;
+    background-size: 1000% !important;
+    transition: background-size .2s linear;
+}
+
+.run-button button.expand_end {
+    background-image: radial-gradient(circle at center, $button-color 10%, $dark-green 11%) !important;
+    background-size: 1000% !important;
+    transition: background-size .2s linear;
+}
+
+.run-button button.green_button {
+    background-color: $dark-green !important;
 }
