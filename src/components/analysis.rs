@@ -9,8 +9,6 @@ use crate::util::Expression;
 pub fn Analysis(
     program: Signal<Option<Arc<Expression>>>,
     run_result: ReadSignal<Option<Result<String, String>>>,
-    graph_toggle: ReadSignal<bool>,
-    set_graph_toggle: WriteSignal<bool>,
 ) -> impl IntoView {
     let maybe_input = move || match (program.get(), run_result.get()) {
         (Some(program), Some(run_result)) => Some((program, run_result)),
@@ -23,9 +21,7 @@ pub fn Analysis(
                 <div>
                     <AnalysisInner
                         expression=program
-                        run_result=run_result
-                        graph_toggle=graph_toggle
-                        set_graph_toggle=set_graph_toggle/>
+                        run_result=run_result/>
                 </div>
             })
         }
@@ -35,12 +31,7 @@ pub fn Analysis(
 const MILLISECONDS_PER_WU: f64 = 0.5 / 1000.0;
 
 #[component]
-fn AnalysisInner(
-    expression: Arc<Expression>,
-    run_result: Result<String, String>,
-    graph_toggle: ReadSignal<bool>,
-    set_graph_toggle: WriteSignal<bool>,
-) -> impl IntoView {
+fn AnalysisInner(expression: Arc<Expression>, run_result: Result<String, String>) -> impl IntoView {
     let bounds = expression.bounds();
     // FIXME: Add conversion method to simplicity::Cost
     let milli_weight = u32::from_str(&bounds.cost.to_string()).unwrap();
@@ -85,22 +76,6 @@ fn AnalysisInner(
             </div>
 
             <RunResultMessage run_result=run_result.clone()/>
-
-            <div
-                on:click=move |_| set_graph_toggle.set(!graph_toggle.get())
-                class="graph-toggle-holder"
-            >
-                <i
-                    id="graph-toggle-icon"
-                    class:fa-toggle-on=move || graph_toggle.get()
-                    class:fa-toggle-off=move || !graph_toggle.get()
-                    class="far"></i>
-                <span
-                    class:white-text=move || graph_toggle.get()
-                    class="graph-toggle-text">
-                        View merkle tree graph
-                </span>
-            </div>
         </div>
     }
 }

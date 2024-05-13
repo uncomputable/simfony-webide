@@ -94,12 +94,11 @@ pub fn App() -> impl IntoView {
 
                 <Analysis
                     program=program
+                    run_result=run_result/>
+                <MerkleExplorer
                     run_result=run_result
                     graph_toggle=graph_toggle
                     set_graph_toggle=set_graph_toggle/>
-                <MerkleExplorer
-                    run_result=run_result
-                    graph_toggle=graph_toggle/>
             </div>
         </div>
     }

@@ -22,9 +22,10 @@ export function load_merkle_graph_js(tree_data){
     let svg_el = document.createElementNS("http://www.w3.org/2000/svg", "svg");
     svg_holder.appendChild(svg_el);
 
-    let width = svg_holder.clientWidth;
-    svg_holder.style.height = `${width / 2}px`;
-    let height = svg_holder.clientHeight;
+    let merkleContainer = document.getElementById("merkle-container");
+    let width = merkleContainer.clientWidth;
+    let height = width / 2
+    svg_holder.style.height = `${height}px`;
 
     let svg = d3.select('#merkle_graph_holder svg')
         .attr('width', width)

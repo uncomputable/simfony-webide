@@ -14,14 +14,34 @@ use crate::util::{DisplayInner, Expression};
 pub fn MerkleExplorer(
     run_result: ReadSignal<Option<Result<String, String>>>,
     graph_toggle: ReadSignal<bool>,
+    set_graph_toggle: WriteSignal<bool>,
 ) -> impl IntoView {
     move || match run_result.get() {
         Some(Ok(_)) => view! {
-            <div class:hidden=move || !graph_toggle.get() class="analysis">
+            <div id="merkle-container" class="analysis">
                 <div class="flex analysis-header">
                     <h2 class="analysis-title">Merkle Explorer</h2>
+
+                    <div
+                        on:click=move |_| set_graph_toggle.set(!graph_toggle.get())
+                        class="graph-toggle-holder"
+                    >
+                        <i
+                            id="graph-toggle-icon"
+                            class:fa-toggle-on=move || graph_toggle.get()
+                            class:fa-toggle-off=move || !graph_toggle.get()
+                            class="far"></i>
+                        <span
+                            class:white-text=move || graph_toggle.get()
+                            class="graph-toggle-text">
+                                View merkle tree graph
+                        </span>
+                    </div>
                 </div>
-                <div id="merkle_graph_holder"></div>
+                <div class:hidden=move || !graph_toggle.get() >
+                    <div id="merkle_graph_holder">
+                    </div>
+                </div>
             </div>
         },
         _ => view! {
