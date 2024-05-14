@@ -1,4 +1,5 @@
 import { load_merkle_graph_js } from './snippets/simplicity-webide-6f80102749cba927/src/assets/js/merkle_graph_d3.js';
+import * as __wbg_star0 from './snippets/simplicity-webide-6f80102749cba927/src/assets/js/button_effects.js';
 
 let wasm;
 
@@ -523,14 +524,15 @@ imports.wbg.__wbg_cloneNode_ea49a704f0699b2e = function() { return handleError(f
 imports.wbg.__wbg_append_125fff38dadbc15f = function() { return handleError(function (arg0, arg1) {
     getObject(arg0).append(getObject(arg1));
 }, arguments) };
-imports.wbg.__wbindgen_closure_wrapper64 = function(arg0, arg1, arg2) {
+imports.wbg.__wbindgen_closure_wrapper66 = function(arg0, arg1, arg2) {
     const ret = makeMutClosure(arg0, arg1, 85, __wbg_adapter_18);
     return addHeapObject(ret);
 };
-imports.wbg.__wbindgen_closure_wrapper73 = function(arg0, arg1, arg2) {
+imports.wbg.__wbindgen_closure_wrapper75 = function(arg0, arg1, arg2) {
     const ret = makeMutClosure(arg0, arg1, 16, __wbg_adapter_18);
     return addHeapObject(ret);
 };
+imports['./snippets/simplicity-webide-6f80102749cba927/src/assets/js/button_effects.js'] = __wbg_star0;
 
 return imports;
 }
@@ -569,7 +571,7 @@ async function __wbg_init(input) {
     if (wasm !== undefined) return wasm;
 
     if (typeof input === 'undefined') {
-        input = new URL('simplicity-webide-9c333f4edd65e723_bg.wasm', import.meta.url);
+        input = new URL('simplicity-webide-b18714fb387c4595_bg.wasm', import.meta.url);
     }
     const imports = __wbg_get_imports();
 
