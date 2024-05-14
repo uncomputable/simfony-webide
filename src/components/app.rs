@@ -1,4 +1,5 @@
 use leptos::*;
+use wasm_bindgen::prelude::*;
 
 use super::analysis::Analysis;
 use super::examples::{ExampleProgramDescription, SelectExampleProgram};
@@ -7,6 +8,12 @@ use super::parser::ParseError;
 
 use crate::function::Runner;
 use crate::util;
+
+#[wasm_bindgen(module = "/src/assets/js/button_effects.js")]
+extern "C" {
+    fn button_success_animation();
+    fn button_fail_animation();
+}
 
 #[component]
 pub fn App() -> impl IntoView {
@@ -33,10 +40,12 @@ pub fn App() -> impl IntoView {
         match runner.run() {
             Ok(_) => {
                 set_run_result.set(Some(Ok("Program success".to_string())));
+                button_success_animation();
                 merkle::reload_graph(program);
             }
             Err(error) => {
                 set_run_result.set(Some(Err(error.to_string())));
+                button_fail_animation();
             }
         }
     };

@@ -69,6 +69,7 @@
                 font-style: normal;
                 font-weight: 400;
                 line-height: normal;
+                word-break: break-word;
             }
         }
 
@@ -109,9 +110,10 @@
             font-style: normal;
             font-weight: 700;
             line-height: 24px;
+            max-width: 100%;
+            cursor: pointer;
             &:hover {
-                cursor: pointer;
-                background: #7973f4;
+                // background: #7973f4;
             }
         }
     }
