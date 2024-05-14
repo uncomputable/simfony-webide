@@ -1,6 +1,7 @@
 // *** bubbles ***
 .run-button button {
-    $bubble-color: #00ff00;
+    $bubble-green: #00ff00;
+    $bubble-red: #ff0000;
     position: relative;
     
     &:before, &:after{
@@ -15,43 +16,76 @@
       transform: scaleY(1.4);
     }
 
-    &:before {
-        display: none;
-        top: -75%;
-        background-image:
-            radial-gradient(circle, $bubble-color 20%, transparent 20%),
-            radial-gradient(circle, transparent 20%, $bubble-color 20%, transparent 30%),
-            radial-gradient(circle, $bubble-color 20%, transparent 20%),
-            radial-gradient(circle, $bubble-color 20%, transparent 20%),
-            radial-gradient(circle, transparent 10%, $bubble-color 15%, transparent 20%),
-            radial-gradient(circle, $bubble-color 20%, transparent 20%),
-            radial-gradient(circle, $bubble-color 20%, transparent 20%),
-            radial-gradient(circle, $bubble-color 20%, transparent 20%),
-            radial-gradient(circle, $bubble-color 20%, transparent 20%);
-        background-size: 10% 10%, 20% 20%, 15% 15%, 20% 20%, 18% 18%, 10% 10%, 15% 15%, 10% 10%, 18% 18%;
-    }
-
-    &:after {
-        display: none;
-        bottom: -75%;
-        background-image:
-            radial-gradient(circle, $bubble-color 20%, transparent 20%),
-            radial-gradient(circle, $bubble-color 20%, transparent 20%),
-            radial-gradient(circle, transparent 10%, $bubble-color 15%, transparent 20%),
-            radial-gradient(circle, $bubble-color 20%, transparent 20%),
-            radial-gradient(circle, $bubble-color 20%, transparent 20%),
-            radial-gradient(circle, $bubble-color 20%, transparent 20%),
-            radial-gradient(circle, $bubble-color 20%, transparent 20%);
-        background-size: 15% 15%, 20% 20%, 18% 18%, 20% 20%, 15% 15%, 10% 10%, 20% 20%;
-    }
-
-    &.bubble-animation {
+    &.bubble-animation-green {
         &:before {
+            display: none;
+            top: -75%;
+            background-image:
+                radial-gradient(circle, $bubble-green 20%, transparent 20%),
+                radial-gradient(circle, transparent 20%, $bubble-green 20%, transparent 30%),
+                radial-gradient(circle, $bubble-green 20%, transparent 20%),
+                radial-gradient(circle, $bubble-green 20%, transparent 20%),
+                radial-gradient(circle, transparent 10%, $bubble-green 15%, transparent 20%),
+                radial-gradient(circle, $bubble-green 20%, transparent 20%),
+                radial-gradient(circle, $bubble-green 20%, transparent 20%),
+                radial-gradient(circle, $bubble-green 20%, transparent 20%),
+                radial-gradient(circle, $bubble-green 20%, transparent 20%);
+            background-size: 10% 10%, 20% 20%, 15% 15%, 20% 20%, 18% 18%, 10% 10%, 15% 15%, 10% 10%, 18% 18%;
+
             display: block;
             animation: topBubbles ease-in-out 0.75s forwards;
         }
-
+    
         &:after {
+            display: none;
+            bottom: -75%;
+            background-image:
+                radial-gradient(circle, $bubble-green 20%, transparent 20%),
+                radial-gradient(circle, $bubble-green 20%, transparent 20%),
+                radial-gradient(circle, transparent 10%, $bubble-green 15%, transparent 20%),
+                radial-gradient(circle, $bubble-green 20%, transparent 20%),
+                radial-gradient(circle, $bubble-green 20%, transparent 20%),
+                radial-gradient(circle, $bubble-green 20%, transparent 20%),
+                radial-gradient(circle, $bubble-green 20%, transparent 20%);
+            background-size: 15% 15%, 20% 20%, 18% 18%, 20% 20%, 15% 15%, 10% 10%, 20% 20%;
+
+            display: block;
+            animation: bottomBubbles ease-in-out 0.75s forwards;
+        }
+    }
+    &.bubble-animation-red {
+        &:before {
+            display: none;
+            top: -75%;
+            background-image:
+                radial-gradient(circle, $bubble-red 20%, transparent 20%),
+                radial-gradient(circle, transparent 20%, $bubble-red 20%, transparent 30%),
+                radial-gradient(circle, $bubble-red 20%, transparent 20%),
+                radial-gradient(circle, $bubble-red 20%, transparent 20%),
+                radial-gradient(circle, transparent 10%, $bubble-red 15%, transparent 20%),
+                radial-gradient(circle, $bubble-red 20%, transparent 20%),
+                radial-gradient(circle, $bubble-red 20%, transparent 20%),
+                radial-gradient(circle, $bubble-red 20%, transparent 20%),
+                radial-gradient(circle, $bubble-red 20%, transparent 20%);
+            background-size: 10% 10%, 20% 20%, 15% 15%, 20% 20%, 18% 18%, 10% 10%, 15% 15%, 10% 10%, 18% 18%;
+
+            display: block;
+            animation: topBubbles ease-in-out 0.75s forwards;
+        }
+    
+        &:after {
+            display: none;
+            bottom: -75%;
+            background-image:
+                radial-gradient(circle, $bubble-red 20%, transparent 20%),
+                radial-gradient(circle, $bubble-red 20%, transparent 20%),
+                radial-gradient(circle, transparent 10%, $bubble-red 15%, transparent 20%),
+                radial-gradient(circle, $bubble-red 20%, transparent 20%),
+                radial-gradient(circle, $bubble-red 20%, transparent 20%),
+                radial-gradient(circle, $bubble-red 20%, transparent 20%),
+                radial-gradient(circle, $bubble-red 20%, transparent 20%);
+            background-size: 15% 15%, 20% 20%, 18% 18%, 20% 20%, 15% 15%, 10% 10%, 20% 20%;
+
             display: block;
             animation: bottomBubbles ease-in-out 0.75s forwards;
         }
@@ -110,7 +144,8 @@
 }
 
 // *** circle expand ***
-$dark-green: #00ad03;
+$circle-green: #00ad03;
+$circle-red: #ba0000;
 $button-color: #5134E0;
 
 .run-button button {
@@ -120,17 +155,26 @@ $button-color: #5134E0;
 }
 
 .run-button button.expand_start {
-    background-image: radial-gradient(circle at center, $dark-green 10%, $button-color 11%) !important;
+    background-image: radial-gradient(circle at center, $circle-green 10%, $button-color 11%) !important;
+    &.red {
+        background-image: radial-gradient(circle at center, $circle-red 10%, $button-color 11%) !important;
+    }
     background-size: 1000% !important;
     transition: background-size .2s linear;
 }
 
 .run-button button.expand_end {
-    background-image: radial-gradient(circle at center, $button-color 10%, $dark-green 11%) !important;
+    background-image: radial-gradient(circle at center, $button-color 10%, $circle-green 11%) !important;
+    &.red{
+        background-image: radial-gradient(circle at center, $button-color 10%, $circle-red 11%) !important;
+    }
     background-size: 1000% !important;
     transition: background-size .2s linear;
 }
 
-.run-button button.green_button {
-    background-color: $dark-green !important;
+.run-button button.button_color {
+    background-color: $circle-green !important;
+    &.red{
+        background-color: $circle-red !important;
+    }
 }

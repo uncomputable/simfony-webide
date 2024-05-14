@@ -1,23 +1,33 @@
 export function button_success_animation(){
-  bubbles()
+  bubbles('success')
   flash_screen('success')
-  circle_expand()
+  circle_expand('success')
 };
 
 export function button_fail_animation(){
+  bubbles('fail')
   flash_screen('fail')
+  circle_expand('fail')
 };
 
-async function bubbles(){
+async function bubbles(mode){
   let button = document.querySelector(".run-button button")
-  button.classList.remove('bubble-animation');
-  button.classList.add('bubble-animation');
-  await new Promise(res => setTimeout(res, 1000))
 
-  button.classList.remove('bubble-animation');
+  if (mode == 'success'){
+    button.classList.remove('bubble-animation-green');
+    button.classList.add('bubble-animation-green');
+    await new Promise(res => setTimeout(res, 1000))
+    button.classList.remove('bubble-animation-green');
+  }
+  else if (mode == 'fail'){
+    button.classList.remove('bubble-animation-red');
+    button.classList.add('bubble-animation-red');
+    await new Promise(res => setTimeout(res, 1000))
+    button.classList.remove('bubble-animation-red');
+  }
 }
 
- async function flash_screen(mode){
+async function flash_screen(mode){
   let flash_class = mode == 'success' ? "flash-success" : "flash-fail"
   document.body.classList.add(flash_class);
   await new Promise(res => setTimeout(res, 400))
@@ -25,22 +35,28 @@ async function bubbles(){
   document.body.classList.remove(flash_class);
 }
 
-async function circle_expand(){
+async function circle_expand(mode){
+  await new Promise(res => setTimeout(res, 10))
+
   let button = document.querySelector(".run-button button")
+  if (mode == 'fail')
+    button.classList.add("red");
+
   button.classList.remove("expand_start");
   button.classList.remove("expand_end");
-  button.classList.remove("green_button");
+  button.classList.remove("button_color");
 
   button.classList.add("expand_start");
   await new Promise(res => setTimeout(res, 1000))
 
   button.classList.remove("expand_start");
-  button.classList.add("green_button");
-  await new Promise(res => setTimeout(res, 1))
+  button.classList.add("button_color");
+  await new Promise(res => setTimeout(res, 10))
 
   button.classList.add("expand_end");
-  await new Promise(res => setTimeout(res, 200))
+  await new Promise(res => setTimeout(res, 1000))
 
   button.classList.remove("expand_end");
-  button.classList.remove("green_button");
+  button.classList.remove("button_color");
+  button.classList.remove("red");
 }
