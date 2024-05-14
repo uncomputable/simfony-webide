@@ -155,7 +155,9 @@ $button-color: #5134E0;
 }
 
 .run-button button.expand_start {
-    background-image: radial-gradient(circle at center, $circle-green 10%, $button-color 11%) !important;
+    &.green{
+        background-image: radial-gradient(circle at center, $circle-green 10%, $button-color 11%) !important;
+    }
     &.red {
         background-image: radial-gradient(circle at center, $circle-red 10%, $button-color 11%) !important;
     }
@@ -164,7 +166,9 @@ $button-color: #5134E0;
 }
 
 .run-button button.expand_end {
-    background-image: radial-gradient(circle at center, $button-color 10%, $circle-green 11%) !important;
+    &.green{
+        background-image: radial-gradient(circle at center, $button-color 10%, $circle-green 11%) !important;
+    }
     &.red{
         background-image: radial-gradient(circle at center, $button-color 10%, $circle-red 11%) !important;
     }
@@ -173,7 +177,9 @@ $button-color: #5134E0;
 }
 
 .run-button button.button_color {
-    background-color: $circle-green !important;
+    &.green{
+        background-color: $circle-green !important;
+    }
     &.red{
         background-color: $circle-red !important;
     }
