@@ -44,15 +44,23 @@ pub fn ExampleProgramDescription(name: ReadSignal<Option<String>>) -> impl IntoV
     view! {
         <div class="program-details">
         {
-            move || name.get().map(|n| view! {
-                <h3 class="program-title">{name}</h3>
-                <p class="program-description">
-                {
-                    move || examples::get_description(n.as_str()).map(|d| d.to_string())
+            move || name.get().map(|name| {
+                let description = examples::get_description(name.as_str())
+                    .unwrap_or("")
+                    .to_string();
+
+                view! {
+                    <div>
+                        <h3 class="program-title">{name}</h3>
+                        <div
+                            class="program-description"
+                            inner_html={description}
+                        >
+                        </div>
+                    </div>
                 }
-                </p>
             })
         }
-         </div>
+        </div>
     }
 }
