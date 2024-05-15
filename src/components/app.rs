@@ -19,6 +19,7 @@ extern "C" {
 pub fn App() -> impl IntoView {
     let (program_str, set_program_str) = create_signal("".to_string());
     let (run_result, set_run_result) = create_signal::<Option<Result<String, String>>>(None);
+    let (is_running, set_is_running) = create_signal(false);
     let (name, set_name) = create_signal::<Option<String>>(None);
     let (graph_toggle, set_graph_toggle) = create_signal(false);
 
@@ -35,15 +36,18 @@ pub fn App() -> impl IntoView {
             Some(program) => program,
             None => return,
         };
+        set_is_running.set(true);
         let mut runner = Runner::for_program(program.clone());
         match runner.run() {
             Ok(_) => {
                 set_run_result.set(Some(Ok("Program success".to_string())));
+                set_is_running.set(false);
                 button_success_animation();
                 merkle::reload_graph(program);
             }
             Err(error) => {
                 set_run_result.set(Some(Err(error.to_string())));
+                set_is_running.set(false);
                 button_fail_animation();
             }
         }
@@ -93,7 +97,10 @@ pub fn App() -> impl IntoView {
                     <div class="flex program-input-footer">
                         <ExampleProgramDescription name=name/>
                         <div class="run-button">
-                            <button on:click=move |_| run_program()>
+                            <button
+                                on:click=move |_| run_program()
+                                disabled=move || is_running.get()
+                            >
                                 "Run program"
                             </button>
                         </div>
