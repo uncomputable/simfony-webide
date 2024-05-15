@@ -36,15 +36,14 @@ async function flash_screen(mode){
 }
 
 async function circle_expand(mode){
-  await new Promise(res => setTimeout(res, 10))
-
   let button = document.querySelector(".run-button button")
-  if (mode == 'fail')
-    button.classList.add("red");
+  if (button.classList.contains('green') || button.classList.contains('red')) return
+  clear_circle_classes(button)
 
-  button.classList.remove("expand_start");
-  button.classList.remove("expand_end");
-  button.classList.remove("button_color");
+  if (mode == 'success')
+    button.classList.add("green");
+  else if (mode == 'fail')
+    button.classList.add("red");
 
   button.classList.add("expand_start");
   await new Promise(res => setTimeout(res, 1000))
@@ -54,9 +53,15 @@ async function circle_expand(mode){
   await new Promise(res => setTimeout(res, 10))
 
   button.classList.add("expand_end");
-  await new Promise(res => setTimeout(res, 1000))
+  await new Promise(res => setTimeout(res, 400))
 
+  clear_circle_classes(button)
+}
+
+function clear_circle_classes(button){
+  button.classList.remove("expand_start");
   button.classList.remove("expand_end");
   button.classList.remove("button_color");
+  button.classList.remove("green");
   button.classList.remove("red");
 }
