@@ -179,57 +179,6 @@ let bit: bool = match true {
 jet_verify(bit);"#,
     ),
     (
-        "List sum",
-        r#"Sum the elements of a list.
-The length of the list is between one (inclusive) and a maximum (exclusive)."#,
-        r#"fn checked_add_32(el, acc) {
-    let (carry, sum) = jet_add_32(el, acc);
-    // assert_eq!(carry, 0)
-    jet_verify(jet_complement_1(carry));
-    sum
-};
-
-// Sum 1 element
-let list: List<u32, 2> = list![1];
-let sum: u32 = fold::<2>(list, 0, checked_add_32);
-jet_verify(jet_eq_32(1, sum));
-
-// Sum 2 elements
-let list: List<u32, 4> = list![1, 2];
-let sum: u32 = fold::<4>(list, 0, checked_add_32);
-jet_verify(jet_eq_32(3, sum));
-
-// Sum 3 elements
-let list: List<u32, 4> = list![1, 2, 3];
-let sum: u32 = fold::<4>(list, 0, checked_add_32);
-jet_verify(jet_eq_32(6, sum));
-
-// Sum 4 elements
-let list: List<u32, 8> = list![1, 2, 3, 4];
-let sum: u32 = fold::<8>(list, 0, checked_add_32);
-jet_verify(jet_eq_32(10, sum));"#,
-    ),
-    (
-        "Byte hash loop 🧨",
-        r#"Hash bytes 0x00 to 0xff in a loop.
-🧨 This program is quite large, currently slow and might break your browser.
-The IDE currently compiles the entire program every time the program text is updated."#,
-        r#"// Add counter to streaming hash and finalize when the loop exists
-fn hash_counter_8(cnt, acc) {
-    let new_acc = jet_sha_256_ctx_8_add_1(acc, cnt);
-    match jet_all_8(cnt) {
-        true => Left(jet_sha_256_ctx_8_finalize(new_acc)),
-        false => Right(new_acc),
-    }
-};
-
-// Hash bytes 0x00 to 0xff
-let ctx: (List<u8, 64>, (u64, u256)) = jet_sha_256_ctx_8_init();
-let c: Either<u256, (List<u8, 64>, (u64, u256))> = forWhile::<256>(ctx, hash_counter_8);
-let expected: u256 = 0x40aff2e9d2d8922e47afd4648e6967497158785fbd1da870e7110266bf944880;
-jet_verify(jet_eq_256(expected, unwrap_left(c)));"#,
-    ),
-    (
         "BIP 340 Schnorr",
         r#"Verify a Schnorr signature.
 Because the signed message is arbitrary, the program is as powerful as OP_CHECKSIGFROMSTACKVERIFY.
@@ -308,6 +257,57 @@ let msg = jet_sha_256_ctx_8_finalize(ctx);
 let pk: u256 = 0xf9308a019258c31049344f85f89d5229b531c845836f99b08601f113bce036f9;
 let sig: (u256, u256) = 0x346152583d5b60b972bb4c03ab672e339431060e2b09c447ab983c65dabc70a459f3beca7788bfa5da221cf99227b65b4ad3821a2045c847ee56d48df26aee9c;
 jet_bip_0340_verify(pk, msg, sig);"#,
+    ),
+    (
+        "List sum",
+        r#"Sum the elements of a list.
+The length of the list is between one (inclusive) and a maximum (exclusive)."#,
+        r#"fn checked_add_32(el, acc) {
+    let (carry, sum) = jet_add_32(el, acc);
+    // assert_eq!(carry, 0)
+    jet_verify(jet_complement_1(carry));
+    sum
+};
+
+// Sum 1 element
+let list: List<u32, 2> = list![1];
+let sum: u32 = fold::<2>(list, 0, checked_add_32);
+jet_verify(jet_eq_32(1, sum));
+
+// Sum 2 elements
+let list: List<u32, 4> = list![1, 2];
+let sum: u32 = fold::<4>(list, 0, checked_add_32);
+jet_verify(jet_eq_32(3, sum));
+
+// Sum 3 elements
+let list: List<u32, 4> = list![1, 2, 3];
+let sum: u32 = fold::<4>(list, 0, checked_add_32);
+jet_verify(jet_eq_32(6, sum));
+
+// Sum 4 elements
+let list: List<u32, 8> = list![1, 2, 3, 4];
+let sum: u32 = fold::<8>(list, 0, checked_add_32);
+jet_verify(jet_eq_32(10, sum));"#,
+    ),
+    (
+        "Byte hash loop 🧨",
+        r#"Hash bytes 0x00 to 0xff in a loop.
+🧨 This program is quite large, currently slow and might break your browser.
+The IDE currently compiles the entire program every time the program text is updated."#,
+        r#"// Add counter to streaming hash and finalize when the loop exists
+fn hash_counter_8(cnt, acc) {
+    let new_acc = jet_sha_256_ctx_8_add_1(acc, cnt);
+    match jet_all_8(cnt) {
+        true => Left(jet_sha_256_ctx_8_finalize(new_acc)),
+        false => Right(new_acc),
+    }
+};
+
+// Hash bytes 0x00 to 0xff
+let ctx: (List<u8, 64>, (u64, u256)) = jet_sha_256_ctx_8_init();
+let c: Either<u256, (List<u8, 64>, (u64, u256))> = forWhile::<256>(ctx, hash_counter_8);
+let expected: u256 = 0x40aff2e9d2d8922e47afd4648e6967497158785fbd1da870e7110266bf944880;
+jet_verify(jet_eq_256(expected, unwrap_left(c)));"#,
     ),
 ];
 
