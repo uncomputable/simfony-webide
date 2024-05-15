@@ -95,15 +95,11 @@
     .graph-toggle-holder{
         display: flex;
         align-items: center;
-
-        .graph-toggle-text{
-            color: #ccc;
-            font-size: 16px;
-        }
+        width: 100%;
 
         #graph-toggle-icon{
             font-size: 26px;
-            margin-right: 14px;
+            margin-left: 14px;
         }
     }
 }

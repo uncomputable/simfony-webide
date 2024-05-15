@@ -20,22 +20,18 @@ pub fn MerkleExplorer(
         Some(Ok(_)) => view! {
             <div id="merkle-container" class="analysis">
                 <div class="flex analysis-header">
-                    <h2 class="analysis-title">Merkle Explorer</h2>
-
                     <div
                         on:click=move |_| set_graph_toggle.set(!graph_toggle.get())
                         class="graph-toggle-holder"
                     >
+                        <h2 class="analysis-title">Merkle Explorer</h2>
                         <i
                             id="graph-toggle-icon"
                             class:fa-toggle-on=move || graph_toggle.get()
                             class:fa-toggle-off=move || !graph_toggle.get()
-                            class="far"></i>
-                        <span
-                            class:white-text=move || graph_toggle.get()
-                            class="graph-toggle-text">
-                                View merkle tree graph
-                        </span>
+                            class="far"
+                        >
+                        </i>
                     </div>
                 </div>
                 <div class:hidden=move || !graph_toggle.get() >
