@@ -45,3 +45,17 @@ just open
 ```
 
 The compiler will keep running in the background and make live updates to the website as you change the code.
+
+### Run CI
+
+Run a single command to run all CI jobs.
+
+```bash
+just check
+```
+
+There are `just` commands that can help you fix broken code.
+
+```bash
+just --list
+```
