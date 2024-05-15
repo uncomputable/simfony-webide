@@ -19,7 +19,7 @@ where
 
     // Select default example upon startup
     // The name must exist inside examples::EXAMPLES
-    select_example_program("BIP 340 Schnorr".to_string());
+    select_example_program("Welcome 💡".to_string());
 
     view! {
         <div class="example-program-select-container">
