@@ -29,7 +29,6 @@ pub fn App() -> impl IntoView {
     let update_program_str = move |s: String| {
         set_program_str.set(s);
         set_run_result.set(None);
-        set_name.set(None);
     };
     let run_program = move || {
         let program = match program.get() {
