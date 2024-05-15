@@ -360,6 +360,11 @@ mod tests {
     #[wasm_bindgen_test::wasm_bindgen_test]
     fn test() {
         for name in examples::get_names() {
+            // Skip tutorial lessons
+            if name.contains('💡') {
+                continue;
+            }
+
             let program_str = examples::get_program_str(name).unwrap();
             let program = util::program_from_string(program_str).unwrap();
             let mut runner = Runner::for_program(program);

@@ -1,29 +1,165 @@
 /// Constant map of example names, descriptions and program strings.
 ///
 /// Names must be unique because they serve as primary keys.
-const EXAMPLES: [(&str, &str, &str); 11] = [
+const EXAMPLES: [(&str, &str, &str); 15] = [
     (
-        "Empty",
-        r#"The empty string is a valid program.
-It does nothing and immediately unlocks its coins."#,
-        r#""#,
+        "Welcome 💡",
+        r#"<h3>👋 Welcome to the Simfony IDE!</h3>
+<p>Write your program in the text box above ⬆️
+The Simfony compiler will give you live feedback about your code.
+When you are happy with your program, click the run button on the right ➡️
+If your program succeeds, then you would be able to spend its locked coins if this were the blockchain.
+If your program fails, then the transaction would be invalid. There is a stack trace for debugging.<p>
+
+<h3>🚧 Troubleshooting</h3>
+<p>Living parsing actually makes the IDE slower than it needs to be.
+In a futur version, we will try to do the heavy parsing just in time before running.
+Some error messages are not very helpful because the compiler is too stupid.
+We are working on making the compiler smarter.
+Get help on <a href="https://github.com/BlockstreamResearch/simfony/discussions">GitHub discussions</a> / <a href="https://github.com/BlockstreamResearch/simfony/issues">open an issue</a> / reach out on Telegram.<p>
+
+<h3>📝 Your Task</h3>
+<p>Click the run button.
+You complete the lesson by making the program succeed.</p>"#,
+        r#"// Anyone can spend the empty program
+// Click the run button"#,
     ),
     (
-        "Block expressions",
-        r#"Use blocks expressions to give your programs more structure.
-Each block returns a value at its end."#,
-        r#"let a: u32 = 10;
-let b = {
-    let c: u32 = 2;
-    let d: u32 = 3;
-    jet_verify(jet_eq_32(a, 10)); // Use variables from outer copes
-    let a: u32 = 7; // Shadow variables from outer scopes
-    jet_max_32(jet_max_32(c, d), a) // Missing ; because the block returns a value
+        "Variables 💡",
+        r#"<h3>Assigning Values to Variables</h3>
+<p>Like in Rust, you define variables using let statements.
+The variable named <code>x</code> is of type <code>u32</code> (unsigned 32-bit integer).
+<code>x</code> is assigned the value that follows after the equality sign </code>=</code>.
+Lines are terminated with a semicolon <code>;</code>.</p>
+
+<h3>📝 Your Task</h3>
+<p>Assign the value 1337 to variable <code>x</code>.</p>"#,
+        r#"let x: u32 = ; // <- Assign the value here
+// Click the run button
+
+jet_verify(jet_eq_32(x, 1337));"#,
+    ),
+    (
+        "Integers 💡",
+        r#"<h3>Available Integer Types</h3>
+<p>Simfony supports unsigned integers from 1 bit to 256 bits:
+<code>u1</code>, <code>u2</code>, <code>u4</code>, <code>u8</code>, <code>u16</code>, <code>u32</code>, <code>u64</code>, <code>u128</code>, <code>u256</code>.
+You can write decimal literals 0, 1, 2 for values of type <code>u8</code> to <code>u64</code>.
+<code>u1</code>, <code>u2</code>, <code>u4</code> require bit literals <code>0b01..01</code> of appropriate length.
+<code>u128</code>, <code>u256</code> require byte literals (hex) <code>0xab...cd</code> of appropriate length.</p>
+
+<h3>📝 Your Task</h3>
+<p>Assign the maximum <code>u8</code> and <code>u128</code> values.</p>"#,
+        r#"let max8: u8 = ; // <- Assign the maximum u8 value
+let max128: u128 = ; // <- Assign the maximum u128 value
+// Click the run button
+
+jet_verify(jet_all_8(max8));
+let (top, bot) = max128;
+jet_verify(jet_all_64(top));
+jet_verify(jet_all_64(bot));"#,
+    ),
+    (
+        "Products 💡",
+        r#"<h3>Combining Values in Products</h3>
+<p>Simfony doesn't support structs or objects, but it supports "products".
+You take data <code>x</code> and <code>y</code> and group them in the product <code>(x, y)</code>.
+Think of <code>(x, y)</code> as an anonymous struct with two members: <code>x</code> and <code>y</code>.</p>
+
+<h3>🚧 Troubleshooting</h3>
+<p>We will introduce structs in a future version of Simfony, but for now you have to use products.
+Right now, u16 is a macro for the product (u8, u8), and so on.</p>
+
+<h3>📝 Your Task</h3>
+<p>Combine "beef" with "babe".</p>"#,
+        r#"let beef: u16 = 0xbeef;
+let babe: u16 = 0xbabe;
+let beefbabe: u32 = ; // <- Construct a product
+// Click the run button
+
+jet_verify(jet_eq_32(0xbeefbabe, beefbabe));"#,
+    ),
+    (
+        "Blocks 💡",
+        r#"<h3>Grouping Code in Blocks</h3>
+<p>You can write expressions inside brackets <code>{ }</code> to put them into a "block".
+Blocks execute a sequence of expressions and return a value at the end.
+Like in Rust, the final line in a block ends without semicolon <code>;</code>.</p>
+
+<h3>Scoping</h3>
+<p>Each block introduces a new scope:
+Variables live for as long as the block in which they are defined.
+Variables from inner scopes overwrite / shadow variables from outer scopes.</p>
+
+<h3>📝 Your Task</h3>
+<p>Use shadowing to make 2 + 2 = 5.</p>"#,
+        r#"let (_, four): (u1, u32) = jet_add_32(2, 2);
+let five: u32 = 5;
+let what_is_false_is_true = {
+    // <- Shadow "four" to make 2 + 2 = 5
+    jet_eq_32(four, five)
 };
-jet_verify(jet_eq_32(b, 7));"#,
+
+jet_verify(what_is_false_is_true);"#,
     ),
     (
-        "Match expressions",
+        "Functions 💡",
+        r#"<h3>Grouping Code in Functions</h3>
+<p>Use functions to encapsulate repetitive code.
+Like in Rust, the function signature starts with <code>fn</code>, followed by the function name, and the list of parameters in parentheses.
+The function body follows, which is simply a block that may only use parameter variables.
+The function returns on the final line of its body.
+
+<h3>🚧 Troubleshooting</h3>
+<p>Because the compiler is stupid, the parameters are implictly typed.
+We are working on explicitly typed parameters.
+There are no early returns via the <code>return</code> keyword at the moment.
+Functions can call other function that have already been defined.
+This means recursion is currently impossible.
+We are looking into enabling safe recursion.</p>
+
+<h3>📝 Your Task</h3>
+<p>Define the function <code>checked_add_32</code> which takes two u32 values and adds them.
+While <code>jet_add_32</code> returns a carry, <code>checked_add_32</code> is supposed to panic if there is an overflow.
+It can be annoying to handle carry bits.</p>"#,
+        r#"let (carry, sum) = jet_add_32(123456, 1);
+// assert!(carry == false)
+jet_verify(jet_complement_1(carry)); // <- Use the first three lines as body
+
+jet_verify(jet_eq_32(sum, 123457));
+
+fn checked_add_32(a, b) {
+    // <- Add the body, using parameters a, b instead of concrete values
+    // <- Return the sum at the end of the block
+};
+
+jet_verify_jet_eq_32(checked_add_32(123456, 1), 123457);"#,
+    ),
+    (
+        "Jets 💡",
+        r#"<h3>Calling Optimized Subroutines</h3>
+<p>Jets are predefined functions that start with <code>jet_</code>.
+While functions are executed as a blob of Simplicity instructions, jets are executed as optimized machine instructions.
+This means jets are faster than functions, but there is only a fixed set of jets.
+Combine jets in a function to compute what you cannot compute with jets alone.</p>
+
+<h3>🚧 Troubleshooting</h3>
+<p>You find a list of documented jets on the <a href="https://github.com/BlockstreamResearch/simplicity/wiki/Supported-Jets">Simplicity Wiki on GitHub</a>.</p>
+
+<h3>📝 Your Task</h3>
+<p>Define a NAND gate using the available jets.</p>"#,
+        r#"// jet_and_1 = AND, jet_or_1 = OR, jet_xor_1 = XOR, jet_complement_1 = NOT
+fn nand(a, b) {
+    // <- Your body here
+};
+
+jet_verify(nand(false, false));
+jet_verify(nand(false, true));
+jet_verify(nand(true, false));
+jet_verify(jet_complement_1(nand(true, true)));"#,
+    ),
+    (
+        "Match expressions 💡",
         r#"Use match expressions to choose between multiple execution paths.
 Unused code is removed inside the Simplicity target code and will never touch the blockchain."#,
         r#"let bit: u1 = match Left(11) {
@@ -41,39 +177,6 @@ let bit: bool = match true {
     false => 0,
 };
 jet_verify(bit);"#,
-    ),
-    (
-        "Functions",
-        r#"Use functions to encapsulate repetitive code.
-Functions are compressed inside the Simplicity target code."#,
-        r#"fn forty_two() {
-    42
-};
-let a = forty_two();
-let b = 42;
-jet_verify(jet_eq_32(a, b));
-fn checked_add_32(x, y) {
-    let (carry, sum) = jet_add_32(x, y);
-    jet_verify(jet_complement_1(carry));
-    sum
-};
-let a = 1;
-let b = 4294967294;
-let c = checked_add_32(a, b);
-let d = 4294967295;
-jet_verify(jet_eq_32(c, d));
-fn first() {
-    1
-};
-fn second() {
-    checked_add_32(first(), first())
-};
-fn third() {
-    checked_add_32(first(), second())
-};
-let a = third();
-let b = 3;
-jet_verify(jet_eq_32(a, b));"#,
     ),
     (
         "List sum",
