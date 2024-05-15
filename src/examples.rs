@@ -16,7 +16,7 @@ If your program fails, then the transaction would be invalid. There is a stack t
 In a futur version, we will try to do the heavy parsing just in time before running.
 Some error messages are not very helpful because the compiler is too stupid.
 We are working on making the compiler smarter.
-Get help on <a href="https://github.com/BlockstreamResearch/simfony/discussions">GitHub discussions</a> / <a href="https://github.com/BlockstreamResearch/simfony/issues">open an issue</a> / reach out on Telegram.<p>
+Get help on <a href="https://github.com/BlockstreamResearch/simfony/discussions">GitHub discussions</a> / <a href="https://github.com/BlockstreamResearch/simfony/issues">open an issue</a> / reach out on <a href="https://t.me/simplicity_community">Telegram.</a><p>
 
 <h3>📝 Your Task</h3>
 <p>Click the run button.
