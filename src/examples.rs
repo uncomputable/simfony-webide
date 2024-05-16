@@ -7,7 +7,7 @@ const EXAMPLES: [(&str, &str, &str); 17] = [
         r#"<h3>👋 Welcome to the Simfony IDE!</h3>
 <p>Write your program in the text box above ⬆️
 The Simfony compiler will give you live feedback about your code.
-When you are happy with your program, click the run button on the right ➡️
+When you are happy with your program, click the run button below ⬇️
 If your program succeeds, then you would be able to spend its locked coins if this were the blockchain.
 If your program fails, then the transaction would be invalid. There is a stack trace for debugging.<p>
 
@@ -20,9 +20,11 @@ Get help on <a href="https://github.com/BlockstreamResearch/simfony/discussions"
 
 <h3>📝 Your Task</h3>
 <p>Click the run button.
-You complete the lesson by making the program succeed.</p>"#,
+You complete the lesson by making the program succeed.
+Switch to the next lesson in the dropdown list above ⬆️</p>"#,
         r#"// Anyone can spend the empty program
-// Click the run button"#,
+// ⬇️ Read the introduction ⬇️
+// ⬇️ Click the run button ⬇️"#,
     ),
     (
         "Variables 💡",
@@ -35,7 +37,6 @@ Lines are terminated with a semicolon <code>;</code>.</p>
 <h3>📝 Your Task</h3>
 <p>Assign the value 1337 to variable <code>x</code>.</p>"#,
         r#"let x: u32 = ; // <- Assign the value
-// Click the run button
 
 jet_verify(jet_eq_32(x, 1337));"#,
     ),
@@ -52,7 +53,6 @@ You can write decimal literals 0, 1, 2 for values of type <code>u8</code> to <co
 <p>Assign the maximum <code>u8</code> and <code>u128</code> values.</p>"#,
         r#"let max8: u8 = ; // <- Assign the maximum u8 value
 let max128: u128 = ; // <- Assign the maximum u128 value
-// Click the run button
 
 jet_verify(jet_all_8(max8));
 let (top, bot) = max128;

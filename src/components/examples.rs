@@ -27,7 +27,7 @@ where
                 class="example-program-select"
                 on:input=move |event| select_example_program(event_target_value(&event))
             >
-                <option value="" disabled selected>Example programs</option>
+                <option value="" disabled selected>Lessons & Examples</option>
                 {
                     examples::get_names()
                         .map(|name| view! { <option value={name}>{name}</option>})
