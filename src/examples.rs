@@ -352,9 +352,14 @@ jet_verify(jet_eq_32(10, sum));"#,
     ),
     (
         "Byte hash loop 🧨",
-        r#"Hash bytes 0x00 to 0xff in a loop.
-🧨 This program is quite large, currently slow and might break your browser.
-The IDE currently compiles the entire program every time the program text is updated."#,
+        r#"<p>Hash bytes 0x00 to 0xff in a loop.</p>
+
+<h3>🧨 Reckless Program</h3>
+<p>This program is quite large and might break your browser.
+Every time you type, the IDE parses and compiles the entire program, which is slow.
+Running the loop also takes longer than expected.
+We are working on browser optimizations.
+Mind that the program runs within milliseconds on the blockchain!</p>"#,
         r#"// Add counter to streaming hash and finalize when the loop exists
 fn hash_counter_8(cnt, acc) {
     let new_acc = jet_sha_256_ctx_8_add_1(acc, cnt);
