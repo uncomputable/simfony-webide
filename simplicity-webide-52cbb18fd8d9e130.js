@@ -571,7 +571,7 @@ async function __wbg_init(input) {
     if (wasm !== undefined) return wasm;
 
     if (typeof input === 'undefined') {
-        input = new URL('simplicity-webide-308b7b7850dc5a25_bg.wasm', import.meta.url);
+        input = new URL('simplicity-webide-52cbb18fd8d9e130_bg.wasm', import.meta.url);
     }
     const imports = __wbg_get_imports();
 
