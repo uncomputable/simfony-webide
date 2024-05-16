@@ -1,7 +1,7 @@
 /// Constant map of example names, descriptions and program strings.
 ///
 /// Names must be unique because they serve as primary keys.
-const EXAMPLES: [(&str, &str, &str); 15] = [
+const EXAMPLES: [(&str, &str, &str); 17] = [
     (
         "Welcome 💡",
         r#"<h3>👋 Welcome to the Simfony IDE!</h3>
@@ -159,24 +159,85 @@ jet_verify(nand(true, false));
 jet_verify(jet_complement_1(nand(true, true)));"#,
     ),
     (
-        "Match expressions 💡",
-        r#"Use match expressions to choose between multiple execution paths.
-Unused code is removed inside the Simplicity target code and will never touch the blockchain."#,
-        r#"let bit: u1 = match Left(11) {
-    Left(x) => jet_le_32(10, x),
-    Right(y) => jet_le_32(y, 10),
+        "Booleans 💡",
+        r#"<h3>Boolean Values</h3>
+<p>Values of type <code>bool</code> can either be <code>true</code> or <code>false</code>.</p>
+
+<h3>Matching Booleans</h3>
+<p>In Simfony, we use <code>match</code> expressions to handle Booleans.
+The match executes the <code>true</code> branch if the input is <code>true</code>,
+and it executes the <code>false</code> branch if the input is <code>false</code>.
+Both branches return a value of the same output type.
+The overall match returns a value of this output type.</p>
+
+<h3>📝 Your Task</h3>
+<p>Complete the function <code>invert</code> which inverts the input bit.<p>"#,
+        r#"fn invert(bit) {
+    match bit {
+        true  => , // <- Invert a true bit
+        false => , // <- Invert a false bit
+    }
 };
-jet_verify(bit);
-let bit: u1 = match Some(11) {
-    Some(x) => jet_le_32(10, x),
-    None => 0,
+
+jet_verify(invert(false));
+jet_verify(jet_complement_1(invert(true)));"#,
+    ),
+    (
+        "Options 💡",
+        r#"<h3>Optional Values</h3>
+<p>Values of type <code>Option&lt;B&gt;</code> are either <code>Some</code> and contain a value <code>b</code> of type <code>B</code>, or they are <code>None</code> and contain no value.
+We use optional values for functions that may or may not take an input (subtraction of unsigned integers),
+for functions that may or may not return an output (division by zero),
+and so on.
+Optional values replace null pointers and runtime exceptions.</p>
+
+<h3>Matching Optional Values</h3>
+<p>We use <code>match</code> expressions to handle optional values:
+The <code>None</code> branch is executed if the input contains no value.
+The <code>Some(b)</code> branch is executed if the input contains value <code>b</code>.</p>
+
+<h3>📝 Your Task</h3>
+<p>The jet <code>jet_divide_32</code> returns 0 for <a href="https://en.wikipedia.org/wiki/Division_by_zero">division by zero</a>.
+Complete the function <code>checked_div_32</code> which returns <code>None</code> instead."#,
+        r#"fn checked_div_32(x, y) {
+    match jet_is_zero_32(y) {
+        true  => , // <- Return no integer
+        false => , // <- Return some quotient
+    }
 };
-jet_verify(bit);
-let bit: bool = match true {
-    true => 1,
-    false => 0,
+
+unwrap_left(checked_div_32(1, 0));
+jet_verify(jet_eq_32(3, unwrap_right(checked_div_32(10, 3))));"#,
+    ),
+    (
+        "Sums 💡",
+        r#"<h3>Sum Values</h3>
+<p>Values of type <code>Either&lt;A, B&gt;</code> are either <code>Left</code> and contain a value <code>a</code> of type <code>A</code>, or they are <code>Right</code> and contain a value <code>b</code> of type <code>B</code>.
+We use sum values to distinguish different cases:
+<code>Either&lt;u32, u32&gt;</code> could be locktimes in block format or in timestamp format.
+<code>Either&lt;A, B&gt;</code> could be successful values <code>Left(success)</code> or failing values <code>Right(error)</code>.
+And so on.
+
+<h3>Matching Sum Values</h3>
+<p>We use <code>match</code> expressions to handle sum values:
+The <code>Left(a)</code> branch is executed if the input contains value <code>a</code> of type <code>A</code>.
+The <code>Right(b)</code> branch is executed if the input contains value <code>b</code> of type <code>B</code>.
+
+<h3>📝 Your Task</h3>
+<p><a href="https://en.wikipedia.org/wiki/Furlong">Eight furlongs are one mile.</a>
+Complete the function <code>to_mile</code> which converts distances to miles.
+The input may be formatted in furlongs or in miles.
+Use <code>jet_divide_32</code> to do division.</p>"#,
+        r#"fn to_miles(distance) {
+    match distance {
+        Left(furlongs) => , // <- Divide by 8
+        Right(miles)   => , // <- Return input
+    }
 };
-jet_verify(bit);"#,
+let eight_furlongs: Either<u32, u32> = Left(8);
+let one_mile: Either<u32, u32> = Right(1);
+jet_verify(jet_eq_32(1, to_miles(eight_furlongs)));
+jet_verify(jet_eq_32(1, to_miles(one_mile)));"#,
     ),
     (
         "BIP 340 Schnorr",
