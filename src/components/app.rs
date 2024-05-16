@@ -41,14 +41,14 @@ pub fn App() -> impl IntoView {
         match runner.run() {
             Ok(_) => {
                 set_run_result.set(Some(Ok("Program success".to_string())));
-                set_is_running.set(false);
                 button_success_animation();
                 merkle::reload_graph(program);
+                set_is_running.set(false);
             }
             Err(error) => {
                 set_run_result.set(Some(Err(error.to_string())));
-                set_is_running.set(false);
                 button_fail_animation();
+                set_is_running.set(false);
             }
         }
     };
