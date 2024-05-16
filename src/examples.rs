@@ -13,7 +13,7 @@ If your program fails, then the transaction would be invalid. There is a stack t
 
 <h3>🚧 Troubleshooting</h3>
 <p>Living parsing actually makes the IDE slower than it needs to be.
-In a futur version, we will try to do the heavy parsing just in time before running.
+In a future version, we will do the heavy parsing just in time before running.
 Some error messages are not very helpful because the compiler is too stupid.
 We are working on making the compiler smarter.
 Get help on <a href="https://github.com/BlockstreamResearch/simfony/discussions">GitHub discussions</a> / <a href="https://github.com/BlockstreamResearch/simfony/issues">open an issue</a> / reach out on <a href="https://t.me/simplicity_community">Telegram.</a><p>
@@ -34,7 +34,7 @@ Lines are terminated with a semicolon <code>;</code>.</p>
 
 <h3>📝 Your Task</h3>
 <p>Assign the value 1337 to variable <code>x</code>.</p>"#,
-        r#"let x: u32 = ; // <- Assign the value here
+        r#"let x: u32 = ; // <- Assign the value
 // Click the run button
 
 jet_verify(jet_eq_32(x, 1337));"#,
@@ -68,7 +68,7 @@ Think of <code>(x, y)</code> as an anonymous struct with two members: <code>x</c
 
 <h3>🚧 Troubleshooting</h3>
 <p>We will introduce structs in a future version of Simfony, but for now you have to use products.
-Right now, u16 is a macro for the product (u8, u8), and so on.</p>
+Right now, <code>u2</code> is a macro for the product <code>(u1, u1)</code>, <code>u4</code> is a macro for <code>(u2, u2)</code>, and so on.</p>
 
 <h3>📝 Your Task</h3>
 <p>Combine "beef" with "babe".</p>"#,
@@ -92,7 +92,7 @@ Variables live for as long as the block in which they are defined.
 Variables from inner scopes overwrite / shadow variables from outer scopes.</p>
 
 <h3>📝 Your Task</h3>
-<p>Use shadowing to make 2 + 2 = 5.</p>"#,
+<p>Use shadowing to make <a href="https://en.wikipedia.org/wiki/2_%2B_2_%3D_5">2 + 2 = 5</a>.</p>"#,
         r#"let (_, four): (u1, u32) = jet_add_32(2, 2);
 let five: u32 = 5;
 let what_is_false_is_true = {
@@ -147,10 +147,10 @@ Combine jets in a function to compute what you cannot compute with jets alone.</
 <p>You find a list of documented jets on the <a href="https://github.com/BlockstreamResearch/simplicity/wiki/Supported-Jets">Simplicity Wiki on GitHub</a>.</p>
 
 <h3>📝 Your Task</h3>
-<p>Define a NAND gate using the available jets.</p>"#,
+<p>Define a <a href="https://en.wikipedia.org/wiki/NAND_gate">NAND gate</a> using the available jets.</p>"#,
         r#"// jet_and_1 = AND, jet_or_1 = OR, jet_xor_1 = XOR, jet_complement_1 = NOT
 fn nand(a, b) {
-    // <- Your body here
+    // <- a NAND b
 };
 
 jet_verify(nand(false, false));
