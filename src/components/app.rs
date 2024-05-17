@@ -99,7 +99,7 @@ pub fn App() -> impl IntoView {
                         <div class="run-button">
                             <button
                                 on:click=move |_| run_program()
-                                disabled=move || is_running.get()
+                                disabled=move || parse_error.get().is_some() | is_running.get()
                             >
                                 "Run program"
                             </button>
