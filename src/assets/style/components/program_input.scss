@@ -189,4 +189,10 @@
         from { transform: rotate(0deg); }
         to { transform: rotate(360deg) }
     }
+
+    :disabled {
+        color: #999 !important;
+        background-color: #ccc !important;
+        cursor: default !important;
+    }
 }
