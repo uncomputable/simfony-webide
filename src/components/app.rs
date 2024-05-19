@@ -87,6 +87,11 @@ pub fn App() -> impl IntoView {
                     </div>
 
                     <textarea class="program-input-field"
+                        on:keydown=move |event: web_sys::KeyboardEvent| {
+                            if event.ctrl_key() && event.key_code() == 13 { // 13 is the Enter key
+                                run_program();
+                            }
+                        }
                         prop:value=move || program_str.get()
                         on:input=move |event| update_program_str(event_target_value(&event))
                         placeholder="Enter your program here"
