@@ -1632,6 +1632,7 @@ dependencies = [
  "leptos",
  "simfony",
  "wasm-bindgen-test",
+ "web-sys",
 ]
 
 [[package]]
