@@ -195,4 +195,26 @@
         background-color: #ccc !important;
         cursor: default !important;
     }
+
+    .program-input-field-container{
+        position: relative;
+
+        .copy-button{
+            position: absolute;
+            top: 10px;
+            right: 20px;
+            color: #ccc;
+        }
+        #copy-button-success{
+            position: absolute;
+            top: 10px;
+            right: 44px;
+            color: #ccc;
+            transition: .5s;
+            opacity: 0;
+        }
+        .copy-show{
+            opacity: 1 !important;
+        }
+    }
 }
