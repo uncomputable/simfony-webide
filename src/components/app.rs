@@ -13,6 +13,15 @@ use crate::util;
 extern "C" {
     fn button_success_animation();
     fn button_fail_animation();
+    fn copy_success();
+}
+
+#[cfg(web_sys_unstable_apis)]
+fn copy(text: &str) {
+    if let Some(clipboard) = window().navigator().clipboard() {
+        let _ = clipboard.write_text(text);
+        copy_success();
+    }
 }
 
 #[component]
@@ -86,18 +95,22 @@ pub fn App() -> impl IntoView {
                         <SelectExampleProgram update_program_str=update_program_str set_name=set_name/>
                     </div>
 
-                    <textarea class="program-input-field"
-                        on:keydown=move |event: web_sys::KeyboardEvent| {
-                            if event.ctrl_key() && event.key_code() == 13 { // 13 is the Enter key
-                                run_program();
+                    <div class="program-input-field-container">
+                        <span class="copy-button"><i class="far fa-copy" on:click=move |_| copy(&program_str.get())></i></span>
+                        <span id="copy-button-success">Program copied</span>
+                        <textarea class="program-input-field"
+                            on:keydown=move |event: web_sys::KeyboardEvent| {
+                                if event.ctrl_key() && event.key_code() == 13 { // 13 is the Enter key
+                                    run_program();
+                                }
                             }
-                        }
-                        prop:value=move || program_str.get()
-                        on:input=move |event| update_program_str(event_target_value(&event))
-                        placeholder="Enter your program here"
-                        rows="15" cols="80"
-                        spellcheck="false"
-                    />
+                            prop:value=move || program_str.get()
+                            on:input=move |event| update_program_str(event_target_value(&event))
+                            placeholder="Enter your program here"
+                            rows="15" cols="80"
+                            spellcheck="false"
+                        />
+                    </div>
 
                     <div class="flex program-input-footer">
                         <ExampleProgramDescription name=name/>

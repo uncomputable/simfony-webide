@@ -1,6 +1,6 @@
 # Deploy local website
 serve:
-    trunk serve
+    RUSTFLAGS=--cfg=web_sys_unstable_apis trunk serve
 
 # Deploy local website and open in browser
 open:

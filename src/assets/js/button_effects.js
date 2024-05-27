@@ -65,3 +65,9 @@ function clear_circle_classes(button){
   button.classList.remove("green");
   button.classList.remove("red");
 }
+
+export function copy_success(){
+  let button = document.querySelector("#copy-button-success")
+  button.classList.add("copy-show");
+  setTimeout(() => button.classList.remove("copy-show"), 1000)
+}
