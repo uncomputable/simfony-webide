@@ -20,8 +20,20 @@ extern "C" {
     fn copy_program(text: &str);
 }
 
+#[wasm_bindgen(module = "/src/assets/js/badger.js")]
+extern "C" {
+    fn load_badger();
+    fn lazer_eyes();
+    fn hide_badger(val: bool);
+    fn hide_badger_timed();
+}
+
 #[component]
 pub fn App() -> impl IntoView {
+    create_effect(move |_| {
+        load_badger();
+    });
+
     let (program_str, set_program_str) = create_signal("".to_string());
     let (run_result, set_run_result) = create_signal::<Option<Result<String, String>>>(None);
     let (is_running, set_is_running) = create_signal(false);
@@ -31,6 +43,11 @@ pub fn App() -> impl IntoView {
     let program_result = Signal::derive(move || util::program_from_string(&program_str.get()));
     let program = Signal::derive(move || program_result.get().ok());
     let parse_error = Signal::derive(move || program_result.get().err());
+
+    create_effect(move |_| match parse_error.get() {
+        Some(_) => hide_badger(true),
+        None => hide_badger(false),
+    });
 
     let update_program_str = move |s: String| {
         set_program_str.set(s);
@@ -46,11 +63,13 @@ pub fn App() -> impl IntoView {
         match runner.run() {
             Ok(_) => {
                 set_run_result.set(Some(Ok("Program success".to_string())));
+                lazer_eyes();
                 button_success_animation();
                 merkle::reload_graph(program);
                 set_is_running.set(false);
             }
             Err(error) => {
+                hide_badger_timed();
                 set_run_result.set(Some(Err(error.to_string())));
                 button_fail_animation();
                 set_is_running.set(false);
@@ -84,6 +103,7 @@ pub fn App() -> impl IntoView {
 
                 <div class="program-input">
                     <div class="program-input-header">
+                        <canvas id="badger-canvas" width="1600" height="1600"></canvas>
                         <div class="program-input-intro">
                             <h2>Program</h2>
                             <p>Select an example program or enter your own program below.</p>

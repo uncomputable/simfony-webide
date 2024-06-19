@@ -90,9 +90,10 @@
 
     .run-button { 
         position: absolute;
-        bottom: 0;
+        top: 34px;
         right: 0;
         max-width: 100%;
+        z-index: 4;
 
         button {
             display: flex;
@@ -122,6 +123,7 @@
         position: absolute;
         bottom: 0;
         right: 0;
+        z-index: 4;
         max-width: 100%;
         display: inline-block;
         width: fit-content;
@@ -198,6 +200,7 @@
 
     .program-input-field-container{
         position: relative;
+        z-index: 4;
 
         .copy-button{
             position: absolute;
@@ -216,5 +219,12 @@
         .copy-show{
             opacity: 1 !important;
         }
+    }
+
+    #badger-canvas{
+        position: absolute;
+        top: -686px;
+        left: -420px;
+        z-index: 2;
     }
 }
