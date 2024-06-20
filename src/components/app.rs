@@ -23,7 +23,7 @@ extern "C" {
 #[wasm_bindgen(module = "/src/assets/js/badger.js")]
 extern "C" {
     fn load_badger();
-    fn lazer_eyes();
+    fn laser_eyes();
     fn hide_badger(val: bool);
     fn hide_badger_timed();
 }
@@ -63,7 +63,7 @@ pub fn App() -> impl IntoView {
         match runner.run() {
             Ok(_) => {
                 set_run_result.set(Some(Ok("Program success".to_string())));
-                lazer_eyes();
+                laser_eyes();
                 button_success_animation();
                 merkle::reload_graph(program);
                 set_is_running.set(false);

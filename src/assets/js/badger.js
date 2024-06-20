@@ -1,44 +1,51 @@
 let riveInstance
 
 export function load_badger(){
-  riveInstance = new rive.Rive({
-      src: "/animations/badger.riv",
-      canvas: document.getElementById("badger-canvas"),
-      autoplay: true,
-      artboard: "Artboard",
-      stateMachines: "State Machine 1",
-  });
-  pass_mousemove_events()
-
+  try {
+    riveInstance = new rive.Rive({
+        src: "/animations/badger.riv",
+        canvas: document.getElementById("badger-canvas"),
+        autoplay: true,
+        artboard: "Artboard",
+        stateMachines: "State Machine 1",
+    });
+    pass_mousemove_events()
+  }catch(e){console.error(e)}
 }
 
-export function lazer_eyes(){
-  const inputs = riveInstance.stateMachineInputs('State Machine 1');
-  const lazerTrigger = inputs.find(i => i.name === 'anim_change');
-  lazerTrigger.fire()
+export function laser_eyes(){
+  try {
+    const inputs = riveInstance.stateMachineInputs('State Machine 1');
+    const laserTrigger = inputs.find(i => i.name === 'anim_change');
+    laserTrigger.fire()
+  }catch(e){console.error(e)}
 }
 
 export async function hide_badger(val){
-  await new Promise(res => setTimeout(res, 500));
+  try {
+    await new Promise(res => setTimeout(res, 500));
 
-  const inputs = riveInstance.stateMachineInputs('State Machine 1');
-  if (inputs){
-    const hideInput = inputs.find(i => i.name === 'Hide');
-    hideInput.value = val
-  }
+    const inputs = riveInstance.stateMachineInputs('State Machine 1');
+    if (inputs){
+      const hideInput = inputs.find(i => i.name === 'Hide');
+      hideInput.value = val
+    }
+  }catch(e){console.error(e)}
 }
 
 export async function hide_badger_timed(){
-  await new Promise(res => setTimeout(res, 500));
+  try {
+    await new Promise(res => setTimeout(res, 500));
 
-  const inputs = riveInstance.stateMachineInputs('State Machine 1');
-  if (inputs){
-    const hideInput = inputs.find(i => i.name === 'Hide');
-    hideInput.value = true
+    const inputs = riveInstance.stateMachineInputs('State Machine 1');
+    if (inputs){
+      const hideInput = inputs.find(i => i.name === 'Hide');
+      hideInput.value = true
 
-    await new Promise(res => setTimeout(res, 2000));
-    hideInput.value = false
-  }
+      await new Promise(res => setTimeout(res, 2000));
+      hideInput.value = false
+    }
+  }catch(e){console.error(e)}
 }
 
 // the input field captures mouse events so a new event 
