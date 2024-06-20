@@ -75,7 +75,7 @@
 
         @media only screen and (max-width: 800px) {
             display: flex;
-            flex-direction: column;
+            flex-direction: column-reverse;
 
             .program-details {
                 margin-right: 0;
@@ -83,7 +83,9 @@
 
             .run-button{
                 position: relative !important;
-                margin-top: 20px;
+                top: 0 !important;
+                margin-top: -10px;
+                margin-bottom: 20px;
             }
         }
     }
