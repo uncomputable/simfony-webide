@@ -55,6 +55,8 @@ p {
 }
 
 .intro{
+    margin-bottom: 80px;
+    
     .intro-title {
         font-size: 32px;
         font-size: 48px;
@@ -86,13 +88,23 @@ p {
 }
 
 .parsing-error-box {
+    box-sizing: border-box;
+    position: relative;
+    z-index: 3;
     color: white;
     padding: 10px;
     background-color: #770000;
     font-weight: 200;
-    margin-bottom: 10px;
+    margin-bottom: 15px;
 
     overflow-x: auto;
     scrollbar-color: #770000 #aa6600;
     scrollbar-width: thin;
+
+    animation: grow .2s;
+}
+
+@keyframes grow {
+    0% {max-height: 0px; padding-top: 0px; padding-bottom: 0px}
+    100% {max-height: 91px;}
 }
