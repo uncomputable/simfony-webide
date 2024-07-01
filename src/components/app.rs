@@ -103,7 +103,7 @@ pub fn App() -> impl IntoView {
 
                 <div class="program-input">
                     <div class="program-input-header">
-                        <canvas id="badger-canvas" width="1600" height="1600"></canvas>
+                        <canvas id="badger-canvas" width="3200" height="3200" style="width: 1600px; height: 1600px;"></canvas>
                         <div class="program-input-intro">
                             <h2>Program</h2>
                             <p>Select an example program or enter your own program below.</p>
