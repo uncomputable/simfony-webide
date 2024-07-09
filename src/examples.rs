@@ -1,7 +1,8 @@
 /// Constant map of example names, descriptions and program strings.
 ///
 /// Names must be unique because they serve as primary keys.
-const EXAMPLES: [(&str, &str, &str); 17] = [
+#[rustfmt::skip]
+const EXAMPLES: [(&str, &str, &str); 8] = [
     (
         "Welcome 💡",
         r#"<h3>👋 Welcome to the Simfony IDE!</h3>
@@ -59,6 +60,7 @@ let (top, bot) = max128;
 jet_verify(jet_all_64(top));
 jet_verify(jet_all_64(bot));"#,
     ),
+    /*
     (
         "Products 💡",
         r#"<h3>Combining Values in Products</h3>
@@ -79,6 +81,7 @@ let beefbabe: u32 = ; // <- Construct a product
 
 jet_verify(jet_eq_32(0xbeefbabe, beefbabe));"#,
     ),
+    */
     (
         "Blocks 💡",
         r#"<h3>Grouping Code in Blocks</h3>
@@ -102,6 +105,7 @@ let what_is_false_is_true = {
 
 jet_verify(what_is_false_is_true);"#,
     ),
+    /*
     (
         "Functions 💡",
         r#"<h3>Grouping Code in Functions</h3>
@@ -239,6 +243,7 @@ let one_mile: Either<u32, u32> = Right(1);
 jet_verify(jet_eq_32(1, to_miles(eight_furlongs)));
 jet_verify(jet_eq_32(1, to_miles(one_mile)));"#,
     ),
+    */
     (
         "BIP 340 Schnorr",
         r#"Verify a Schnorr signature.
@@ -247,10 +252,11 @@ Here, the signature is backed into the program. This is just for demonstration p
 In reality, the signature would live inside the witness.
 In a future version of the IDE, the witness data will be customizable."#,
         r#"let pk: u256 = 0xf9308a019258c31049344f85f89d5229b531c845836f99b08601f113bce036f9;
-let sig: (u256, u256) = 0xe907831f80848d1069a5371b402410364bdf1c5f8307b0084c55f1ce2dca821525f66a4a85ea8b71e482a74f382d2ce5ebeee8fdb2172f477df4900d310536c0;
 let msg: u256 = 0x0000000000000000000000000000000000000000000000000000000000000000;
+let sig: [u8; 64] = [0xe9, 0x07, 0x83, 0x1f, 0x80, 0x84, 0x8d, 0x10, 0x69, 0xa5, 0x37, 0x1b, 0x40, 0x24, 0x10, 0x36, 0x4b, 0xdf, 0x1c, 0x5f, 0x83, 0x07, 0xb0, 0x08, 0x4c, 0x55, 0xf1, 0xce, 0x2d, 0xca, 0x82, 0x15, 0x25, 0xf6, 0x6a, 0x4a, 0x85, 0xea, 0x8b, 0x71, 0xe4, 0x82, 0xa7, 0x4f, 0x38, 0x2d, 0x2c, 0xe5, 0xeb, 0xee, 0xe8, 0xfd, 0xb2, 0x17, 0x2f, 0x47, 0x7d, 0xf4, 0x90, 0x0d, 0x31, 0x05, 0x36, 0xc0];
 jet_bip_0340_verify(pk, msg, sig);"#,
     ),
+    /*
     (
         "OP_CAT",
         r#"Concatenate some bytes and verify the result."#,
@@ -260,6 +266,7 @@ let ab: u16 = (a, b);
 let c = 0x1001;
 jet_verify(jet_eq_16(ab, c));"#,
     ),
+    */
     (
         "Recursive covenant",
         r#"The world's simplest recursive covenant:
@@ -278,15 +285,15 @@ we require the user to specify all the components of the sighash
 that they want to commit.
 The spending transaction is hardcoded to satisfy the covenant.
 In a future version of the IDE, the transaction will be customizable."#,
-        r#"let ctx = jet_sha_256_ctx_8_init();
-let ctx = jet_sha_256_ctx_8_add_4(ctx, jet_version());
-let ctx = jet_sha_256_ctx_8_add_4(ctx, jet_lock_time());
-let ctx = jet_sha_256_ctx_8_add_32(ctx, jet_input_script_sigs_hash());
-let ctx = jet_sha_256_ctx_8_add_4(ctx, jet_num_inputs());
-let ctx = jet_sha_256_ctx_8_add_32(ctx, jet_input_sequences_hash());
-let ctx = jet_sha_256_ctx_8_add_4(ctx, jet_num_outputs());
-let ctx = jet_sha_256_ctx_8_add_32(ctx, jet_outputs_hash());
-let ctx = jet_sha_256_ctx_8_add_4(ctx, jet_current_index());
+        r#"let ctx: Ctx8 = jet_sha_256_ctx_8_init();
+let ctx: Ctx8 = jet_sha_256_ctx_8_add_4(ctx, jet_version());
+let ctx: Ctx8 = jet_sha_256_ctx_8_add_4(ctx, jet_lock_time());
+let ctx: Ctx8 = jet_sha_256_ctx_8_add_32(ctx, jet_input_script_sigs_hash());
+let ctx: Ctx8 = jet_sha_256_ctx_8_add_4(ctx, jet_num_inputs());
+let ctx: Ctx8 = jet_sha_256_ctx_8_add_32(ctx, jet_input_sequences_hash());
+let ctx: Ctx8 = jet_sha_256_ctx_8_add_4(ctx, jet_num_outputs());
+let ctx: Ctx8 = jet_sha_256_ctx_8_add_32(ctx, jet_outputs_hash());
+let ctx: Ctx8 = jet_sha_256_ctx_8_add_4(ctx, jet_current_index());
 let ctv_hash: u256 = jet_sha_256_ctx_8_finalize(ctx);
 
 let expected_hash: u256 = 0xae3d019b30529c6044d2b3d7ee2e0ee5db51a7f05ed5db8f089cd5d455f1fc5d;
@@ -298,27 +305,28 @@ jet_verify(jet_eq_256(ctv_hash, expected_hash));"#,
 Here, the signature is backed into the program. This is just for demonstration purposes.
 In reality, the signature would live inside the witness.
 In a future version of the IDE, the witness data will be customizable."#,
-        r#"let ctx = jet_sha_256_ctx_8_init();
+        r#"let ctx: Ctx8 = jet_sha_256_ctx_8_init();
 // Blockchain
-let ctx = jet_sha_256_ctx_8_add_32(ctx, jet_genesis_block_hash());
-let ctx = jet_sha_256_ctx_8_add_32(ctx, jet_genesis_block_hash());
+let ctx: Ctx8 = jet_sha_256_ctx_8_add_32(ctx, jet_genesis_block_hash());
+let ctx: Ctx8 = jet_sha_256_ctx_8_add_32(ctx, jet_genesis_block_hash());
 // Transaction
-let ctx = jet_sha_256_ctx_8_add_4(ctx, jet_version());
-let ctx = jet_sha_256_ctx_8_add_4(ctx, jet_lock_time());
-let ctx = jet_sha_256_ctx_8_add_32(ctx, jet_tap_env_hash());
+let ctx: Ctx8 = jet_sha_256_ctx_8_add_4(ctx, jet_version());
+let ctx: Ctx8 = jet_sha_256_ctx_8_add_4(ctx, jet_lock_time());
+let ctx: Ctx8 = jet_sha_256_ctx_8_add_32(ctx, jet_tap_env_hash());
 // All inputs
-let ctx = jet_sha_256_ctx_8_add_32(ctx, jet_inputs_hash());
-let ctx = jet_sha_256_ctx_8_add_32(ctx, jet_input_utxos_hash());
+let ctx: Ctx8 = jet_sha_256_ctx_8_add_32(ctx, jet_inputs_hash());
+let ctx: Ctx8 = jet_sha_256_ctx_8_add_32(ctx, jet_input_utxos_hash());
 // No outputs
 // Current index
-let ctx = jet_sha_256_ctx_8_add_4(ctx, jet_current_index());
+let ctx: Ctx8 = jet_sha_256_ctx_8_add_4(ctx, jet_current_index());
 // Message
-let msg = jet_sha_256_ctx_8_finalize(ctx);
+let msg: u256 = jet_sha_256_ctx_8_finalize(ctx);
 
 let pk: u256 = 0xf9308a019258c31049344f85f89d5229b531c845836f99b08601f113bce036f9;
-let sig: (u256, u256) = 0x346152583d5b60b972bb4c03ab672e339431060e2b09c447ab983c65dabc70a459f3beca7788bfa5da221cf99227b65b4ad3821a2045c847ee56d48df26aee9c;
+let sig: [u8; 64] = [0x34, 0x61, 0x52, 0x58, 0x3d, 0x5b, 0x60, 0xb9, 0x72, 0xbb, 0x4c, 0x03, 0xab, 0x67, 0x2e, 0x33, 0x94, 0x31, 0x06, 0x0e, 0x2b, 0x09, 0xc4, 0x47, 0xab, 0x98, 0x3c, 0x65, 0xda, 0xbc, 0x70, 0xa4, 0x59, 0xf3, 0xbe, 0xca, 0x77, 0x88, 0xbf, 0xa5, 0xda, 0x22, 0x1c, 0xf9, 0x92, 0x27, 0xb6, 0x5b, 0x4a, 0xd3, 0x82, 0x1a, 0x20, 0x45, 0xc8, 0x47, 0xee, 0x56, 0xd4, 0x8d, 0xf2, 0x6a, 0xee, 0x9c];
 jet_bip_0340_verify(pk, msg, sig);"#,
     ),
+    /*
     (
         "List sum",
         r#"Sum the elements of a list.
@@ -375,6 +383,7 @@ let c: Either<u256, (List<u8, 64>, (u64, u256))> = forWhile::<256>(ctx, hash_cou
 let expected: u256 = 0x40aff2e9d2d8922e47afd4648e6967497158785fbd1da870e7110266bf944880;
 jet_verify(jet_eq_256(expected, unwrap_left(c)));"#,
     ),
+    */
 ];
 
 /// Iterate over the example names.
