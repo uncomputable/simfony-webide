@@ -361,9 +361,9 @@ checksum = "669a445ee724c5c69b1b06fe0b63e70a1c84bc9bb7d9696cd4f4e3ec45050408"
 
 [[package]]
 name = "either"
-version = "1.10.0"
+version = "1.13.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "11157ac094ffbdde99aa67b23417ebdd801842852b500e395a45a9c0aac03e4a"
+checksum = "60b1af1c220855b6ceac025d3f6ecdd2b7c4894bfe9cd9bda4fbb4bc7c0d4cf0"
 
 [[package]]
 name = "elements"
@@ -711,18 +711,18 @@ checksum = "8f518f335dce6725a761382244631d86cf0ccb2863413590b31338feb467f9c3"
 
 [[package]]
 name = "itertools"
-version = "0.11.0"
+version = "0.12.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b1c173a5686ce8bfa551b3563d0c2170bf24ca44da99c7ca4bfdab5418c3fe57"
+checksum = "ba291022dbbd398a455acf126c1e341954079855bc60dfdda641363bd6922569"
 dependencies = [
  "either",
 ]
 
 [[package]]
 name = "itertools"
-version = "0.12.1"
+version = "0.13.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ba291022dbbd398a455acf126c1e341954079855bc60dfdda641363bd6922569"
+checksum = "413ee7dfc52ee1a4949ceeb7dbc8a33f2d6c088194d9f922fb8318faf1f01186"
 dependencies = [
  "either",
 ]
@@ -1583,9 +1583,10 @@ dependencies = [
 [[package]]
 name = "simfony"
 version = "0.1.0"
-source = "git+https://github.com/uncomputable/simfony?branch=dev#91e83c20b216ee0c0dd88e2d08d2c6dd3f842034"
+source = "git+https://github.com/uncomputable/simfony?branch=2024-07-empty-witness#60c18e237472dd1ce925aeb920679a3d783479df"
 dependencies = [
  "base64",
+ "either",
  "getrandom",
  "hex-conservative",
  "miniscript",
@@ -1599,7 +1600,7 @@ dependencies = [
 [[package]]
 name = "simplicity-lang"
 version = "0.2.0"
-source = "git+https://github.com/BlockstreamResearch/rust-simplicity?rev=e3866e82001f8b62f0bdcd65dc2d0ec56462d5d7#e3866e82001f8b62f0bdcd65dc2d0ec56462d5d7"
+source = "git+https://github.com/BlockstreamResearch/rust-simplicity?rev=497b88fec845b3080b61b3939074b59fe24d6dec#497b88fec845b3080b61b3939074b59fe24d6dec"
 dependencies = [
  "bitcoin",
  "bitcoin_hashes",
@@ -1615,7 +1616,7 @@ dependencies = [
 [[package]]
 name = "simplicity-sys"
 version = "0.2.0"
-source = "git+https://github.com/BlockstreamResearch/rust-simplicity?rev=e3866e82001f8b62f0bdcd65dc2d0ec56462d5d7#e3866e82001f8b62f0bdcd65dc2d0ec56462d5d7"
+source = "git+https://github.com/BlockstreamResearch/rust-simplicity?rev=497b88fec845b3080b61b3939074b59fe24d6dec#497b88fec845b3080b61b3939074b59fe24d6dec"
 dependencies = [
  "bitcoin_hashes",
  "cc",
@@ -1627,7 +1628,7 @@ version = "0.1.0"
 dependencies = [
  "console_error_panic_hook",
  "hex-conservative",
- "itertools 0.11.0",
+ "itertools 0.13.0",
  "js-sys",
  "leptos",
  "simfony",
