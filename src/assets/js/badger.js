@@ -48,22 +48,23 @@ export async function hide_badger_timed(){
   }catch(e){console.error(e)}
 }
 
-// the input field captures mouse events so a new event 
-// needs to be created for the badgers eyes to follow the pointer.
+// pass mousemove events to badger canvas for eye movement
 function pass_mousemove_events(){
   const inputElement = document.querySelector('.program-input-field');
+
+
   const badgerCanvas = document.querySelector('#badger-canvas');
 
-  inputElement.addEventListener('mousemove', function(event) {
-      const newEvent = new MouseEvent('mousemove', {
-          clientX: event.clientX,
-          clientY: event.clientY,
-          screenX: event.screenX,
-          screenY: event.screenY,
-          bubbles: true,
-          cancelable: true,
-          view: window
-      });
-      badgerCanvas.dispatchEvent(newEvent);
+  document.body.addEventListener('mousemove', function(event) {
+    const newEvent = new MouseEvent('mousemove', {
+        clientX: event.clientX,
+        clientY: event.clientY,
+        screenX: event.screenX,
+        screenY: event.screenY,
+        bubbles: false,
+        cancelable: true,
+        view: window
+    });
+    badgerCanvas.dispatchEvent(newEvent);
   });
 }
