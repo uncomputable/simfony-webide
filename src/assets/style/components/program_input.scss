@@ -209,14 +209,31 @@
             top: 10px;
             right: 20px;
             color: #ccc;
+            border: 1px solid #5134E0;
+            padding: 4px;
+            border-radius: 4px;
+            height: 34px;
+            width: 34px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+
+            &:hover {
+                background: #5134e0;
+            }
         }
         #copy-button-success{
             position: absolute;
             top: 10px;
-            right: 44px;
+            right: 60px;
             color: #ccc;
             transition: .5s;
             opacity: 0;
+            background: #5134E0;
+
+            padding: 6px 10px;
+            border: 1px solid #5134e0;
+            border-radius: 4px;
         }
         .copy-show{
             opacity: 1 !important;

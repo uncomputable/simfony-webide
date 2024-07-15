@@ -2,11 +2,13 @@
 #merkle_graph_holder{
     border: 1px solid rgba(255, 255, 255, .1);
     margin-top: 20px;
+    border-radius: 7.5px;
 
     svg {
         background-color: $background-light;
         max-width: 100%;
         max-height: 100%;
+        border-radius: 7.5px;
     }
     text {
         fill: white;
