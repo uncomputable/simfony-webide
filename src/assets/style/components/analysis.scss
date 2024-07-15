@@ -96,10 +96,38 @@
         display: flex;
         align-items: center;
         width: 100%;
+        margin-left: 14px;
 
         #graph-toggle-icon{
-            font-size: 26px;
             margin-left: 14px;
+            
+            rect{
+                stroke: #b5bdc2;
+                transition: .3s;
+            }
+            circle{
+                fill: #b5bdc2;
+                transition: .3s;
+            }
+
+            &:hover{
+                rect{
+                    stroke: white;
+                }
+                circle{
+                    fill: white;
+                }
+            }
+
+            &.toggle-on{
+                rect{
+                    stroke: #9595FC;
+                }
+                circle{
+                    fill: #9595FC;
+                    transform:translateX(22px);
+                }
+            }
         }
     }
 }

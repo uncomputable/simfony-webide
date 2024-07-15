@@ -25,13 +25,14 @@ pub fn MerkleExplorer(
                         class="graph-toggle-holder"
                     >
                         <h2 class="analysis-title">Merkle Explorer</h2>
-                        <i
+
+                        <svg width="46" height="24" viewBox="0 0 46 24" fill="none" xmlns="http://www.w3.org/2000/svg"
                             id="graph-toggle-icon"
-                            class:fa-toggle-on=move || graph_toggle.get()
-                            class:fa-toggle-off=move || !graph_toggle.get()
-                            class="far"
+                            class:toggle-on=move || graph_toggle.get()
                         >
-                        </i>
+                            <rect x="0.5" y="0.5" width="45" height="22.7931" rx="11.3966" />
+                            <circle cx="11.897" cy="11.8965" r="8.72414" />
+                        </svg>
                     </div>
                 </div>
                 <div class:hidden=move || !graph_toggle.get() >

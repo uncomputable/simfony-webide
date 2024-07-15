@@ -112,7 +112,7 @@ pub fn App() -> impl IntoView {
                     </div>
 
                     <div class="program-input-field-container">
-                        <span class="copy-button"><i class="far fa-copy" on:click=move |_| copy_program(&program_str.get())></i></span>
+                        <span class="copy-button" on:click=move |_| copy_program(&program_str.get())><i class="far fa-copy"></i></span>
                         <span id="copy-button-success">Program copied</span>
                         <textarea class="program-input-field"
                             on:keydown=move |event: web_sys::KeyboardEvent| {
