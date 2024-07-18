@@ -1,4 +1,6 @@
 
+let svg, zoom, zoomInitialTransform;
+
 export function load_merkle_graph_js(tree_data){
 
     let horizontal = true;
@@ -24,18 +26,23 @@ export function load_merkle_graph_js(tree_data){
 
     let merkleContainer = document.getElementById("merkle-container");
     let width = merkleContainer.clientWidth;
-    let height = width / 2
+    let height = width < 1000 ? width : width / 2
     svg_holder.style.height = `${height}px`;
 
-    let svg = d3.select('#merkle_graph_holder svg')
+    svg = d3.select('#merkle_graph_holder svg')
         .attr('width', width)
         .attr('height', height)
 
     let zoom_g = svg.append('g')
 
-    let centerGraph = horizontal ? `translate(${nodeSize[0]}, ${height / 2})` : `translate(${width / 2}, ${nodeSize[1]})`;
+    let centerGraph = horizontal ? `translate(${nodeSize[0]}, ${height / 2})` : `translate(${width / 2}, ${nodeSize[1]});`;
+
+    let baseWidth = 1160
+    let scaleValue = width / (width + (baseWidth - width) / 2)
+
+    let scaleGraph = ` scale( ${scaleValue} )`
     let svg_g = zoom_g.append('g')
-        .attr('transform',centerGraph);
+        .attr('transform', centerGraph + scaleGraph);
 
     let nodePositions = horizontal ? [nodeSize[1] + nodeGap[1], nodeSize[0] + nodeGap[0]] : [nodeSize[0] + nodeGap[0], nodeSize[1] + nodeGap[1]]
     let tree = d3.tree()
@@ -43,7 +50,12 @@ export function load_merkle_graph_js(tree_data){
     let root = d3.hierarchy(tree_data)
     let links = tree(root).links()
 
-    svg.call(d3.zoom().on('zoom', (e) => {
+    zoom = d3.zoom()
+        .scaleExtent([.2, 4])
+
+    zoomInitialTransform = d3.zoomTransform(svg)
+
+    svg.call(zoom.on('zoom', (e) => {
         zoom_g.attr('transform', e.transform)
     }))    
 
@@ -93,6 +105,15 @@ export function load_merkle_graph_js(tree_data){
         .attr('dominant-baseline', 'middle')
         .attr('class', 'node-full-text')
         .text(d => d.data.text)
+}
+
+export function manualZoom(mode){
+    if (mode == 'zoom_in')
+        svg.transition().call(zoom.scaleBy, 1.1)
+    else if (mode == 'zoom_out')
+        svg.transition().call(zoom.scaleBy, .9)
+    else if (mode == 'zoom_reset')
+        svg.transition().call(zoom.transform, zoomInitialTransform)
 }
 
 function countNodes(node, count = 0){

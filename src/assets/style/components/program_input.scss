@@ -221,6 +221,7 @@
                 display: flex;
                 justify-content: center;
                 align-items: center;
+                background: #191C21;
 
                 &:hover {
                     background: #5134e0;
@@ -229,6 +230,7 @@
             #copy-button-success{
                 transition: .5s;
                 opacity: 0;
+                background: #191C21;
 
                 padding: 6px 10px;
                 border: 1px solid #5134e0;

@@ -35,8 +35,22 @@ pub fn MerkleExplorer(
                         </svg>
                     </div>
                 </div>
-                <div class:hidden=move || !graph_toggle.get() >
-                    <div id="merkle_graph_holder">
+                <div class="merkle_graph" class:hidden=move || !graph_toggle.get() >
+                    <div id="merkle_graph_holder"></div>
+
+                    <div class="graph-button-holder">
+                        <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" class="graph-button" on:click=move |_| manualZoom("zoom_in")>
+                            <line x1="5" y1="50" x2="95" y2="50" />
+                            <line x1="50" y1="5" x2="50" y2="95" />
+                        </svg>
+
+                        <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" class="graph-button" on:click=move |_| manualZoom("zoom_out")>
+                            <line x1="5" y1="50" x2="95" y2="50" />
+                        </svg>
+
+                        <svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg" class="graph-button" on:click=move |_| manualZoom("zoom_reset")>
+                            <path d="M64,256H34A222,222,0,0,1,430,118.15V85h30V190H355V160h67.27A192.21,192.21,0,0,0,256,64C150.13,64,64,150.13,64,256Zm384,0c0,105.87-86.13,192-192,192A192.21,192.21,0,0,1,89.73,352H157V322H52V427H82V393.85A222,222,0,0,0,478,256Z"/>
+                        </svg>
                     </div>
                 </div>
             </div>
@@ -50,6 +64,7 @@ pub fn MerkleExplorer(
 #[wasm_bindgen(module = "/src/assets/js/merkle_graph_d3.js")]
 extern "C" {
     fn load_merkle_graph_js(dat: JsValue);
+    fn manualZoom(mode: &str);
 }
 
 fn marshal_merkle_data<M: node::Marker>(expression: &node::Node<M>) -> JsValue {
