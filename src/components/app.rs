@@ -112,8 +112,10 @@ pub fn App() -> impl IntoView {
                     </div>
 
                     <div class="program-input-field-container">
-                        <span class="copy-button" on:click=move |_| copy_program(&program_str.get())><i class="far fa-copy"></i></span>
-                        <span id="copy-button-success">Program copied</span>
+                        <div class="copy-holder">
+                            <span id="copy-button-success">Program copied</span>
+                            <span class="copy-button" on:click=move |_| copy_program(&program_str.get())><i class="far fa-copy"></i></span>
+                        </div>
                         <textarea class="program-input-field"
                             on:keydown=move |event: web_sys::KeyboardEvent| {
                                 if event.ctrl_key() && event.key_code() == 13 { // 13 is the Enter key
