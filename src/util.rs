@@ -13,8 +13,8 @@ use crate::value::ExtValue;
 pub type Expression = RedeemNode<Elements>;
 
 pub fn program_from_string(s: &str) -> Result<Arc<Expression>, String> {
-    let prog_text = Arc::from(s);
-    simfony::satisfy(prog_text)
+    let witness = simfony::witness::WitnessValues::empty();
+    simfony::satisfy(s, &witness)
 }
 
 pub fn get_compression_factor<M: node::Marker>(node: &node::Node<M>) -> usize {

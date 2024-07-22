@@ -1583,12 +1583,13 @@ dependencies = [
 [[package]]
 name = "simfony"
 version = "0.1.0"
-source = "git+https://github.com/uncomputable/simfony?branch=2024-07-empty-witness#60c18e237472dd1ce925aeb920679a3d783479df"
+source = "git+https://github.com/uncomputable/simfony?branch=2024-07-type-casts#a3bb49db49ba73810bef5c5b9081502803ff6e01"
 dependencies = [
  "base64",
  "either",
  "getrandom",
  "hex-conservative",
+ "itertools 0.13.0",
  "miniscript",
  "pest",
  "pest_derive",
