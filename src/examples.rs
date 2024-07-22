@@ -30,10 +30,11 @@ Switch to the next lesson in the dropdown list above ⬆️</p>"#,
     (
         "Variables 💡",
         r#"<h3>Assigning Values to Variables</h3>
-<p>Like in Rust, you define variables using let statements.
-The variable named <code>x</code> is of type <code>u32</code> (unsigned 32-bit integer).
-<code>x</code> is assigned the value that follows after the equality sign </code>=</code>.
-Lines are terminated with a semicolon <code>;</code>.</p>
+<p>You define variables using let statements of the form <code>let X: TYPE_OF_X = VALUE_OF_X</code>.
+In this example, the variable <code>X</code> is of type <code>TYPE_OF_X</code> and holds the value <code>VALUE_OF_X</code>.
+The line ends with a semicolon <code>;</code>.
+Unlike in Rust, every variable must be explicitly typed by the programmer.
+The Simfony compiler doesn't infer types.</p>
 
 <h3>📝 Your Task</h3>
 <p>Assign the value 1337 to variable <code>x</code>.</p>"#,
@@ -47,9 +48,10 @@ Lines are terminated with a semicolon <code>;</code>.</p>
         r#"<h3>Available Integer Types</h3>
 <p>Simfony supports unsigned integers from 1 bit to 256 bits:
 <code>u1</code>, <code>u2</code>, <code>u4</code>, <code>u8</code>, <code>u16</code>, <code>u32</code>, <code>u64</code>, <code>u128</code>, <code>u256</code>.
-You can write decimal literals 0, 1, 2 for values of type <code>u8</code> to <code>u64</code>.
-<code>u1</code>, <code>u2</code>, <code>u4</code> require bit literals <code>0b01..01</code> of appropriate length.
-<code>u128</code>, <code>u256</code> require byte literals (hex) <code>0xab...cd</code> of appropriate length.</p>
+You can write decimal literals: <code>0</code>, <code>1</code>, <code>2</code>.
+You can also write bit literals of appropriate length: <code>0b00</code>, <code>0b01</code>, <code>0b10</code>.
+Finally, types that are at least 1 byte long support byte (hex) literals of appropriate length: <code>0x00</code>, <code>0x01</code>, <code>0x02</code>.
+Half bytes (aka nibbles) are not supported.</p>
 
 <h3>📝 Your Task</h3>
 <p>Assign the maximum <code>u8</code> and <code>u128</code> values.</p>"#,
@@ -71,8 +73,7 @@ You take data <code>x</code> and <code>y</code> and group them in the product <c
 Think of <code>(x, y)</code> as an anonymous struct with two members: <code>x</code> and <code>y</code>.</p>
 
 <h3>🚧 Troubleshooting</h3>
-<p>We will introduce structs in a future version of Simfony, but for now you have to use products.
-Right now, <code>u2</code> is a macro for the product <code>(u1, u1)</code>, <code>u4</code> is a macro for <code>(u2, u2)</code>, and so on.</p>
+<p>We will introduce structs in a future version of Simfony, but for now you have to use products.</p>
 
 <h3>📝 Your Task</h3>
 <p>Combine "beef" with "babe".</p>"#,
@@ -120,9 +121,7 @@ The function body follows, which is simply a block that may only use parameter v
 The function returns on the final line of its body.
 
 <h3>🚧 Troubleshooting</h3>
-<p>Because the compiler is stupid, the parameters are implictly typed.
-We are working on explicitly typed parameters.
-There are no early returns via the <code>return</code> keyword at the moment.
+<p>There are no early returns via the <code>return</code> keyword at the moment.
 Functions can call other function that have already been defined.
 This means recursion is currently impossible.
 We are looking into enabling safe recursion.</p>
@@ -155,7 +154,7 @@ This means jets are faster than functions, but there is only a fixed set of jets
 Combine jets in a function to compute what you cannot compute with jets alone.</p>
 
 <h3>🚧 Troubleshooting</h3>
-<p>You find a list of documented jets on the <a href="https://github.com/BlockstreamResearch/simplicity/wiki/Supported-Jets">Simplicity Wiki on GitHub</a>.</p>
+<p>There is a <a href="https://docs.rs/simfony-as-rust/latest/simfony_as_rust/jet/index.html">complete documentation of all jets on docs.rs</a>.</p>
 
 <h3>📝 Your Task</h3>
 <p>Define a <a href="https://en.wikipedia.org/wiki/NAND_gate">NAND gate</a> using the available jets.</p>"#,
@@ -238,8 +237,9 @@ And so on.
 
 <h3>Matching Sum Values</h3>
 <p>We use <code>match</code> expressions to handle sum values:
-The <code>Left(a)</code> branch is executed if the input contains value <code>a</code> of type <code>A</code>.
-The <code>Right(b)</code> branch is executed if the input contains value <code>b</code> of type <code>B</code>.
+The <code>Left(a: A)</code> branch is executed if the input contains value <code>a</code> of type <code>A</code>.
+The <code>Right(b: B)</code> branch is executed if the input contains value <code>b</code> of type <code>B</code>.
+Like variable assignments, variable bindings in match arms must be explicitly typed.</p>
 
 <h3>📝 Your Task</h3>
 <p><a href="https://en.wikipedia.org/wiki/Furlong">Eight furlongs are one mile.</a>
