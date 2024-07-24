@@ -5,6 +5,8 @@ export function copy_program(text){
 
 function copy_success(){
     let button = document.querySelector("#copy-button-success")
-    button.classList.add("copy-show");
-    setTimeout(() => button.classList.remove("copy-show"), 1000)
+    if (!button.classList.contains("copy-show")){
+        button.classList.add("copy-show");
+        setTimeout(() => button.classList.remove("copy-show"), 1000)
+    }
 }	

@@ -204,22 +204,41 @@
         position: relative;
         z-index: 4;
 
-        .copy-button{
+        .copy-holder {
             position: absolute;
             top: 10px;
             right: 20px;
             color: #ccc;
-        }
-        #copy-button-success{
-            position: absolute;
-            top: 10px;
-            right: 44px;
-            color: #ccc;
-            transition: .5s;
-            opacity: 0;
-        }
-        .copy-show{
-            opacity: 1 !important;
+            display: flex;
+            gap: 4px;
+
+            .copy-button{
+                border: 1px solid #5134E0;
+                padding: 4px;
+                border-radius: 4px;
+                height: 34px;
+                width: 34px;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                background: #191C21;
+
+                &:hover {
+                    background: #5134e0;
+                }
+            }
+            #copy-button-success{
+                transition: .5s;
+                opacity: 0;
+                background: #191C21;
+
+                padding: 6px 10px;
+                border: 1px solid #5134e0;
+                border-radius: 4px;
+            }
+            .copy-show{
+                opacity: 1 !important;
+            }
         }
     }
 
@@ -228,9 +247,18 @@
         top: -686px;
         left: -420px;
         z-index: 2;
+        pointer-events: none;
 
         @media only screen and (max-width: 800px) {
             top: -680px;
         }
+    }
+    code{
+        padding: .2em .4em;
+        margin: 0;
+        font-size: 85%;
+        white-space: break-spaces;
+        background-color: #505050;
+        border-radius: 3px;
     }
 }
