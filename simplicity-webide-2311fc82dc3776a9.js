@@ -1,6 +1,6 @@
 import { hide_badger } from './snippets/simplicity-webide-6f80102749cba927/src/assets/js/badger.js';
 import { copy_program } from './snippets/simplicity-webide-6f80102749cba927/src/assets/js/copy_button.js';
-import { load_merkle_graph_js } from './snippets/simplicity-webide-6f80102749cba927/src/assets/js/merkle_graph_d3.js';
+import { load_merkle_graph_js, manualZoom } from './snippets/simplicity-webide-6f80102749cba927/src/assets/js/merkle_graph_d3.js';
 import * as __wbg_star0 from './snippets/simplicity-webide-6f80102749cba927/src/assets/js/badger.js';
 import * as __wbg_star1 from './snippets/simplicity-webide-6f80102749cba927/src/assets/js/button_effects.js';
 
@@ -498,6 +498,10 @@ imports.wbg.__wbg_body_874ccb42daaab363 = function(arg0) {
     const ret = getObject(arg0).body;
     return isLikeNone(ret) ? 0 : addHeapObject(ret);
 };
+imports.wbg.__wbg_manualZoom_c8b801fa5c959999 = function(arg0, arg1) {
+    var v0 = getCachedStringFromWasm0(arg0, arg1);
+    manualZoom(v0);
+};
 imports.wbg.__wbindgen_debug_string = function(arg0, arg1) {
     const ret = debugString(getObject(arg1));
     const ptr1 = passStringToWasm0(ret, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
@@ -511,6 +515,12 @@ imports.wbg.__wbindgen_throw = function(arg0, arg1) {
 imports.wbg.__wbg_createElement_03cf347ddad1c8c0 = function() { return handleError(function (arg0, arg1, arg2) {
     var v0 = getCachedStringFromWasm0(arg1, arg2);
     const ret = getObject(arg0).createElement(v0);
+    return addHeapObject(ret);
+}, arguments) };
+imports.wbg.__wbg_createElementNS_93f8de4acdef6da8 = function() { return handleError(function (arg0, arg1, arg2, arg3, arg4) {
+    var v0 = getCachedStringFromWasm0(arg1, arg2);
+    var v1 = getCachedStringFromWasm0(arg3, arg4);
+    const ret = getObject(arg0).createElementNS(v0, v1);
     return addHeapObject(ret);
 }, arguments) };
 imports.wbg.__wbg_setinnerHTML_95222f1a2e797983 = function(arg0, arg1, arg2) {
@@ -555,20 +565,20 @@ imports.wbg.__wbg_cloneNode_ea49a704f0699b2e = function() { return handleError(f
 imports.wbg.__wbg_append_125fff38dadbc15f = function() { return handleError(function (arg0, arg1) {
     getObject(arg0).append(getObject(arg1));
 }, arguments) };
-imports.wbg.__wbindgen_closure_wrapper108 = function(arg0, arg1, arg2) {
+imports.wbg.__wbindgen_closure_wrapper110 = function(arg0, arg1, arg2) {
     const ret = makeMutClosure(arg0, arg1, 32, __wbg_adapter_20);
     return addHeapObject(ret);
 };
-imports.wbg.__wbindgen_closure_wrapper170 = function(arg0, arg1, arg2) {
-    const ret = makeMutClosure(arg0, arg1, 89, __wbg_adapter_23);
+imports.wbg.__wbindgen_closure_wrapper172 = function(arg0, arg1, arg2) {
+    const ret = makeMutClosure(arg0, arg1, 95, __wbg_adapter_23);
     return addHeapObject(ret);
 };
-imports.wbg.__wbindgen_closure_wrapper404 = function(arg0, arg1, arg2) {
+imports.wbg.__wbindgen_closure_wrapper407 = function(arg0, arg1, arg2) {
     const ret = makeMutClosure(arg0, arg1, 30, __wbg_adapter_23);
     return addHeapObject(ret);
 };
-imports.wbg.__wbindgen_closure_wrapper3997 = function(arg0, arg1, arg2) {
-    const ret = makeMutClosure(arg0, arg1, 89, __wbg_adapter_23);
+imports.wbg.__wbindgen_closure_wrapper4027 = function(arg0, arg1, arg2) {
+    const ret = makeMutClosure(arg0, arg1, 95, __wbg_adapter_23);
     return addHeapObject(ret);
 };
 imports['./snippets/simplicity-webide-6f80102749cba927/src/assets/js/badger.js'] = __wbg_star0;
@@ -611,7 +621,7 @@ async function __wbg_init(input) {
     if (wasm !== undefined) return wasm;
 
     if (typeof input === 'undefined') {
-        input = new URL('simplicity-webide-dcf70dc39edec931_bg.wasm', import.meta.url);
+        input = new URL('simplicity-webide-2311fc82dc3776a9_bg.wasm', import.meta.url);
     }
     const imports = __wbg_get_imports();
 
