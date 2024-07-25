@@ -151,18 +151,6 @@ pub fn App() -> impl IntoView {
                     graph_toggle=graph_toggle
                     set_graph_toggle=set_graph_toggle/>
             </div>
-            <div class="container center intro">
-                <p class="intro-text text-grey">
-                    "Learn more about the "
-                    <a href="https://github.com/BlockstreamResearch/simfony/blob/master/doc/syntax.md" target="blank">syntax</a>
-                    " of Simfony. The IDE also supports "
-                    <a href="https://github.com/BlockstreamResearch/simfony/blob/master/doc/experimental-syntax.md" target="blank">experimental syntax</a>
-                    "."
-                </p>
-                <p class="intro-text text-grey">
-                    "Experimental syntax is not yet supported by the Simfony master branch on GitHub."
-                </p>
-            </div>
         </div>
     }
 }
