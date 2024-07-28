@@ -9,7 +9,7 @@ lto = true
 
 [dependencies]
 itertools = "0.13.0"
-simfony = { git = "https://github.com/uncomputable/simfony", branch = "2024-07-type-casts" }
+simfony = { git = "https://github.com/BlockstreamResearch/simfony", branch = "master" }
 leptos = { version = "0.5.2", features = ["csr"] }
 console_error_panic_hook = "0.1.7"
 hex-conservative = "0.1.1"
