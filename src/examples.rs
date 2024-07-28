@@ -2,7 +2,7 @@
 ///
 /// Names must be unique because they serve as primary keys.
 #[rustfmt::skip]
-const EXAMPLES: [(&str, &str, &str); 15] = [
+const EXAMPLES: [(&str, &str, &str); 16] = [
     (
         "Welcome 💡",
         r#"<h3>👋 Welcome to the Simfony IDE!</h3>
@@ -348,38 +348,31 @@ In a future version of the IDE, the witness data will be customizable."#,
     jet::bip_0340_verify((pk, msg), sig);
 }"#,
     ),
-    /*
     (
         "List sum",
-        r#"Sum the elements of a list.
-The length of the list is between one (inclusive) and a maximum (exclusive)."#,
-        r#"fn checked_add_32(el, acc) {
-    let (carry, sum) = jet_add_32(el, acc);
-    // assert_eq!(carry, 0)
-    jet_verify(jet_complement_1(carry));
+        r#"Sum the elements of a list."#,
+        r#"fn checked_add_32(a: u32, b: u32) -> u32 {
+    let (carry, sum): (bool, u32) = jet::add_32(a, b);
+    assert!(<u1>::into(jet::complement_1(<bool>::into(carry))));
     sum
-};
+}
 
-// Sum 1 element
-let list: List<u32, 2> = list![1];
-let sum: u32 = fold::<2>(list, 0, checked_add_32);
-jet_verify(jet_eq_32(1, sum));
+fn main() {
+    // This list holds less than 4 elements
+    let list: List<u32, 4> = list![1, 2, 3];
+    // This list holds less than 8 elements
+    let bigger_list: List<u32, 8> = list![1, 2, 3, 4, 5, 6, 7];
 
-// Sum 2 elements
-let list: List<u32, 4> = list![1, 2];
-let sum: u32 = fold::<4>(list, 0, checked_add_32);
-jet_verify(jet_eq_32(3, sum));
+    // Sum the first list
+    let sum: u32 = fold::<checked_add_32, 4>(list, 0);
+    assert!(jet::eq_32(6, sum));
 
-// Sum 3 elements
-let list: List<u32, 4> = list![1, 2, 3];
-let sum: u32 = fold::<4>(list, 0, checked_add_32);
-jet_verify(jet_eq_32(6, sum));
-
-// Sum 4 elements
-let list: List<u32, 8> = list![1, 2, 3, 4];
-let sum: u32 = fold::<8>(list, 0, checked_add_32);
-jet_verify(jet_eq_32(10, sum));"#,
+    // Sum the second list
+    let sum: u32 = fold::<checked_add_32, 8>(bigger_list, 0);
+    assert!(jet::eq_32(28, sum));
+}"#,
     ),
+    /*
     (
         "Byte hash loop 🧨",
         r#"<p>Hash bytes 0x00 to 0xff in a loop.</p>
