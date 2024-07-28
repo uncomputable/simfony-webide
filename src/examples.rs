@@ -40,7 +40,7 @@ The Simfony compiler doesn't infer types.</p>
 <p>Assign the value 1337 to variable <code>x</code>.</p>"#,
         r#"fn main() {
     let x: u32 = ; // <- Assign the value
-    jet_verify(jet_eq_32(x, 1337));
+    assert!(jet::eq_32(x, 1337));
 }"#,
     ),
     (
@@ -59,10 +59,10 @@ Half bytes (aka nibbles) are not supported.</p>
     let max8: u8 = ; // <- Assign the maximum u8 value
     let max128: u128 = ; // <- Assign the maximum u128 value
 
-    jet_verify(jet_all_8(max8));
+    assert!(jet::all_8(max8));
     let (top, bot): (u64, u64) = <u128>::into(max128);
-    jet_verify(jet_all_64(top));
-    jet_verify(jet_all_64(bot));
+    assert!(jet::all_64(top));
+    assert!(jet::all_64(bot));
 }"#,
     ),
     (
@@ -84,7 +84,7 @@ Think of <code>(x, y)</code> as an anonymous struct with two members: <code>x</c
     // Cast product of two 16-bit integers to one 32-bit integer
     let beefbabe: u32 = <(u16, u16)>::into(beefbabe);
 
-    jet_verify(jet_eq_32(0xbeefbabe, beefbabe));
+    assert!(jet::eq_32(0xbeefbabe, beefbabe));
 }"#,
     ),
     (
@@ -102,14 +102,14 @@ Variables from inner scopes overwrite / shadow variables from outer scopes.</p>
 <h3>📝 Your Task</h3>
 <p>Use shadowing to make <a href="https://en.wikipedia.org/wiki/2_%2B_2_%3D_5">2 + 2 = 5</a>.</p>"#,
         r#"fn main() {
-    let (_, four): (bool, u32) = jet_add_32(2, 2);
+    let (_, four): (bool, u32) = jet::add_32(2, 2);
     let five: u32 = 5;
     let what_is_false_is_true: bool = {
         // <- Shadow "four" to make 2 + 2 = 5
-        jet_eq_32(four, five)
+        jet::eq_32(four, five)
     };
 
-    jet_verify(what_is_false_is_true);
+    assert!(what_is_false_is_true);
 }"#,
     ),
     (
@@ -128,7 +128,7 @@ We are looking into enabling safe recursion.</p>
 
 <h3>📝 Your Task</h3>
 <p>Define the function <code>checked_add_32</code> which takes two u32 values and adds them.
-While <code>jet_add_32</code> returns a carry, <code>checked_add_32</code> is supposed to panic if there is an overflow.
+While <code>jet::add_32</code> returns a carry, <code>checked_add_32</code> is supposed to panic if there is an overflow.
 It can be annoying to handle carry bits.</p>"#,
         r#"fn checked_add_32(a: u32, b: u32) -> u32 {
     // your function body here
@@ -137,18 +137,18 @@ It can be annoying to handle carry bits.</p>"#,
 
 fn main() {
         // ⬇️ Use these two lines as function body ⬇️
-        let (carry, manual_sum): (bool, u32) = jet_add_32(123456, 1);
-        jet_verify(<u1>::into(jet_complement_1(<bool>::into(carry))));  // assert!(carry == false)
+        let (carry, manual_sum): (bool, u32) = jet::add_32(123456, 1);
+        assert!(<u1>::into(jet::complement_1(<bool>::into(carry))));  // assert!(carry == false)
         // ⬆️ Use these two lines as function body ⬆️
 
         let automatic_sum: u32 = checked_add_32(123456, 1)
-        jet_verify(jet_eq_32(manual_sum, automatic_sum));
+        assert!(jet::eq_32(manual_sum, automatic_sum));
 }"#,
     ),
     (
         "Jets 💡",
         r#"<h3>Calling Optimized Subroutines</h3>
-<p>Jets are predefined functions that start with <code>jet_</code>.
+<p>Jets are predefined functions that live in the <code>jet::</code> namespace.
 While functions are executed as a blob of Simplicity instructions, jets are executed as optimized machine instructions.
 This means jets are faster than functions, but there is only a fixed set of jets.
 Combine jets in a function to compute what you cannot compute with jets alone.</p>
@@ -158,16 +158,16 @@ Combine jets in a function to compute what you cannot compute with jets alone.</
 
 <h3>📝 Your Task</h3>
 <p>Define a <a href="https://en.wikipedia.org/wiki/NAND_gate">NAND gate</a> using the available jets.</p>"#,
-        r#"// jet_and_1 = AND, jet_or_1 = OR, jet_xor_1 = XOR, jet_complement_1 = NOT
+        r#"// jet::and_1 = AND, jet::or_1 = OR, jet::xor_1 = XOR, jet::complement_1 = NOT
 fn nand(a: u1, b: u1) -> u1 {
     // <- a NAND b
 }
 
 fn main() {
-    jet_verify(<u1>::into(nand(0, 0)));
-    jet_verify(<u1>::into(nand(0, 1)));
-    jet_verify(<u1>::into(nand(1, 0)));
-    jet_verify(<u1>::into(jet_complement_1(nand(1, 1))));
+    assert!(<u1>::into(nand(0, 0)));
+    assert!(<u1>::into(nand(0, 1)));
+    assert!(<u1>::into(nand(1, 0)));
+    assert!(<u1>::into(jet::complement_1(nand(1, 1))));
 }"#,
     ),
     (
@@ -192,8 +192,8 @@ The overall match returns a value of this output type.</p>
 }
 
 fn main() {
-    jet_verify(invert(false));
-    jet_verify(<u1>::into(jet_complement_1(<bool>::into(invert(true)))));
+    assert!(invert(false));
+    assert!(<u1>::into(jet::complement_1(<bool>::into(invert(true)))));
 }"#,
     ),
     // TODO: "Unwrap" checked_div_32(1, 0) = None
@@ -212,18 +212,18 @@ The <code>None</code> branch is executed if the input contains no value.
 The <code>Some(b)</code> branch is executed if the input contains value <code>b</code>.</p>
 
 <h3>📝 Your Task</h3>
-<p>The jet <code>jet_divide_32</code> returns 0 for <a href="https://en.wikipedia.org/wiki/Division_by_zero">division by zero</a>.
+<p>The jet <code>jet::divide_32</code> returns 0 for <a href="https://en.wikipedia.org/wiki/Division_by_zero">division by zero</a>.
 Complete the function <code>checked_div_32</code> which returns <code>None</code> instead."#,
         r#"fn checked_div_32(x: u32, y: u32) -> Option<u32> {
-    match jet_is_zero_32(y) {
+    match jet::is_zero_32(y) {
         true  => , // <- Return no integer
         false => , // <- Return some quotient
     }
 }
 
 fn main() {
-    // jet_verify(is_none::<u32>(checked_div_32(1, 0)));
-    jet_verify(jet_eq_32(3, unwrap(checked_div_32(10, 3))));
+    // assert!(is_none::<u32>(checked_div_32(1, 0)));
+    assert!(jet::eq_32(3, unwrap(checked_div_32(10, 3))));
 }"#,
     ),
     (
@@ -245,7 +245,7 @@ Like variable assignments, variable bindings in match arms must be explicitly ty
 <p><a href="https://en.wikipedia.org/wiki/Furlong">Eight furlongs are one mile.</a>
 Complete the function <code>to_mile</code> which converts distances to miles.
 The input may be formatted in furlongs or in miles.
-Use <code>jet_divide_32</code> to do division.</p>"#,
+Use <code>jet::divide_32</code> to do division.</p>"#,
         r#"fn to_miles(distance: Either<u32, u32>) -> u32 {
     match distance {
         Left(furlongs: u32) => , // <- Divide by 8
@@ -256,8 +256,8 @@ Use <code>jet_divide_32</code> to do division.</p>"#,
 fn main() {
     let eight_furlongs: Either<u32, u32> = Left(8);
     let one_mile: Either<u32, u32> = Right(1);
-    jet_verify(jet_eq_32(1, to_miles(eight_furlongs)));
-    jet_verify(jet_eq_32(1, to_miles(one_mile)));
+    assert!(jet::eq_32(1, to_miles(eight_furlongs)));
+    assert!(jet::eq_32(1, to_miles(one_mile)));
 }"#,
     ),
     (
@@ -271,7 +271,7 @@ In a future version of the IDE, the witness data will be customizable."#,
     let pk: u256 = 0xf9308a019258c31049344f85f89d5229b531c845836f99b08601f113bce036f9;
     let msg: u256 = 0x0000000000000000000000000000000000000000000000000000000000000000;
     let sig: [u8; 64] = [0xe9, 0x07, 0x83, 0x1f, 0x80, 0x84, 0x8d, 0x10, 0x69, 0xa5, 0x37, 0x1b, 0x40, 0x24, 0x10, 0x36, 0x4b, 0xdf, 0x1c, 0x5f, 0x83, 0x07, 0xb0, 0x08, 0x4c, 0x55, 0xf1, 0xce, 0x2d, 0xca, 0x82, 0x15, 0x25, 0xf6, 0x6a, 0x4a, 0x85, 0xea, 0x8b, 0x71, 0xe4, 0x82, 0xa7, 0x4f, 0x38, 0x2d, 0x2c, 0xe5, 0xeb, 0xee, 0xe8, 0xfd, 0xb2, 0x17, 0x2f, 0x47, 0x7d, 0xf4, 0x90, 0x0d, 0x31, 0x05, 0x36, 0xc0];
-    jet_bip_0340_verify(pk, msg, sig);
+    jet::bip_0340_verify((pk, msg), sig);
 }"#,
     ),
     (
@@ -280,7 +280,7 @@ In a future version of the IDE, the witness data will be customizable."#,
         r#"fn main() {
     let ab: u16 = <(u8, u8)>::into((0x10, 0x01));
     let c: u16 = 0x1001;
-    jet_verify(jet_eq_16(ab, c));
+    assert!(jet::eq_16(ab, c));
 }"#,
     ),
     (
@@ -290,9 +290,9 @@ The scriptPubKey of the UTXO must be repeated in the first output of the spendin
 The spending transaction is hardcoded to satisfy the covenant.
 In a future version of the IDE, the transaction will be customizable."#,
         r#"fn main() {
-    let utxo_hash: u256 = jet_current_script_hash();
-    let spend_hash: u256 = unwrap(jet_output_script_hash(0));
-    jet_verify(jet_eq_256(utxo_hash, spend_hash));
+    let utxo_hash: u256 = jet::current_script_hash();
+    let spend_hash: u256 = unwrap(jet::output_script_hash(0));
+    assert!(jet::eq_256(utxo_hash, spend_hash));
 }"#,
     ),
     (
@@ -304,19 +304,19 @@ that they want to commit.
 The spending transaction is hardcoded to satisfy the covenant.
 In a future version of the IDE, the transaction will be customizable."#,
         r#"fn main() {
-    let ctx: Ctx8 = jet_sha_256_ctx_8_init();
-    let ctx: Ctx8 = jet_sha_256_ctx_8_add_4(ctx, jet_version());
-    let ctx: Ctx8 = jet_sha_256_ctx_8_add_4(ctx, jet_lock_time());
-    let ctx: Ctx8 = jet_sha_256_ctx_8_add_32(ctx, jet_input_script_sigs_hash());
-    let ctx: Ctx8 = jet_sha_256_ctx_8_add_4(ctx, jet_num_inputs());
-    let ctx: Ctx8 = jet_sha_256_ctx_8_add_32(ctx, jet_input_sequences_hash());
-    let ctx: Ctx8 = jet_sha_256_ctx_8_add_4(ctx, jet_num_outputs());
-    let ctx: Ctx8 = jet_sha_256_ctx_8_add_32(ctx, jet_outputs_hash());
-    let ctx: Ctx8 = jet_sha_256_ctx_8_add_4(ctx, jet_current_index());
-    let ctv_hash: u256 = jet_sha_256_ctx_8_finalize(ctx);
+    let ctx: Ctx8 = jet::sha_256_ctx_8_init();
+    let ctx: Ctx8 = jet::sha_256_ctx_8_add_4(ctx, jet::version());
+    let ctx: Ctx8 = jet::sha_256_ctx_8_add_4(ctx, jet::lock_time());
+    let ctx: Ctx8 = jet::sha_256_ctx_8_add_32(ctx, jet::input_script_sigs_hash());
+    let ctx: Ctx8 = jet::sha_256_ctx_8_add_4(ctx, jet::num_inputs());
+    let ctx: Ctx8 = jet::sha_256_ctx_8_add_32(ctx, jet::input_sequences_hash());
+    let ctx: Ctx8 = jet::sha_256_ctx_8_add_4(ctx, jet::num_outputs());
+    let ctx: Ctx8 = jet::sha_256_ctx_8_add_32(ctx, jet::outputs_hash());
+    let ctx: Ctx8 = jet::sha_256_ctx_8_add_4(ctx, jet::current_index());
+    let ctv_hash: u256 = jet::sha_256_ctx_8_finalize(ctx);
 
     let expected_hash: u256 = 0xae3d019b30529c6044d2b3d7ee2e0ee5db51a7f05ed5db8f089cd5d455f1fc5d;
-    jet_verify(jet_eq_256(ctv_hash, expected_hash));
+    assert!(jet::eq_256(ctv_hash, expected_hash));
 }"#,
     ),
     (
@@ -326,26 +326,26 @@ Here, the signature is backed into the program. This is just for demonstration p
 In reality, the signature would live inside the witness.
 In a future version of the IDE, the witness data will be customizable."#,
         r#"fn main() {
-    let ctx: Ctx8 = jet_sha_256_ctx_8_init();
+    let ctx: Ctx8 = jet::sha_256_ctx_8_init();
     // Blockchain
-    let ctx: Ctx8 = jet_sha_256_ctx_8_add_32(ctx, jet_genesis_block_hash());
-    let ctx: Ctx8 = jet_sha_256_ctx_8_add_32(ctx, jet_genesis_block_hash());
+    let ctx: Ctx8 = jet::sha_256_ctx_8_add_32(ctx, jet::genesis_block_hash());
+    let ctx: Ctx8 = jet::sha_256_ctx_8_add_32(ctx, jet::genesis_block_hash());
     // Transaction
-    let ctx: Ctx8 = jet_sha_256_ctx_8_add_4(ctx, jet_version());
-    let ctx: Ctx8 = jet_sha_256_ctx_8_add_4(ctx, jet_lock_time());
-    let ctx: Ctx8 = jet_sha_256_ctx_8_add_32(ctx, jet_tap_env_hash());
+    let ctx: Ctx8 = jet::sha_256_ctx_8_add_4(ctx, jet::version());
+    let ctx: Ctx8 = jet::sha_256_ctx_8_add_4(ctx, jet::lock_time());
+    let ctx: Ctx8 = jet::sha_256_ctx_8_add_32(ctx, jet::tap_env_hash());
     // All inputs
-    let ctx: Ctx8 = jet_sha_256_ctx_8_add_32(ctx, jet_inputs_hash());
-    let ctx: Ctx8 = jet_sha_256_ctx_8_add_32(ctx, jet_input_utxos_hash());
+    let ctx: Ctx8 = jet::sha_256_ctx_8_add_32(ctx, jet::inputs_hash());
+    let ctx: Ctx8 = jet::sha_256_ctx_8_add_32(ctx, jet::input_utxos_hash());
     // No outputs
     // Current index
-    let ctx: Ctx8 = jet_sha_256_ctx_8_add_4(ctx, jet_current_index());
+    let ctx: Ctx8 = jet::sha_256_ctx_8_add_4(ctx, jet::current_index());
     // Message
-    let msg: u256 = jet_sha_256_ctx_8_finalize(ctx);
+    let msg: u256 = jet::sha_256_ctx_8_finalize(ctx);
 
     let pk: u256 = 0xf9308a019258c31049344f85f89d5229b531c845836f99b08601f113bce036f9;
     let sig: [u8; 64] = [0x34, 0x61, 0x52, 0x58, 0x3d, 0x5b, 0x60, 0xb9, 0x72, 0xbb, 0x4c, 0x03, 0xab, 0x67, 0x2e, 0x33, 0x94, 0x31, 0x06, 0x0e, 0x2b, 0x09, 0xc4, 0x47, 0xab, 0x98, 0x3c, 0x65, 0xda, 0xbc, 0x70, 0xa4, 0x59, 0xf3, 0xbe, 0xca, 0x77, 0x88, 0xbf, 0xa5, 0xda, 0x22, 0x1c, 0xf9, 0x92, 0x27, 0xb6, 0x5b, 0x4a, 0xd3, 0x82, 0x1a, 0x20, 0x45, 0xc8, 0x47, 0xee, 0x56, 0xd4, 0x8d, 0xf2, 0x6a, 0xee, 0x9c];
-    jet_bip_0340_verify(pk, msg, sig);
+    jet::bip_0340_verify((pk, msg), sig);
 }"#,
     ),
     /*
