@@ -577,7 +577,7 @@ imports.wbg.__wbindgen_closure_wrapper407 = function(arg0, arg1, arg2) {
     const ret = makeMutClosure(arg0, arg1, 30, __wbg_adapter_23);
     return addHeapObject(ret);
 };
-imports.wbg.__wbindgen_closure_wrapper4074 = function(arg0, arg1, arg2) {
+imports.wbg.__wbindgen_closure_wrapper4070 = function(arg0, arg1, arg2) {
     const ret = makeMutClosure(arg0, arg1, 94, __wbg_adapter_23);
     return addHeapObject(ret);
 };
@@ -621,7 +621,7 @@ async function __wbg_init(input) {
     if (wasm !== undefined) return wasm;
 
     if (typeof input === 'undefined') {
-        input = new URL('simplicity-webide-98a4f13f96c0871b_bg.wasm', import.meta.url);
+        input = new URL('simplicity-webide-932607d16d6a69d3_bg.wasm', import.meta.url);
     }
     const imports = __wbg_get_imports();
 
