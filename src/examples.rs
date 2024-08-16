@@ -2,7 +2,7 @@
 ///
 /// Names must be unique because they serve as primary keys.
 #[rustfmt::skip]
-const EXAMPLES: [(&str, &str, &str); 16] = [
+const EXAMPLES: [(&str, &str, &str); 17] = [
     (
         "Welcome 💡",
         r#"<h3>👋 Welcome to the Simfony IDE!</h3>
@@ -372,7 +372,6 @@ fn main() {
     assert!(jet::eq_32(28, sum));
 }"#,
     ),
-    /*
     (
         "Byte hash loop 🧨",
         r#"<p>Hash bytes 0x00 to 0xff in a loop.</p>
@@ -384,21 +383,22 @@ Running the loop also takes longer than expected.
 We are working on browser optimizations.
 Mind that the program runs within milliseconds on the blockchain!</p>"#,
         r#"// Add counter to streaming hash and finalize when the loop exists
-fn hash_counter_8(cnt, acc) {
-    let new_acc = jet_sha_256_ctx_8_add_1(acc, cnt);
-    match jet_all_8(cnt) {
-        true => Left(jet_sha_256_ctx_8_finalize(new_acc)),
-        false => Right(new_acc),
+fn hash_counter_8(ctx: Ctx8, unused: (), byte: u8) -> Either<u256, Ctx8> {
+    let new_ctx: Ctx8 = jet::sha_256_ctx_8_add_1(ctx, byte);
+    match jet::all_8(byte) {
+        true => Left(jet::sha_256_ctx_8_finalize(new_ctx)),
+        false => Right(new_ctx),
     }
-};
+}
 
-// Hash bytes 0x00 to 0xff
-let ctx: (List<u8, 64>, (u64, u256)) = jet_sha_256_ctx_8_init();
-let c: Either<u256, (List<u8, 64>, (u64, u256))> = forWhile::<256>(ctx, hash_counter_8);
-let expected: u256 = 0x40aff2e9d2d8922e47afd4648e6967497158785fbd1da870e7110266bf944880;
-jet_verify(jet_eq_256(expected, unwrap_left(c)));"#,
+fn main() {
+    // Hash bytes 0x00 to 0xff
+    let ctx: Ctx8 = jet::sha_256_ctx_8_init();
+    let out: Either<u256, Ctx8> = for_while::<hash_counter_8>(ctx, ());
+    let expected: u256 = 0x40aff2e9d2d8922e47afd4648e6967497158785fbd1da870e7110266bf944880;
+    assert!(jet::eq_256(expected, unwrap_left::<Ctx8>(out)));
+}"#,
     ),
-    */
 ];
 
 /// Iterate over the example names.
