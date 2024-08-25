@@ -53,9 +53,6 @@
         pkgs.wasm-pack
         pkgs.wasm-bindgen-cli
       ];
-      deploy = pkgs.callPackage ./deploy.nix {
-        rust = rust-min;
-      };
       CC_wasm32_unknown_unknown = "${pkgs.llvmPackages_16.clang-unwrapped}/bin/clang-16";
       AR_wasm32_unknown_unknown = "${pkgs.llvmPackages_16.libllvm}/bin/llvm-ar";
       CFLAGS_wasm32_unknown_unknown = "-I ${pkgs.llvmPackages_16.libclang.lib}/lib/clang/16/include/";
@@ -77,7 +74,7 @@
           RUST_STDLIB = "${rust-dev}/lib/rustlib/src/rust";
           DEBUGGER = "${pkgs.gdb}";
         };
-        # Temporary shell until deploy.nix works
+        # Temporary shell until deployment happens in a nix derivation
         deploy = pkgs.mkShell.override {
           stdenv = pkgs.clang16Stdenv;
         } {
