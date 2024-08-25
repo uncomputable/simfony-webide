@@ -180,7 +180,7 @@ impl Runner {
                 }
                 Task::ExecuteDisconnect(t) => {
                     let prod_b_c = self.output.pop().unwrap();
-                    let (b, c) = prod_b_c.to_product().unwrap();
+                    let (b, c) = prod_b_c.as_product().unwrap();
                     self.output.push(b);
                     let state = State {
                         expression: t,
@@ -238,7 +238,7 @@ impl Runner {
             Inner::Take(t) => {
                 let (a, _) = state
                     .input
-                    .to_product()
+                    .as_product()
                     .ok_or_else(|| Error::new(ErrorKind::ExpectedProduct, state.clone()))?;
                 let t_state = State {
                     expression: t.clone(),
@@ -249,7 +249,7 @@ impl Runner {
             Inner::Drop(t) => {
                 let (_, b) = state
                     .input
-                    .to_product()
+                    .as_product()
                     .ok_or_else(|| Error::new(ErrorKind::ExpectedProduct, state.clone()))?;
                 let t_state = State {
                     expression: t.clone(),
@@ -281,10 +281,10 @@ impl Runner {
             Inner::Case(..) | Inner::AssertL(..) | Inner::AssertR(..) => {
                 let (sum_a_b, c) = state
                     .input
-                    .to_product()
+                    .as_product()
                     .ok_or_else(|| Error::new(ErrorKind::ExpectedProduct, state.clone()))?;
 
-                if let Some(a) = sum_a_b.to_left() {
+                if let Some(a) = sum_a_b.as_left() {
                     match inner {
                         Inner::Case(s, _) | Inner::AssertL(s, _) => {
                             let s_state = State {
@@ -298,7 +298,7 @@ impl Runner {
                         }
                         _ => unreachable!("Covered by outer match statement"),
                     }
-                } else if let Some(b) = sum_a_b.to_right() {
+                } else if let Some(b) = sum_a_b.as_right() {
                     match inner {
                         Inner::Case(_, t) | Inner::AssertR(_, t) => {
                             let t_state = State {
