@@ -10,10 +10,10 @@ lto = true
 [dependencies]
 itertools = "0.13.0"
 simfony = { git = "https://github.com/BlockstreamResearch/simfony", branch = "master" }
-leptos = { version = "0.5.2", features = ["csr"] }
+leptos = { version = "0.6.14", features = ["csr"] }
 console_error_panic_hook = "0.1.7"
 hex-conservative = "0.1.1"
-js-sys = "0.3.69"
+js-sys = "0.3.70"
 
 [dev-dependencies]
-wasm-bindgen-test = "0.3.40"
+wasm-bindgen-test = "0.3.43"
