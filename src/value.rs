@@ -406,8 +406,6 @@ impl Item {
 }
 
 impl ExtValue {
-    // FIXME: Take &Final
-    // Requires split_{sum,product} method of Final that returns references
     pub fn from_bits_with_padding<I: Iterator<Item = bool>>(
         ty: &Final,
         it: &mut I,
