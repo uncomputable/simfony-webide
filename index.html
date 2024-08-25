@@ -1,6 +1,8 @@
-<!DOCTYPE html><html lang="en"><head>
+<!DOCTYPE html>
+<html lang="en">
+  <head>
     <!-- Google tag (gtag.js) -->
-    <script async="" src="https://www.googletagmanager.com/gtag/js?id=G-7E1W2Z7720"></script>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-7E1W2Z7720"></script>
     <script>
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
@@ -9,24 +11,40 @@
       gtag('config', 'G-7E1W2Z7720');
     </script>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="icon" href="/favicon-45ca9b991953adf3.png">
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" href="/favicon-45ca9b991953adf3.png" integrity="sha384&#x2D;0sl&#x2F;QMsXqbq4Wuar3PLp5TWNPVEktxcKOa7aMVDi9TMGs88HQnTks5s2rttzBv1x"/>
     <title>Simfony IDE</title>
 
-    <link rel="stylesheet" href="/style-6a584c0b487530a1.css">
+    <link rel="stylesheet" href="/style-9ec637e5642008e3.css" integrity="sha384&#x2D;3H0W06GVVAOW2cldfWwcpkvhqJWT20BQdv5BrPiduitcJ&#x2F;HNMTUQrZ7XEOaYZzqM"/>
     
     
     
     <link href="font-awesome/css/all.min.css" rel="stylesheet">
 
     <script src="https://unpkg.com/@rive-app/canvas@2.17.3"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js" integrity="sha512-vc58qvvBdrDR4etbxMdlTt4GBQk1qjvyORR2nrsPsFPyrs+/u5c3+1Ct6upOgdZoIl7eq6k3a1UPDSNAQi/32A==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js" 
+      integrity="sha512-vc58qvvBdrDR4etbxMdlTt4GBQk1qjvyORR2nrsPsFPyrs+/u5c3+1Ct6upOgdZoIl7eq6k3a1UPDSNAQi/32A==" 
+      crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 
     <noscript>This page requires JavaScript</noscript>
   
-<link rel="preload" href="/simplicity-webide-932607d16d6a69d3_bg.wasm" as="fetch" type="application/wasm" crossorigin="">
-<link rel="modulepreload" href="/simplicity-webide-932607d16d6a69d3.js"></head>
+<link rel="modulepreload" href="/simplicity-webide-4464e8869994c9a0.js" crossorigin=anonymous integrity="sha384-DQfENwhZw6VDAxvkOD2soWczDhU8oj+p1cH4TYEe4dim4uXnc8ZTGz7FFm2GDq6n">
+<link rel="modulepreload" href="/snippets/simplicity-webide-6f80102749cba927/src/assets/js/merkle_graph_d3.js" crossorigin=anonymous integrity="sha384-d9tN1v3DniRPKtSrg5Bk4s8/lfzUG7/uEafC1aO/oXaZFo/eoNIYv0y/XIEE2LxW">
+<link rel="modulepreload" href="/snippets/simplicity-webide-6f80102749cba927/src/assets/js/badger.js" crossorigin=anonymous integrity="sha384-9Z+ygXoRWpuERMrdaFZutJtXqhdVK6DfyDRYd3KFFstsoLAEgo/FXMQDi9c/Ewl/">
+<link rel="modulepreload" href="/snippets/simplicity-webide-6f80102749cba927/src/assets/js/copy_button.js" crossorigin=anonymous integrity="sha384-r50JjJ5ZfGoGqShRy85RYeU63pNfU0DWi2+qyAWAQUONkHzqPkcXHRbtw8DGkpMX">
+<link rel="modulepreload" href="/snippets/simplicity-webide-6f80102749cba927/src/assets/js/button_effects.js" crossorigin=anonymous integrity="sha384-k2nFSFYYFUlUX6IwDcHjuGsspkdoyrZVzetrLbiq5qEVbYSTAavWAnonglqr5s4g">
+<link rel="preload" href="/simplicity-webide-4464e8869994c9a0_bg.wasm" crossorigin=anonymous integrity="sha384-4PaYvm5NPl4nJmKIpXUee4hGAsQPXeC7lFq+guhIprwi5VLIRm8lE90nUypOGRcl" as="fetch" type="application/wasm"></head>
   <body>
+<script type="module">
+import init, * as bindings from '/simplicity-webide-4464e8869994c9a0.js';
+const wasm = await init('/simplicity-webide-4464e8869994c9a0_bg.wasm');
 
 
-<script type="module">import init from '/simplicity-webide-932607d16d6a69d3.js';init('/simplicity-webide-932607d16d6a69d3_bg.wasm');</script></body></html>
+window.wasmBindings = bindings;
+
+
+dispatchEvent(new CustomEvent("TrunkApplicationStarted", {detail: {wasm}}));
+
+</script></body>
+
+</html>
