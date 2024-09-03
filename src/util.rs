@@ -1,7 +1,7 @@
 use std::fmt;
 use std::sync::Arc;
 
-use simplicity::dag::{Dag, DagLike, MaxSharing, NoSharing};
+use simplicity::dag::{DagLike, MaxSharing, NoSharing};
 use simplicity::jet::Elements;
 use simplicity::node::Inner;
 use simplicity::types::Final;
@@ -57,57 +57,6 @@ impl<'a, M: node::Marker> fmt::Display for DisplayInner<'a, M> {
 }
 
 impl<'a, M: node::Marker> fmt::Debug for DisplayInner<'a, M> {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt::Display::fmt(self, f)
-    }
-}
-
-pub struct DisplayExpression<'a, M: node::Marker>(&'a node::Node<M>);
-
-impl<'a, M: node::Marker> From<&'a node::Node<M>> for DisplayExpression<'a, M> {
-    fn from(node: &'a node::Node<M>) -> Self {
-        Self(node)
-    }
-}
-
-impl<'a, M: node::Marker> fmt::Display for DisplayExpression<'a, M>
-where
-    &'a node::Node<M>: DagLike,
-{
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        for data in self.0.verbose_pre_order_iter::<NoSharing>(None) {
-            match data.n_children_yielded {
-                1 => {
-                    if let Dag::Binary(..) = data.node.inner().as_dag() {
-                        f.write_str(" ")?;
-                    } else {
-                        debug_assert!(matches!(data.node.inner().as_dag(), Dag::Unary(..)));
-                    }
-                }
-                2 => {
-                    debug_assert!(matches!(data.node.inner().as_dag(), Dag::Binary(..)));
-                    f.write_str(")")?;
-                }
-                n => {
-                    debug_assert!(n == 0, "Combinators are nullary, unary or binary");
-                    write!(f, "{}", DisplayInner::from(data.node))?;
-                    match data.node.inner().as_dag() {
-                        Dag::Unary(..) => f.write_str(" ")?,
-                        Dag::Binary(..) => f.write_str(" (")?,
-                        _ => {}
-                    }
-                }
-            };
-        }
-
-        Ok(())
-    }
-}
-
-impl<'a, M: node::Marker> fmt::Debug for DisplayExpression<'a, M>
-where
-    &'a node::Node<M>: DagLike,
-{
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt::Display::fmt(self, f)
     }
