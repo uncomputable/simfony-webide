@@ -4,7 +4,6 @@ use std::sync::Arc;
 use simplicity::dag::{DagLike, MaxSharing, NoSharing};
 use simplicity::jet::Elements;
 use simplicity::node::Inner;
-use simplicity::types::Final;
 use simplicity::{node, RedeemNode};
 
 use crate::simplicity;
@@ -60,12 +59,4 @@ impl<'a, M: node::Marker> fmt::Debug for DisplayInner<'a, M> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt::Display::fmt(self, f)
     }
-}
-
-pub fn pad_left(a: &Final, b: &Final) -> usize {
-    std::cmp::max(a.bit_width(), b.bit_width()) - a.bit_width()
-}
-
-pub fn pad_right(a: &Final, b: &Final) -> usize {
-    std::cmp::max(a.bit_width(), b.bit_width()) - b.bit_width()
 }

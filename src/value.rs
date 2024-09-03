@@ -7,7 +7,6 @@ use simplicity::types::Final;
 use simplicity::Value;
 
 use crate::simplicity;
-use crate::util;
 
 /// Immutable sequence of bits whose length is a power of two.
 ///
@@ -313,11 +312,11 @@ impl ExtValue {
             } else if let Some((l_ty, r_ty)) = ty.as_sum() {
                 if let Some(l_value) = value.as_left() {
                     bits.push(false);
-                    bits.extend(std::iter::repeat(false).take(util::pad_left(l_ty, r_ty)));
+                    bits.extend(std::iter::repeat(false).take(l_ty.pad_left(r_ty)));
                     stack.push((l_value, l_ty));
                 } else if let Some(r_value) = value.as_right() {
                     bits.push(true);
-                    bits.extend(std::iter::repeat(false).take(util::pad_right(l_ty, r_ty)));
+                    bits.extend(std::iter::repeat(false).take(l_ty.pad_right(r_ty)));
                     stack.push((r_value, r_ty));
                 } else {
                     panic!("Value {value} is not of expected type {ty}");
@@ -427,13 +426,13 @@ impl ExtValue {
                         result_stack.push(Item::Value(ExtValue::Unit));
                     } else if let Some((l_ty, r_ty)) = ty.as_sum() {
                         if !it.next().ok_or("Not enough bits")? {
-                            for _ in 0..util::pad_left(l_ty, r_ty) {
+                            for _ in 0..l_ty.pad_left(r_ty) {
                                 let _padding = it.next().ok_or("Not enough bits")?;
                             }
                             task_stack.push(Task::MakeLeft);
                             task_stack.push(Task::ReadType(l_ty));
                         } else {
-                            for _ in 0..util::pad_right(l_ty, r_ty) {
+                            for _ in 0..l_ty.pad_right(r_ty) {
                                 let _padding = it.next().ok_or("Not enough bits")?;
                             }
                             task_stack.push(Task::MakeRight);
