@@ -182,7 +182,7 @@ pub enum ExtValue {
 
 impl fmt::Display for ExtValue {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        for data in self.verbose_pre_order_iter::<NoSharing>() {
+        for data in self.verbose_pre_order_iter::<NoSharing>(None) {
             match data.node {
                 ExtValue::Unit => f.write_str("●")?,
                 ExtValue::Left(..) => {
@@ -490,24 +490,21 @@ impl<'a> From<&'a Value> for ExtValue {
     fn from(value: &'a Value) -> Self {
         let mut stack = vec![];
         for data in value.post_order_iter::<NoSharing>() {
-            match data.node {
-                Value::Unit => stack.push(Item::Value(ExtValue::Unit)),
-                Value::SumL(..) => {
-                    let tmp = stack.pop().unwrap().into_left();
-                    stack.push(tmp)
-                }
-                Value::SumR(..) => {
-                    let tmp = stack.pop().unwrap().into_right();
-                    stack.push(tmp);
-                }
-                Value::Prod(..) => {
-                    let tmp = stack.pop().unwrap().into_product(stack.pop().unwrap());
-                    stack.push(tmp);
-                }
+            if data.node.is_unit() {
+                stack.push(Item::Value(ExtValue::Unit));
+            } else if data.node.as_left().is_some() {
+                let tmp = stack.pop().unwrap().into_left();
+                stack.push(tmp);
+            } else if data.node.as_right().is_some() {
+                let tmp = stack.pop().unwrap().into_right();
+                stack.push(tmp);
+            } else if data.node.as_product().is_some() {
+                let tmp = stack.pop().unwrap().into_product(stack.pop().unwrap());
+                stack.push(tmp);
             }
         }
 
-        debug_assert!(stack.len() == 1);
+        debug_assert_eq!(stack.len(), 1);
         stack.pop().unwrap().into_extvalue()
     }
 }
@@ -611,25 +608,19 @@ mod tests {
     fn extvalue_from_value() {
         let output_input = vec![
             (ExtValue::unit(), Value::unit()),
-            (
-                ExtValue::bits(Bits::from_bit(false)),
-                Value::sum_l(Value::unit()),
-            ),
-            (
-                ExtValue::bits(Bits::from_bit(true)),
-                Value::sum_r(Value::unit()),
-            ),
+            (ExtValue::bits(Bits::from_bit(false)), Value::u1(0)),
+            (ExtValue::bits(Bits::from_bit(true)), Value::u1(1)),
             (
                 ExtValue::left(ExtValue::bits(Bits::from_bit(true))),
-                Value::sum_l(Value::sum_r(Value::unit())),
+                Value::left(Value::u1(1), Final::unit()),
             ),
             (
                 ExtValue::product(ExtValue::unit(), ExtValue::unit()),
-                Value::prod(Value::unit(), Value::unit()),
+                Value::product(Value::unit(), Value::unit()),
             ),
             (
                 ExtValue::bytes(Bytes::from_bytes(Cmr::unit())),
-                Value::u256_from_slice(Cmr::unit().as_ref()),
+                Value::u256(Cmr::unit().to_byte_array()),
             ),
             (
                 ExtValue::bytes(Bytes::from_bytes(vec![0b01010101])),
@@ -637,12 +628,12 @@ mod tests {
             ),
             (
                 ExtValue::bytes(Bytes::from_bytes(vec![0xab, 0xcd])),
-                Value::prod(Value::u8(0xab), Value::u8(0xcd)),
+                Value::product(Value::u8(0xab), Value::u8(0xcd)),
             ),
         ];
 
         for (expected_output, input) in output_input {
-            assert_eq!(expected_output.as_ref(), &ExtValue::from(input.as_ref()));
+            assert_eq!(expected_output.as_ref(), &ExtValue::from(&input));
         }
     }
 

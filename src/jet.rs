@@ -85,7 +85,7 @@ pub fn execute_jet_with_env<J: Jet>(
         unsafe { get_output_frame(output_type.bit_width()) };
 
     let jet_fn = jet.c_jet_ptr();
-    let c_env = jet.c_jet_env(env);
+    let c_env = J::c_jet_env(env);
     let success = jet_fn(&mut output_write_frame, input_read_frame, c_env);
 
     if !success {

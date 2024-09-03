@@ -330,7 +330,7 @@ impl Runner {
                 };
                 self.input.push(Task::Execute(s_state));
             }
-            Inner::Witness(value) => self.output.push(Arc::new(ExtValue::from(value.as_ref()))),
+            Inner::Witness(value) => self.output.push(Arc::new(ExtValue::from(value))),
             Inner::Fail(_) => {
                 return Err(Error::new(ErrorKind::FailNode, state));
             }
@@ -344,7 +344,7 @@ impl Runner {
                     }
                 }
             }
-            Inner::Word(value) => self.output.push(Arc::new(ExtValue::from(value.as_ref()))),
+            Inner::Word(value) => self.output.push(Arc::new(ExtValue::from(value))),
         };
 
         Ok(())

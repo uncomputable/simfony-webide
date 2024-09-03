@@ -51,7 +51,7 @@ impl<'a, M: node::Marker> fmt::Display for DisplayInner<'a, M> {
             Inner::Witness(_) => f.write_str("witness"),
             Inner::Fail(_) => f.write_str("fail"),
             Inner::Jet(jet) => write!(f, "jet_{}", jet),
-            Inner::Word(value) => write!(f, "const {}", ExtValue::from(value.as_ref())),
+            Inner::Word(value) => write!(f, "const {}", ExtValue::from(value)),
         }
     }
 }
@@ -75,7 +75,7 @@ where
     &'a node::Node<M>: DagLike,
 {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        for data in self.0.verbose_pre_order_iter::<NoSharing>() {
+        for data in self.0.verbose_pre_order_iter::<NoSharing>(None) {
             match data.n_children_yielded {
                 1 => {
                     if let Dag::Binary(..) = data.node.inner().as_dag() {
