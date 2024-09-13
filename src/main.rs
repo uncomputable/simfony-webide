@@ -1,5 +1,4 @@
 mod components;
-mod env;
 mod examples;
 mod function;
 mod jet;

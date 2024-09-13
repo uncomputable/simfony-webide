@@ -336,7 +336,11 @@ impl Runner {
                 return Err(Error::new(ErrorKind::FailNode, state));
             }
             Inner::Jet(jet) => {
-                match jet::execute_jet_with_env(jet, state.input.clone(), &crate::env::dummy()) {
+                match jet::execute_jet_with_env(
+                    jet,
+                    state.input.clone(),
+                    &simfony::dummy_env::dummy(),
+                ) {
                     Ok(output) => {
                         self.output.push(output);
                     }
