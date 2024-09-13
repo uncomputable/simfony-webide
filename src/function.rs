@@ -49,24 +49,6 @@ impl fmt::Display for ErrorKind {
 }
 
 #[derive(Debug, Clone, Eq, PartialEq)]
-pub struct Error {
-    kind: ErrorKind,
-    state: State,
-}
-
-impl fmt::Display for Error {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{} {}", self.kind, self.state)
-    }
-}
-
-impl Error {
-    pub fn new(kind: ErrorKind, state: State) -> Self {
-        Self { kind, state }
-    }
-}
-
-#[derive(Debug, Clone, Eq, PartialEq)]
 enum Task {
     Execute(State),
     ExecuteComp(Arc<Expression>),
@@ -96,7 +78,7 @@ impl Runner {
         }
     }
 
-    pub fn run(&mut self) -> Result<Value, Error> {
+    pub fn run(&mut self) -> Result<Value, ErrorKind> {
         while let Some(task) = self.input.pop() {
             match task {
                 Task::Execute(state) => {
@@ -140,7 +122,7 @@ impl Runner {
         Ok(self.output.pop().unwrap())
     }
 
-    fn execute_state(&mut self, state: State) -> Result<(), Error> {
+    fn execute_state(&mut self, state: State) -> Result<(), ErrorKind> {
         let inner = state.expression.inner();
         match inner {
             Inner::Iden => {
@@ -168,10 +150,7 @@ impl Runner {
                 self.input.push(Task::Execute(t_state));
             }
             Inner::Take(t) => {
-                let (a, _) = state
-                    .input
-                    .as_product()
-                    .ok_or_else(|| Error::new(ErrorKind::WrongType, state.clone()))?;
+                let (a, _) = state.input.as_product().ok_or(ErrorKind::WrongType)?;
                 let t_state = State {
                     expression: t.clone(),
                     input: a.shallow_clone(),
@@ -179,10 +158,7 @@ impl Runner {
                 self.input.push(Task::Execute(t_state));
             }
             Inner::Drop(t) => {
-                let (_, b) = state
-                    .input
-                    .as_product()
-                    .ok_or_else(|| Error::new(ErrorKind::WrongType, state.clone()))?;
+                let (_, b) = state.input.as_product().ok_or(ErrorKind::WrongType)?;
                 let t_state = State {
                     expression: t.clone(),
                     input: b.shallow_clone(),
@@ -211,10 +187,7 @@ impl Runner {
                 self.input.push(Task::Execute(s_state));
             }
             Inner::Case(..) | Inner::AssertL(..) | Inner::AssertR(..) => {
-                let (sum_a_b, c) = state
-                    .input
-                    .as_product()
-                    .ok_or_else(|| Error::new(ErrorKind::WrongType, state.clone()))?;
+                let (sum_a_b, c) = state.input.as_product().ok_or(ErrorKind::WrongType)?;
 
                 if let Some(a) = sum_a_b.as_left() {
                     match inner {
@@ -226,7 +199,7 @@ impl Runner {
                             self.input.push(Task::Execute(s_state));
                         }
                         Inner::AssertR(_, _) => {
-                            return Err(Error::new(ErrorKind::AssertionFailed, state.clone()));
+                            return Err(ErrorKind::AssertionFailed);
                         }
                         _ => unreachable!("Covered by outer match statement"),
                     }
@@ -240,12 +213,12 @@ impl Runner {
                             self.input.push(Task::Execute(t_state));
                         }
                         Inner::AssertL(_, _) => {
-                            return Err(Error::new(ErrorKind::AssertionFailed, state));
+                            return Err(ErrorKind::AssertionFailed);
                         }
                         _ => unreachable!("Covered by outer match statement"),
                     }
                 } else {
-                    return Err(Error::new(ErrorKind::WrongType, state));
+                    return Err(ErrorKind::WrongType);
                 }
             }
             Inner::Disconnect(s, t) => {
@@ -261,7 +234,7 @@ impl Runner {
             }
             Inner::Witness(value) => self.output.push(value.shallow_clone()),
             Inner::Fail(_) => {
-                return Err(Error::new(ErrorKind::FailNode, state));
+                return Err(ErrorKind::FailNode);
             }
             Inner::Jet(jet) => {
                 match jet::execute_jet_with_env(jet, &state.input, &simfony::dummy_env::dummy()) {
@@ -269,7 +242,7 @@ impl Runner {
                         self.output.push(output);
                     }
                     Err(JetFailed) => {
-                        return Err(Error::new(ErrorKind::JetFailed, state));
+                        return Err(ErrorKind::JetFailed);
                     }
                 }
             }
