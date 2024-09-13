@@ -7,7 +7,6 @@ use simplicity::node::Inner;
 use simplicity::{node, RedeemNode};
 
 use crate::simplicity;
-use crate::value::ExtValue;
 
 pub type Expression = RedeemNode<Elements>;
 
@@ -50,7 +49,7 @@ impl<'a, M: node::Marker> fmt::Display for DisplayInner<'a, M> {
             Inner::Witness(_) => f.write_str("witness"),
             Inner::Fail(_) => f.write_str("fail"),
             Inner::Jet(jet) => write!(f, "jet_{}", jet),
-            Inner::Word(value) => write!(f, "const {}", ExtValue::from(value)),
+            Inner::Word(value) => write!(f, "const {}", value),
         }
     }
 }

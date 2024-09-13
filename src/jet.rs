@@ -1,7 +1,4 @@
-use std::sync::Arc;
-
-use crate::simplicity;
-use crate::value::ExtValue;
+use crate::{simplicity, value};
 
 use simplicity::ffi::c_jets::frame_ffi::{c_readBit, c_writeBit};
 use simplicity::ffi::c_jets::uword_width;
@@ -9,6 +6,7 @@ use simplicity::ffi::ffi::UWORD;
 use simplicity::ffi::CFrameItem;
 use simplicity::jet::Jet;
 use simplicity::types::Final;
+use simplicity::Value;
 
 pub struct JetFailed;
 
@@ -19,14 +17,14 @@ pub struct JetFailed;
 /// ## Safety
 ///
 /// The returned frame must outlive its buffer or there is a dangling pointer.
-unsafe fn get_input_frame(input: Arc<ExtValue>, ty: &Final) -> (CFrameItem, Vec<UWORD>) {
+unsafe fn get_input_frame(input: &Value, ty: &Final) -> (CFrameItem, Vec<UWORD>) {
     let uword_width = uword_width(ty.bit_width());
     let mut buffer = vec![0; uword_width];
 
     // Copy bits from value to input frame
     let buffer_end = buffer.as_mut_ptr().add(uword_width);
     let mut write_frame = CFrameItem::new_write(ty.bit_width(), buffer_end);
-    for bit in input.iter_bits_with_padding(ty) {
+    for bit in input.iter_padded() {
         c_writeBit(&mut write_frame, bit);
     }
 
@@ -60,23 +58,22 @@ unsafe fn get_output_frame(bit_width: usize) -> (CFrameItem, Vec<UWORD>) {
 /// ## Panics
 ///
 /// Buffer has fewer than bits than `ty` is wide (converted to UWORDs).
-fn value_from_frame(ty: &Final, buffer: &mut [UWORD]) -> Arc<ExtValue> {
+fn value_from_frame(ty: &Final, buffer: &mut [UWORD]) -> Value {
     assert!(uword_width(ty.bit_width()) <= buffer.len());
     let buffer_ptr = buffer.as_ptr();
     let mut read_frame = unsafe { CFrameItem::new_read(ty.bit_width(), buffer_ptr) };
 
     let mut it = (0..ty.bit_width()).map(|_| unsafe { c_readBit(&mut read_frame) });
 
-    ExtValue::from_bits_with_padding(ty, &mut it)
-        .expect("Jets return values that fit their output type")
+    value::from_padded_bits(&mut it, ty).expect("Jets return values that fit their output type")
 }
 
 /// Execute a jet on an input and inside an environment. Return the output.
 pub fn execute_jet_with_env<J: Jet>(
     jet: &J,
-    input: Arc<ExtValue>,
+    input: &Value,
     env: &J::Environment,
-) -> Result<Arc<ExtValue>, JetFailed> {
+) -> Result<Value, JetFailed> {
     let input_type = jet.source_ty().to_final();
     let output_type = jet.target_ty().to_final();
 

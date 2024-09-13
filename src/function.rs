@@ -2,26 +2,27 @@ use std::fmt;
 use std::sync::Arc;
 
 use simplicity::node::Inner;
+use simplicity::types::Final;
+use simplicity::Value;
 
 use crate::jet;
 use crate::jet::JetFailed;
 use crate::simplicity;
 use crate::util::Expression;
-use crate::value::{Bytes, ExtValue};
 
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct State {
     pub expression: Arc<Expression>,
-    pub input: Arc<ExtValue>,
+    pub input: Value,
 }
 
 impl fmt::Display for State {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self.input.as_ref() {
-            ExtValue::Product(..) => {
+        match self.input.as_product().is_some() {
+            true => {
                 write!(f, "[{}]{}", self.expression.display_expr(), self.input)
             }
-            _ => write!(f, "[{}]({})", self.expression.display_expr(), self.input),
+            false => write!(f, "[{}]({})", self.expression.display_expr(), self.input),
         }
     }
 }
@@ -112,8 +113,8 @@ enum Task {
     Execute(State),
     ExecuteComp(Arc<Expression>),
     ExecuteDisconnect(Arc<Expression>),
-    MakeLeft,
-    MakeRight,
+    MakeLeft(Arc<Final>),
+    MakeRight(Arc<Final>),
     MakeProduct,
 }
 
@@ -121,12 +122,12 @@ enum Task {
 pub struct Runner {
     /// Stack of tasks to run.
     input: Vec<Task>,
-    /// Stack of outputs produced.
-    trace: Vec<State>,
     /// List of executed states in order of execution.
     ///
     /// The currently executed state is not included.
-    output: Vec<Arc<ExtValue>>,
+    trace: Vec<State>,
+    /// Stack of produced outputs.
+    output: Vec<Value>,
 }
 
 #[derive(Debug, Clone, Eq, PartialEq)]
@@ -134,15 +135,15 @@ pub enum Output {
     /// Intermediate state
     Intermediate(State),
     /// Final output
-    Final(Arc<ExtValue>),
+    Final(Value),
 }
 
 impl Runner {
     pub fn for_program(program: Arc<Expression>) -> Self {
-        Self::for_expression(program, ExtValue::unit())
+        Self::for_expression(program, Value::unit())
     }
 
-    fn for_expression(expression: Arc<Expression>, input: Arc<ExtValue>) -> Self {
+    fn for_expression(expression: Arc<Expression>, input: Value) -> Self {
         let initial_state = State { expression, input };
         Self {
             input: vec![Task::Execute(initial_state.clone())],
@@ -151,7 +152,7 @@ impl Runner {
         }
     }
 
-    pub fn run(&mut self) -> Result<Arc<ExtValue>, TraceError> {
+    pub fn run(&mut self) -> Result<Value, TraceError> {
         loop {
             match self.step() {
                 Ok(Output::Intermediate(new_state)) => {
@@ -182,31 +183,31 @@ impl Runner {
                 Task::ExecuteDisconnect(t) => {
                     let prod_b_c = self.output.pop().unwrap();
                     let (b, c) = prod_b_c.as_product().unwrap();
-                    self.output.push(b);
+                    self.output.push(b.shallow_clone());
                     let state = State {
                         expression: t,
-                        input: c,
+                        input: c.shallow_clone(),
                     };
                     self.execute_state(state.clone())?;
                     return Ok(Output::Intermediate(state));
                 }
-                Task::MakeLeft => {
-                    let a = self.output.pop().unwrap();
-                    self.output.push(ExtValue::left(a));
+                Task::MakeLeft(ty_r) => {
+                    let val_l = self.output.pop().unwrap();
+                    self.output.push(Value::left(val_l, ty_r));
                 }
-                Task::MakeRight => {
-                    let a = self.output.pop().unwrap();
-                    self.output.push(ExtValue::right(a));
+                Task::MakeRight(ty_l) => {
+                    let val_r = self.output.pop().unwrap();
+                    self.output.push(Value::right(ty_l, val_r));
                 }
                 Task::MakeProduct => {
                     let b = self.output.pop().unwrap();
                     let a = self.output.pop().unwrap();
-                    self.output.push(ExtValue::product(a, b));
+                    self.output.push(Value::product(a, b));
                 }
             }
         }
 
-        debug_assert!(self.output.len() == 1);
+        debug_assert_eq!(self.output.len(), 1);
         let a = self.output.pop().unwrap();
         Ok(Output::Final(a))
     }
@@ -218,10 +219,11 @@ impl Runner {
                 self.output.push(state.input);
             }
             Inner::Unit => {
-                self.output.push(ExtValue::unit());
+                self.output.push(Value::unit());
             }
             Inner::InjL(t) => {
-                self.input.push(Task::MakeLeft);
+                let ty_r = state.expression.arrow().target.as_sum().unwrap().1;
+                self.input.push(Task::MakeLeft(Arc::new(ty_r.clone())));
                 let t_state = State {
                     expression: t.clone(),
                     input: state.input,
@@ -229,7 +231,8 @@ impl Runner {
                 self.input.push(Task::Execute(t_state));
             }
             Inner::InjR(t) => {
-                self.input.push(Task::MakeRight);
+                let ty_l = state.expression.arrow().target.as_sum().unwrap().0;
+                self.input.push(Task::MakeRight(Arc::new(ty_l.clone())));
                 let t_state = State {
                     expression: t.clone(),
                     input: state.input,
@@ -243,7 +246,7 @@ impl Runner {
                     .ok_or_else(|| Error::new(ErrorKind::ExpectedProduct, state.clone()))?;
                 let t_state = State {
                     expression: t.clone(),
-                    input: a,
+                    input: a.shallow_clone(),
                 };
                 self.input.push(Task::Execute(t_state));
             }
@@ -254,7 +257,7 @@ impl Runner {
                     .ok_or_else(|| Error::new(ErrorKind::ExpectedProduct, state.clone()))?;
                 let t_state = State {
                     expression: t.clone(),
-                    input: b,
+                    input: b.shallow_clone(),
                 };
                 self.input.push(Task::Execute(t_state));
             }
@@ -290,7 +293,7 @@ impl Runner {
                         Inner::Case(s, _) | Inner::AssertL(s, _) => {
                             let s_state = State {
                                 expression: s.clone(),
-                                input: ExtValue::product(a.clone(), c),
+                                input: Value::product(a.shallow_clone(), c.shallow_clone()),
                             };
                             self.input.push(Task::Execute(s_state));
                         }
@@ -304,7 +307,7 @@ impl Runner {
                         Inner::Case(_, t) | Inner::AssertR(_, t) => {
                             let t_state = State {
                                 expression: t.clone(),
-                                input: ExtValue::product(b.clone(), c),
+                                input: Value::product(b.shallow_clone(), c.shallow_clone()),
                             };
                             self.input.push(Task::Execute(t_state));
                         }
@@ -324,23 +327,19 @@ impl Runner {
                 self.input.push(Task::MakeProduct);
                 self.input.push(Task::ExecuteDisconnect(t.clone()));
 
-                let t_cmr = ExtValue::bytes(Bytes::from_bytes(t.cmr()));
+                let t_cmr = Value::u256(t.cmr().to_byte_array());
                 let s_state = State {
                     expression: s.clone(),
-                    input: ExtValue::product(t_cmr, state.input),
+                    input: Value::product(t_cmr, state.input),
                 };
                 self.input.push(Task::Execute(s_state));
             }
-            Inner::Witness(value) => self.output.push(Arc::new(ExtValue::from(value))),
+            Inner::Witness(value) => self.output.push(value.shallow_clone()),
             Inner::Fail(_) => {
                 return Err(Error::new(ErrorKind::FailNode, state));
             }
             Inner::Jet(jet) => {
-                match jet::execute_jet_with_env(
-                    jet,
-                    state.input.clone(),
-                    &simfony::dummy_env::dummy(),
-                ) {
+                match jet::execute_jet_with_env(jet, &state.input, &simfony::dummy_env::dummy()) {
                     Ok(output) => {
                         self.output.push(output);
                     }
@@ -349,7 +348,7 @@ impl Runner {
                     }
                 }
             }
-            Inner::Word(value) => self.output.push(Arc::new(ExtValue::from(value))),
+            Inner::Word(value) => self.output.push(value.shallow_clone()),
         };
 
         Ok(())
