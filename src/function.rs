@@ -140,13 +140,12 @@ pub enum Output {
 
 impl Runner {
     pub fn for_program(program: Arc<Expression>) -> Self {
-        Self::for_expression(program, Value::unit())
-    }
-
-    fn for_expression(expression: Arc<Expression>, input: Value) -> Self {
-        let initial_state = State { expression, input };
+        let initial_state = State {
+            expression: program,
+            input: Value::unit(),
+        };
         Self {
-            input: vec![Task::Execute(initial_state.clone())],
+            input: vec![Task::Execute(initial_state)],
             output: vec![],
             trace: vec![],
         }
