@@ -32,8 +32,7 @@ pub enum ErrorKind {
     AssertionFailed,
     FailNode,
     JetFailed,
-    ExpectedProduct,
-    ExpectedSumInFirstComponent,
+    WrongType,
 }
 
 impl fmt::Display for ErrorKind {
@@ -42,9 +41,8 @@ impl fmt::Display for ErrorKind {
             ErrorKind::AssertionFailed => f.write_str("Assertion failed"),
             ErrorKind::FailNode => f.write_str("Universal fail"),
             ErrorKind::JetFailed => f.write_str("Jet failed"),
-            ErrorKind::ExpectedProduct => f.write_str("Expected a product value as input"),
-            ErrorKind::ExpectedSumInFirstComponent => {
-                f.write_str("Expected a sum value in the first component of the input")
+            ErrorKind::WrongType => {
+                f.write_str("The program is ill-typed (this should never happen)")
             }
         }
     }
@@ -242,7 +240,7 @@ impl Runner {
                 let (a, _) = state
                     .input
                     .as_product()
-                    .ok_or_else(|| Error::new(ErrorKind::ExpectedProduct, state.clone()))?;
+                    .ok_or_else(|| Error::new(ErrorKind::WrongType, state.clone()))?;
                 let t_state = State {
                     expression: t.clone(),
                     input: a.shallow_clone(),
@@ -253,7 +251,7 @@ impl Runner {
                 let (_, b) = state
                     .input
                     .as_product()
-                    .ok_or_else(|| Error::new(ErrorKind::ExpectedProduct, state.clone()))?;
+                    .ok_or_else(|| Error::new(ErrorKind::WrongType, state.clone()))?;
                 let t_state = State {
                     expression: t.clone(),
                     input: b.shallow_clone(),
@@ -285,7 +283,7 @@ impl Runner {
                 let (sum_a_b, c) = state
                     .input
                     .as_product()
-                    .ok_or_else(|| Error::new(ErrorKind::ExpectedProduct, state.clone()))?;
+                    .ok_or_else(|| Error::new(ErrorKind::WrongType, state.clone()))?;
 
                 if let Some(a) = sum_a_b.as_left() {
                     match inner {
@@ -316,10 +314,7 @@ impl Runner {
                         _ => unreachable!("Covered by outer match statement"),
                     }
                 } else {
-                    return Err(Error::new(
-                        ErrorKind::ExpectedSumInFirstComponent,
-                        state.clone(),
-                    ));
+                    return Err(Error::new(ErrorKind::WrongType, state.clone()));
                 }
             }
             Inner::Disconnect(s, t) => {
