@@ -67,46 +67,6 @@ impl Error {
 }
 
 #[derive(Debug, Clone, Eq, PartialEq)]
-pub struct TraceError {
-    /// Error kind.
-    kind: ErrorKind,
-    /// List of executed states in order of execution.
-    ///
-    /// The currently executed state is included.
-    trace: Vec<State>,
-}
-
-impl fmt::Display for TraceError {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        writeln!(f, "{}\n", self.kind)?;
-        writeln!(f, "Caused by:")?;
-        for (index, state) in self.trace.iter().rev().take(5).enumerate() {
-            writeln!(f, " {index:>4}: {state}")?;
-        }
-        if 5 < self.trace.len() {
-            writeln!(f, "    ...")?;
-        }
-
-        Ok(())
-    }
-}
-
-impl TraceError {
-    pub fn new(kind: ErrorKind, trace: Vec<State>) -> TraceError {
-        Self { kind, trace }
-    }
-
-    pub fn from_error(error: Error, trace: &[State]) -> TraceError {
-        let mut owned_trace = Vec::with_capacity(trace.len() + 1);
-        for state in trace.iter() {
-            owned_trace.push(state.clone());
-        }
-        owned_trace.push(error.state);
-        Self::new(error.kind, owned_trace)
-    }
-}
-
-#[derive(Debug, Clone, Eq, PartialEq)]
 enum Task {
     Execute(State),
     ExecuteComp(Arc<Expression>),
@@ -120,10 +80,6 @@ enum Task {
 pub struct Runner {
     /// Stack of tasks to run.
     input: Vec<Task>,
-    /// List of executed states in order of execution.
-    ///
-    /// The currently executed state is not included.
-    trace: Vec<State>,
     /// Stack of produced outputs.
     output: Vec<Value>,
 }
@@ -131,7 +87,7 @@ pub struct Runner {
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub enum Output {
     /// Intermediate state
-    Intermediate(State),
+    Intermediate,
     /// Final output
     Final(Value),
 }
@@ -145,18 +101,15 @@ impl Runner {
         Self {
             input: vec![Task::Execute(initial_state)],
             output: vec![],
-            trace: vec![],
         }
     }
 
-    pub fn run(&mut self) -> Result<Value, TraceError> {
+    pub fn run(&mut self) -> Result<Value, Error> {
         loop {
             match self.step() {
-                Ok(Output::Intermediate(new_state)) => {
-                    self.trace.push(new_state);
-                }
+                Ok(Output::Intermediate) => {}
                 Ok(Output::Final(a)) => return Ok(a),
-                Err(error) => return Err(TraceError::from_error(error, &self.trace)),
+                Err(error) => return Err(error),
             }
         }
     }
@@ -165,8 +118,8 @@ impl Runner {
         while let Some(task) = self.input.pop() {
             match task {
                 Task::Execute(state) => {
-                    self.execute_state(state.clone())?;
-                    return Ok(Output::Intermediate(state));
+                    self.execute_state(state)?;
+                    return Ok(Output::Intermediate);
                 }
                 Task::ExecuteComp(t) => {
                     let input = self.output.pop().unwrap();
@@ -174,8 +127,8 @@ impl Runner {
                         expression: t,
                         input,
                     };
-                    self.execute_state(state.clone())?;
-                    return Ok(Output::Intermediate(state));
+                    self.execute_state(state)?;
+                    return Ok(Output::Intermediate);
                 }
                 Task::ExecuteDisconnect(t) => {
                     let prod_b_c = self.output.pop().unwrap();
@@ -185,8 +138,8 @@ impl Runner {
                         expression: t,
                         input: c.shallow_clone(),
                     };
-                    self.execute_state(state.clone())?;
-                    return Ok(Output::Intermediate(state));
+                    self.execute_state(state)?;
+                    return Ok(Output::Intermediate);
                 }
                 Task::MakeLeft(ty_r) => {
                     let val_l = self.output.pop().unwrap();
@@ -309,12 +262,12 @@ impl Runner {
                             self.input.push(Task::Execute(t_state));
                         }
                         Inner::AssertL(_, _) => {
-                            return Err(Error::new(ErrorKind::AssertionFailed, state.clone()));
+                            return Err(Error::new(ErrorKind::AssertionFailed, state));
                         }
                         _ => unreachable!("Covered by outer match statement"),
                     }
                 } else {
-                    return Err(Error::new(ErrorKind::WrongType, state.clone()));
+                    return Err(Error::new(ErrorKind::WrongType, state));
                 }
             }
             Inner::Disconnect(s, t) => {
@@ -372,24 +325,6 @@ mod tests {
                 Ok(..) => {}
                 Err(..) if name.contains('❌') => {}
                 Err(error) => panic!("Unexpected error: {error}"),
-            }
-        }
-    }
-
-    #[test]
-    fn trace_program() {
-        let program_str = examples::get_program_str("BIP 340 Schnorr").unwrap();
-        let program = util::program_from_string(program_str).unwrap();
-        let mut runner = Runner::for_program(program);
-        loop {
-            match runner.step().unwrap() {
-                Output::Intermediate(state) => {
-                    println!("{}", state);
-                }
-                Output::Final(value) => {
-                    println!("{}", value);
-                    break;
-                }
             }
         }
     }
