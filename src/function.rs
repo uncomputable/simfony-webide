@@ -84,14 +84,6 @@ pub struct Runner {
     output: Vec<Value>,
 }
 
-#[derive(Debug, Clone, Eq, PartialEq)]
-pub enum Output {
-    /// Intermediate state
-    Intermediate,
-    /// Final output
-    Final(Value),
-}
-
 impl Runner {
     pub fn for_program(program: Arc<Expression>) -> Self {
         let initial_state = State {
@@ -105,21 +97,10 @@ impl Runner {
     }
 
     pub fn run(&mut self) -> Result<Value, Error> {
-        loop {
-            match self.step() {
-                Ok(Output::Intermediate) => {}
-                Ok(Output::Final(a)) => return Ok(a),
-                Err(error) => return Err(error),
-            }
-        }
-    }
-
-    fn step(&mut self) -> Result<Output, Error> {
         while let Some(task) = self.input.pop() {
             match task {
                 Task::Execute(state) => {
                     self.execute_state(state)?;
-                    return Ok(Output::Intermediate);
                 }
                 Task::ExecuteComp(t) => {
                     let input = self.output.pop().unwrap();
@@ -128,7 +109,6 @@ impl Runner {
                         input,
                     };
                     self.execute_state(state)?;
-                    return Ok(Output::Intermediate);
                 }
                 Task::ExecuteDisconnect(t) => {
                     let prod_b_c = self.output.pop().unwrap();
@@ -139,7 +119,6 @@ impl Runner {
                         input: c.shallow_clone(),
                     };
                     self.execute_state(state)?;
-                    return Ok(Output::Intermediate);
                 }
                 Task::MakeLeft(ty_r) => {
                     let val_l = self.output.pop().unwrap();
@@ -158,8 +137,7 @@ impl Runner {
         }
 
         debug_assert_eq!(self.output.len(), 1);
-        let a = self.output.pop().unwrap();
-        Ok(Output::Final(a))
+        Ok(self.output.pop().unwrap())
     }
 
     fn execute_state(&mut self, state: State) -> Result<(), Error> {
