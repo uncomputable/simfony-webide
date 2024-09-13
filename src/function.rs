@@ -368,16 +368,15 @@ mod tests {
                 continue;
             }
 
+            println!("{name}");
             let program_str = examples::get_program_str(name).unwrap();
             let program = util::program_from_string(program_str).unwrap();
             let mut runner = Runner::for_program(program);
-            let ret = runner.run();
-
-            println!("{name}");
-            if name.contains('❌') {
-                assert!(ret.is_err());
-            } else {
-                assert!(ret.is_ok());
+            match runner.run() {
+                Ok(..) if name.contains('❌') => panic!("Expected failure"),
+                Ok(..) => {}
+                Err(..) if name.contains('❌') => {}
+                Err(error) => panic!("Unexpected error: {error}"),
             }
         }
     }
