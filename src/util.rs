@@ -1,5 +1,5 @@
+use simfony::SatisfiedProgram;
 use std::fmt;
-use std::sync::Arc;
 
 use simplicity::dag::{DagLike, MaxSharing, NoSharing};
 use simplicity::jet::Elements;
@@ -10,7 +10,7 @@ use crate::simplicity;
 
 pub type Expression = RedeemNode<Elements>;
 
-pub fn program_from_string(s: &str) -> Result<Arc<Expression>, String> {
+pub fn program_from_string(s: &str) -> Result<SatisfiedProgram, String> {
     let witness = simfony::witness::WitnessValues::empty();
     simfony::satisfy(s, &witness)
 }

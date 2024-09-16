@@ -204,7 +204,7 @@ mod tests {
             println!("{name}");
             let program_str = examples::get_program_str(name).unwrap();
             let program = util::program_from_string(program_str).unwrap();
-            let mut runner = Runner::for_program(program);
+            let mut runner = Runner::for_program(program.simplicity);
             match runner.run() {
                 Ok(..) if name.contains('❌') => panic!("Expected failure"),
                 Ok(..) => {}

@@ -41,7 +41,7 @@ pub fn App() -> impl IntoView {
     let (graph_toggle, set_graph_toggle) = create_signal(false);
 
     let program_result = Signal::derive(move || util::program_from_string(&program_str.get()));
-    let program = Signal::derive(move || program_result.get().ok());
+    let program = Signal::derive(move || program_result.get().ok().map(|x| x.simplicity));
     let parse_error = Signal::derive(move || program_result.get().err());
 
     create_effect(move |_| match parse_error.get() {
@@ -54,18 +54,18 @@ pub fn App() -> impl IntoView {
         set_run_result.set(None);
     };
     let run_program = move || {
-        let program = match program.get() {
-            Some(program) => program,
-            None => return,
+        let program = match program_result.get() {
+            Ok(program) => program,
+            Err(..) => return,
         };
         set_is_running.set(true);
-        let mut runner = Runner::for_program(program.clone());
+        let mut runner = Runner::for_program(program.simplicity.clone());
         match runner.run() {
             Ok(_) => {
                 set_run_result.set(Some(Ok("Program success".to_string())));
                 laser_eyes();
                 button_success_animation();
-                merkle::reload_graph(program);
+                merkle::reload_graph(program.simplicity);
                 set_is_running.set(false);
             }
             Err(error) => {

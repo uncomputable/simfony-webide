@@ -1415,7 +1415,7 @@ dependencies = [
 [[package]]
 name = "simfony"
 version = "0.1.0"
-source = "git+https://github.com/BlockstreamResearch/simfony?rev=c75cd2abe0b7dce2284b5e96d28a63e767b034d8#c75cd2abe0b7dce2284b5e96d28a63e767b034d8"
+source = "git+https://github.com/BlockstreamResearch/simfony?rev=6137606dab17d27693b2fa3d624850ee5658de37#6137606dab17d27693b2fa3d624850ee5658de37"
 dependencies = [
  "base64 0.21.7",
  "either",
@@ -1433,7 +1433,7 @@ dependencies = [
 [[package]]
 name = "simplicity-lang"
 version = "0.2.0"
-source = "git+https://github.com/BlockstreamResearch/rust-simplicity?rev=794918783291465a109bdaf2ef694f86467c477e#794918783291465a109bdaf2ef694f86467c477e"
+source = "git+https://github.com/BlockstreamResearch/rust-simplicity?rev=713842937ab0b5e0b1a343e19fdee6634b7a6add#713842937ab0b5e0b1a343e19fdee6634b7a6add"
 dependencies = [
  "bitcoin",
  "bitcoin_hashes",
@@ -1449,7 +1449,7 @@ dependencies = [
 [[package]]
 name = "simplicity-sys"
 version = "0.2.0"
-source = "git+https://github.com/BlockstreamResearch/rust-simplicity?rev=794918783291465a109bdaf2ef694f86467c477e#794918783291465a109bdaf2ef694f86467c477e"
+source = "git+https://github.com/BlockstreamResearch/rust-simplicity?rev=713842937ab0b5e0b1a343e19fdee6634b7a6add#713842937ab0b5e0b1a343e19fdee6634b7a6add"
 dependencies = [
  "bitcoin_hashes",
  "cc",
