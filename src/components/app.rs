@@ -59,13 +59,14 @@ pub fn App() -> impl IntoView {
             Err(..) => return,
         };
         set_is_running.set(true);
-        let mut runner = Runner::for_program(program.simplicity.clone());
+        let simplicity = program.simplicity.clone();
+        let mut runner = Runner::for_program(program);
         match runner.run() {
             Ok(_) => {
                 set_run_result.set(Some(Ok("Program success".to_string())));
                 laser_eyes();
                 button_success_animation();
-                merkle::reload_graph(program.simplicity);
+                merkle::reload_graph(simplicity);
                 set_is_running.set(false);
             }
             Err(error) => {

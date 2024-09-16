@@ -1,6 +1,9 @@
 use std::fmt;
 use std::sync::Arc;
 
+use either::Either;
+use simfony::debug::{DebugSymbols, FallibleCall, FallibleCallName};
+use simfony::SatisfiedProgram;
 use simplicity::node::Inner;
 use simplicity::types::Final;
 use simplicity::Value;
@@ -10,12 +13,13 @@ use crate::jet::JetFailed;
 use crate::simplicity;
 use crate::util::Expression;
 
-#[derive(Debug, Clone, Ord, PartialOrd, Eq, PartialEq)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub enum ErrorKind {
     AssertionFailed,
     FailNode,
     JetFailed,
     WrongType,
+    SimfonyCallFailed(FallibleCall),
 }
 
 impl fmt::Display for ErrorKind {
@@ -26,6 +30,21 @@ impl fmt::Display for ErrorKind {
             ErrorKind::JetFailed => f.write_str("Jet failed"),
             ErrorKind::WrongType => {
                 f.write_str("The program is ill-typed (this should never happen)")
+            }
+            ErrorKind::SimfonyCallFailed(call) => {
+                match call.name() {
+                    FallibleCallName::Assert => writeln!(f, "Assertion failed: false")?,
+                    FallibleCallName::Panic => writeln!(f, "Explicit panic")?,
+                    FallibleCallName::Jet => writeln!(f, "Jet failed")?,
+                    FallibleCallName::UnwrapLeft(val) => {
+                        writeln!(f, "Called `unwrap_left()` on a `Right` value: {val}")?
+                    }
+                    FallibleCallName::UnwrapRight(val) => {
+                        writeln!(f, "Called `unwrap_right()` on a `Left` value: {val}")?
+                    }
+                    FallibleCallName::Unwrap => writeln!(f, "Called `unwrap()` on a `None` value")?,
+                }
+                write!(f, "`{}`", call.text())
             }
         }
     }
@@ -39,6 +58,7 @@ enum Task {
     MakeLeft(Arc<Final>),
     MakeRight(Arc<Final>),
     MakeProduct,
+    ResetActiveSimfonyCall,
 }
 
 #[derive(Debug, Clone, Eq, PartialEq)]
@@ -49,14 +69,20 @@ pub struct Runner {
     input: Vec<Value>,
     /// Stack of output values.
     output: Vec<Value>,
+    /// Simfony debug symbols in the Simplicity target code.
+    debug_symbols: DebugSymbols,
+    /// Simfony call expression that is currently running.
+    active_simfony_call: Option<FallibleCall>,
 }
 
 impl Runner {
-    pub fn for_program(program: Arc<Expression>) -> Self {
+    pub fn for_program(program: SatisfiedProgram) -> Self {
         Self {
-            tasks: vec![Task::Execute(program)],
+            tasks: vec![Task::Execute(program.simplicity)],
             input: vec![Value::unit()],
             output: vec![],
+            debug_symbols: program.debug_symbols,
+            active_simfony_call: None,
         }
     }
 
@@ -106,6 +132,23 @@ impl Runner {
                         Inner::Case(..) | Inner::AssertL(..) | Inner::AssertR(..) => {
                             let (sum_a_b, c) = input.as_product().ok_or(ErrorKind::WrongType)?;
 
+                            if let Inner::AssertL(_, cmr) = expression.inner() {
+                                if let Some(tracked_call) = self.debug_symbols.get(cmr) {
+                                    match tracked_call.map_value(
+                                        &simfony::value::StructuralValue::from(c.shallow_clone()),
+                                    ) {
+                                        Some(Either::Left(fallible_call)) => {
+                                            let replaced =
+                                                self.active_simfony_call.replace(fallible_call);
+                                            debug_assert!(replaced.is_none());
+                                            self.tasks.push(Task::ResetActiveSimfonyCall);
+                                        }
+                                        Some(Either::Right(_debug_value)) => {}
+                                        None => {}
+                                    }
+                                }
+                            }
+
                             if let Some(a) = sum_a_b.as_left() {
                                 match expression.inner() {
                                     Inner::Case(s, _) | Inner::AssertL(s, _) => {
@@ -115,7 +158,9 @@ impl Runner {
                                             c.shallow_clone(),
                                         ));
                                     }
-                                    Inner::AssertR(_, _) => return Err(ErrorKind::AssertionFailed),
+                                    Inner::AssertR(_, _) => {
+                                        return Err(self.error(ErrorKind::AssertionFailed))
+                                    }
                                     _ => unreachable!("Covered by outer match statement"),
                                 }
                             } else if let Some(b) = sum_a_b.as_right() {
@@ -127,7 +172,9 @@ impl Runner {
                                             c.shallow_clone(),
                                         ));
                                     }
-                                    Inner::AssertL(_, _) => return Err(ErrorKind::AssertionFailed),
+                                    Inner::AssertL(_, _) => {
+                                        return Err(self.error(ErrorKind::AssertionFailed))
+                                    }
                                     _ => unreachable!("Covered by outer match statement"),
                                 }
                             } else {
@@ -143,14 +190,14 @@ impl Runner {
                             self.input.push(Value::product(t_cmr, input));
                         }
                         Inner::Witness(value) => self.output.push(value.shallow_clone()),
-                        Inner::Fail(_) => return Err(ErrorKind::FailNode),
+                        Inner::Fail(_) => return Err(self.error(ErrorKind::FailNode)),
                         Inner::Jet(jet) => match jet::execute_jet_with_env(
                             jet,
                             &input,
                             &simfony::dummy_env::dummy(),
                         ) {
                             Ok(output) => self.output.push(output),
-                            Err(JetFailed) => return Err(ErrorKind::JetFailed),
+                            Err(JetFailed) => return Err(self.error(ErrorKind::JetFailed)),
                         },
                         Inner::Word(value) => self.output.push(value.shallow_clone()),
                     }
@@ -178,12 +225,22 @@ impl Runner {
                     let a = self.output.pop().unwrap();
                     self.output.push(Value::product(a, b));
                 }
+                Task::ResetActiveSimfonyCall => self.active_simfony_call = None,
             }
         }
 
         debug_assert!(self.input.is_empty());
         debug_assert_eq!(self.output.len(), 1);
         Ok(self.output.pop().unwrap())
+    }
+
+    /// Try to return an error with Simfony debug information included.
+    /// Otherwise, return the original error.
+    fn error(&self, error: ErrorKind) -> ErrorKind {
+        match &self.active_simfony_call {
+            Some(call) => ErrorKind::SimfonyCallFailed(call.clone()),
+            None => error,
+        }
     }
 }
 
@@ -204,7 +261,7 @@ mod tests {
             println!("{name}");
             let program_str = examples::get_program_str(name).unwrap();
             let program = util::program_from_string(program_str).unwrap();
-            let mut runner = Runner::for_program(program.simplicity);
+            let mut runner = Runner::for_program(program);
             match runner.run() {
                 Ok(..) if name.contains('❌') => panic!("Expected failure"),
                 Ok(..) => {}
