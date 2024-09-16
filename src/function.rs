@@ -86,7 +86,7 @@ impl Runner {
         }
     }
 
-    pub fn run(&mut self) -> Result<Value, ErrorKind> {
+    pub fn run(&mut self) -> Result<(), ErrorKind> {
         while let Some(task) = self.tasks.pop() {
             match task {
                 Task::Execute(expression) => {
@@ -231,7 +231,8 @@ impl Runner {
 
         debug_assert!(self.input.is_empty());
         debug_assert_eq!(self.output.len(), 1);
-        Ok(self.output.pop().unwrap())
+        debug_assert!(self.output.pop().unwrap().is_unit());
+        Ok(())
     }
 
     /// Try to return an error with Simfony debug information included.
