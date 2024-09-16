@@ -1460,6 +1460,7 @@ name = "simplicity-webide"
 version = "0.1.0"
 dependencies = [
  "console_error_panic_hook",
+ "either",
  "hex-conservative",
  "itertools 0.13.0",
  "js-sys",
