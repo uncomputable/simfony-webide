@@ -1,12 +1,11 @@
 use simfony::SatisfiedProgram;
 use std::fmt;
 
+use simfony::simplicity;
 use simplicity::dag::{DagLike, MaxSharing, NoSharing};
 use simplicity::jet::Elements;
 use simplicity::node::Inner;
 use simplicity::{node, RedeemNode};
-
-use crate::simplicity;
 
 pub type Expression = RedeemNode<Elements>;
 

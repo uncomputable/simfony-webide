@@ -3,6 +3,7 @@ use std::sync::Arc;
 
 use either::Either;
 use simfony::debug::{DebugSymbols, FallibleCall, FallibleCallName};
+use simfony::simplicity;
 use simfony::SatisfiedProgram;
 use simplicity::node::Inner;
 use simplicity::types::Final;
@@ -10,7 +11,6 @@ use simplicity::Value;
 
 use crate::jet;
 use crate::jet::JetFailed;
-use crate::simplicity;
 use crate::util::Expression;
 
 #[derive(Debug, Clone, Eq, PartialEq)]

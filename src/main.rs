@@ -5,10 +5,8 @@ mod jet;
 mod util;
 mod value;
 
-pub use simfony::simplicity;
-
 use components::App;
-use leptos::*;
+use leptos::{mount_to_body, view};
 
 #[cfg(test)]
 wasm_bindgen_test::wasm_bindgen_test_configure!(run_in_browser);

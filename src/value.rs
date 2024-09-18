@@ -1,9 +1,9 @@
-use simplicity::types::Final;
-use simplicity::Value;
 use std::sync::Arc;
 
-use crate::simplicity;
-use crate::simplicity::types::CompleteBound;
+use simfony::simplicity;
+use simplicity::types::CompleteBound;
+use simplicity::types::Final;
+use simplicity::Value;
 
 // TODO: Upstream to rust-simplicity
 pub fn from_padded_bits<I: Iterator<Item = bool>>(it: &mut I, ty: &Final) -> Option<Value> {
