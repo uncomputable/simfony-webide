@@ -1,4 +1,3 @@
-use simfony::SatisfiedProgram;
 use std::fmt;
 
 use simfony::simplicity;
@@ -8,11 +7,6 @@ use simplicity::node::Inner;
 use simplicity::{node, RedeemNode};
 
 pub type Expression = RedeemNode<Elements>;
-
-pub fn program_from_string(s: &str) -> Result<SatisfiedProgram, String> {
-    let witness = simfony::witness::WitnessValues::empty();
-    simfony::satisfy(s, &witness)
-}
 
 pub fn get_compression_factor<M: node::Marker>(node: &node::Node<M>) -> usize {
     let unshared_len = node.pre_order_iter::<NoSharing>().count();
