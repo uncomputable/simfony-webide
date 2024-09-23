@@ -1,5 +1,6 @@
 mod analysis;
 mod app;
+mod apply_changes;
 mod examples;
 mod merkle;
 mod parser;
