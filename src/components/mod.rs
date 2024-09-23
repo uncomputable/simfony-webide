@@ -3,9 +3,7 @@ mod app;
 mod apply_changes;
 mod copy_to_clipboard;
 mod error;
-mod examples;
-mod merkle;
-mod parser;
+mod program_window;
 mod table_form;
 mod tabs;
 
