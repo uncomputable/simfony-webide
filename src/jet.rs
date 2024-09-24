@@ -1,5 +1,6 @@
-use crate::{simplicity, value};
+use crate::value;
 
+use simfony::simplicity;
 use simplicity::ffi::c_jets::frame_ffi::{c_readBit, c_writeBit};
 use simplicity::ffi::c_jets::uword_width;
 use simplicity::ffi::ffi::UWORD;

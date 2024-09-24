@@ -3,6 +3,7 @@ use std::sync::Arc;
 
 use either::Either;
 use simfony::debug::{DebugSymbols, FallibleCall, FallibleCallName};
+use simfony::simplicity;
 use simfony::SatisfiedProgram;
 use simplicity::node::Inner;
 use simplicity::types::Final;
@@ -10,7 +11,6 @@ use simplicity::Value;
 
 use crate::jet;
 use crate::jet::JetFailed;
-use crate::simplicity;
 use crate::util::Expression;
 
 #[derive(Debug, Clone, Eq, PartialEq)]
@@ -248,7 +248,7 @@ impl Runner {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{examples, util};
+    use crate::examples;
 
     #[test]
     #[wasm_bindgen_test::wasm_bindgen_test]
@@ -261,7 +261,8 @@ mod tests {
 
             println!("{name}");
             let program_str = examples::get_program_str(name).unwrap();
-            let program = util::program_from_string(program_str).unwrap();
+            let program =
+                simfony::satisfy(program_str, &simfony::witness::WitnessValues::empty()).unwrap();
             let mut runner = Runner::for_program(program);
             match runner.run() {
                 Ok(..) if name.contains('❌') => panic!("Expected failure"),

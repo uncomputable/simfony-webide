@@ -2,12 +2,12 @@ use std::sync::Arc;
 
 use js_sys::{Array, Object};
 use leptos::*;
+use simfony::simplicity;
 use simplicity::dag::DagLike;
+use simplicity::dag::NoSharing;
 use simplicity::node;
 use wasm_bindgen::prelude::*;
 
-use crate::simplicity;
-use crate::simplicity::dag::NoSharing;
 use crate::util::{DisplayInner, Expression};
 
 #[component]
