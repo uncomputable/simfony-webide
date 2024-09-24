@@ -697,3 +697,60 @@ p {
     max-height: 91px;
   }
 }
+.tabs {
+  overflow: hidden;
+  border: 1px solid #ccc;
+  background-color: #f1f1f1;
+}
+.tabs button {
+  background-color: inherit;
+  float: left;
+  border: none;
+  outline: none;
+  cursor: pointer;
+  padding: 14px 16px;
+}
+.tabs button:hover {
+  background-color: #ddd;
+}
+.tabs button.active {
+  background-color: #bbb;
+}
+
+.error-box {
+  border: 1px dotted #ff0000;
+  color: #ff0000;
+  word-break: break-word;
+  margin-top: 10px;
+  padding: 10px;
+  overflow-x: scroll;
+  scrollbar-color: #191C21 #b00000;
+  scrollbar-width: thin;
+}
+
+.button-row {
+  display: flex;
+}
+
+.button-col {
+  display: flex;
+  flex-direction: column;
+}
+
+.submit-button, .push-button, .pop-button, .copy-button {
+  border: 1px solid #5134E0;
+  padding: 4px;
+  border-radius: 4px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: #ccc;
+  background: #191C21;
+}
+.submit-button:hover, .push-button:hover, .pop-button:hover, .copy-button:hover {
+  background: #5134e0;
+}
+
+input:invalid {
+  background-color: lightpink;
+}
