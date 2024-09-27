@@ -11,6 +11,7 @@ use self::transaction_tab::TransactionTab;
 use self::witness_tab::WitnessTab;
 use crate::components::tabs::{Tab, Tabs};
 
+pub use self::program_tab::Program;
 pub use self::transaction_tab::TxEnv;
 
 #[component]

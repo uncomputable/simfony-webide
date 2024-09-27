@@ -78,10 +78,10 @@ pub struct Runner {
 impl Runner {
     pub fn for_program(program: SatisfiedProgram) -> Self {
         Self {
-            tasks: vec![Task::Execute(program.simplicity)],
+            tasks: vec![Task::Execute(program.redeem().clone())],
             input: vec![Value::unit()],
             output: vec![],
-            debug_symbols: program.debug_symbols,
+            debug_symbols: program.debug_symbols().clone(),
             active_simfony_call: None,
         }
     }
@@ -253,6 +253,7 @@ mod tests {
     #[test]
     #[wasm_bindgen_test::wasm_bindgen_test]
     fn test() {
+        let empty_witness = simfony::witness::WitnessValues::empty();
         for name in examples::get_names() {
             // Skip tutorial lessons
             if name.contains('💡') {
@@ -261,8 +262,7 @@ mod tests {
 
             println!("{name}");
             let program_str = examples::get_program_str(name).unwrap();
-            let program =
-                simfony::satisfy(program_str, &simfony::witness::WitnessValues::empty()).unwrap();
+            let program = SatisfiedProgram::new(program_str, &empty_witness).unwrap();
             let mut runner = Runner::for_program(program);
             match runner.run() {
                 Ok(..) if name.contains('❌') => panic!("Expected failure"),

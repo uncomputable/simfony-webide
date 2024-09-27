@@ -1,15 +1,35 @@
 use leptos::{
     component, create_node_ref, create_rw_signal, ev, html, use_context, view, IntoView, NodeRef,
-    SignalSet, SignalUpdate,
+    RwSignal, SignalGetUntracked, SignalSet, SignalUpdate,
 };
+use simfony::witness::WitnessValues;
+use simfony::{CompiledProgram, SatisfiedProgram};
 
-use crate::components::app::ProgramWrapper;
 use crate::components::apply_changes::ApplyChanges;
 use crate::components::error::ErrorBox;
 
+#[derive(Clone, Debug, Default)]
+pub struct Program {
+    pub compiled: CompiledProgram,
+    pub text: String,
+}
+
+impl Program {
+    pub fn compile(text: String) -> Result<Self, String> {
+        match CompiledProgram::new(text.as_str()) {
+            Ok(compiled) => Ok(Self { compiled, text }),
+            Err(error) => Err(error),
+        }
+    }
+
+    pub fn satisfy(&self, witness_values: &WitnessValues) -> Result<SatisfiedProgram, String> {
+        self.compiled.satisfy(witness_values)
+    }
+}
+
 #[component]
 pub fn ProgramTab() -> impl IntoView {
-    let program_text = use_context::<ProgramWrapper>().expect("program should exist in context");
+    let program = use_context::<RwSignal<Program>>().expect("program should exist in context");
     let parse_error = create_rw_signal("".to_string());
     let apply_changes = ApplyChanges::default();
     let textarea_ref: NodeRef<html::Textarea> = create_node_ref();
@@ -20,10 +40,10 @@ pub fn ProgramTab() -> impl IntoView {
             .get()
             .expect("<textarea> should be mounted")
             .value();
-        match simfony::compile(textarea_value.as_str()) {
-            Ok(..) => {
+        match Program::compile(textarea_value) {
+            Ok(x) => {
+                program.set(x);
                 parse_error.update(String::clear);
-                program_text.0.set(textarea_value);
                 apply_changes.set_success(true);
             }
             Err(error) => {
@@ -32,6 +52,8 @@ pub fn ProgramTab() -> impl IntoView {
             }
         }
     };
+
+    let program_text_initial_value = program.get_untracked().text;
 
     view! {
         <div>
@@ -44,7 +66,7 @@ pub fn ProgramTab() -> impl IntoView {
                     spellcheck="false"
                     node_ref=textarea_ref
                 >
-                    {program_text.0}
+                    {program_text_initial_value}
                 </textarea>
                 <ErrorBox error=parse_error />
                 {apply_changes}

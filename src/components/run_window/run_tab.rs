@@ -1,52 +1,46 @@
 use leptos::{
-    component, create_rw_signal, ev, spawn_local, use_context, view, Fragment, IntoView, SignalGet,
-    SignalSet, SignalUpdate,
+    component, create_rw_signal, ev, spawn_local, use_context, view, with, Fragment, IntoView,
+    RwSignal, SignalGet, SignalSet, SignalUpdate,
 };
+use simfony::witness::WitnessValues;
 
-use crate::components::app::{ProgramWrapper, WitnessWrapper};
 use crate::components::error::ErrorBox;
+use crate::components::program_window::Program;
 use crate::function::Runner;
 
 #[component]
 pub fn RuntimeTab() -> impl IntoView {
-    let program_text = use_context::<ProgramWrapper>().expect("program should exist in context");
-    let witness_values = use_context::<WitnessWrapper>().expect("witness should exist in context");
+    let program = use_context::<RwSignal<Program>>().expect("program exist in context");
+    let witness_values =
+        use_context::<RwSignal<WitnessValues>>().expect("witness values should exist in context");
     let run_error = create_rw_signal("".to_string());
     let run_succeeded = create_rw_signal::<Option<bool>>(None);
 
     let run_program = move |_event: ev::MouseEvent| {
-        // TODO: Store simfony::witness::WitnessValues in witness signal
-        let mut witness_values1 = simfony::witness::WitnessValues::empty();
-        for (name, value) in witness_values.0.get() {
-            witness_values1
-                .insert(name, value)
-                .expect("Same name cannot be assigned to two values");
-        }
-
-        // TODO: Store unsatisfied but compiled Simfony program in program signal
-        let satisfied_program =
-            match simfony::satisfy(program_text.0.get().as_str(), &witness_values1) {
+        with!(|program, witness_values| {
+            let satisfied_program = match program.satisfy(witness_values) {
                 Ok(x) => x,
                 Err(error) => {
                     run_error.set(error);
                     return;
                 }
             };
-        let mut runner = Runner::for_program(satisfied_program);
-        let success = match runner.run() {
-            Ok(..) => {
-                run_error.update(String::clear);
-                true
-            }
-            Err(error) => {
-                run_error.set(error.to_string());
-                false
-            }
-        };
-        spawn_local(async move {
-            run_succeeded.set(Some(success));
-            gloo_timers::future::TimeoutFuture::new(500).await;
-            run_succeeded.set(None);
+            let mut runner = Runner::for_program(satisfied_program);
+            let success = match runner.run() {
+                Ok(..) => {
+                    run_error.update(String::clear);
+                    true
+                }
+                Err(error) => {
+                    run_error.set(error.to_string());
+                    false
+                }
+            };
+            spawn_local(async move {
+                run_succeeded.set(Some(success));
+                gloo_timers::future::TimeoutFuture::new(500).await;
+                run_succeeded.set(None);
+            });
         });
     };
 

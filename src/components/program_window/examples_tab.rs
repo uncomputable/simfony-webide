@@ -1,15 +1,15 @@
 use leptos::{
     component, create_rw_signal, ev, event_target_value, use_context, view, CollectView, IntoView,
-    Signal, SignalGet, SignalSet,
+    RwSignal, Signal, SignalGet, SignalSet,
 };
 
-use crate::components::app::ProgramWrapper;
 use crate::components::apply_changes::ApplyChanges;
+use crate::components::program_window::Program;
 use crate::examples;
 
 #[component]
 pub fn ExamplesTab() -> impl IntoView {
-    let program_text = use_context::<ProgramWrapper>().expect("program should exist in context");
+    let program = use_context::<RwSignal<Program>>().expect("program should exist in context");
     // TODO: Set witness data
     // TODO: Set transaction data
     let selected_name = create_rw_signal("".to_string());
@@ -24,7 +24,8 @@ pub fn ExamplesTab() -> impl IntoView {
         let name = selected_name.get();
         match examples::get_program_str(&name) {
             Some(s) => {
-                program_text.0.set(s.to_string());
+                let x = Program::compile(s.to_string()).expect("example program should compile");
+                program.set(x);
                 apply_changes.set_success(true);
             }
             None => {
