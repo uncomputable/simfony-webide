@@ -9,8 +9,8 @@ use crate::components::apply_changes::ApplyChanges;
 
 #[derive(Copy, Clone, Debug)]
 pub struct TxEnv {
-    lock_time: RwSignal<elements::LockTime>,
-    sequence: RwSignal<elements::Sequence>,
+    pub lock_time: RwSignal<elements::LockTime>,
+    pub sequence: RwSignal<elements::Sequence>,
 }
 
 impl TxEnv {

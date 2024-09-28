@@ -52,27 +52,6 @@
         padding-top: 30px;
         position: relative;
 
-        .program-details {
-            margin-right: 300px;
-
-            .program-title {
-                margin: 0 0 7px 0;
-                font-size: 20px;
-                font-style: normal;
-                font-weight: 700;
-                line-height: normal;
-            }
-
-            .program-description {
-                color: $text-grey;
-                font-size: 16px;
-                font-style: normal;
-                font-weight: 400;
-                line-height: normal;
-                word-break: break-word;
-            }
-        }
-
         @media only screen and (max-width: 800px) {
             display: flex;
             flex-direction: column-reverse;

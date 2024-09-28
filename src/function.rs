@@ -253,17 +253,15 @@ mod tests {
     #[test]
     #[wasm_bindgen_test::wasm_bindgen_test]
     fn test() {
-        let empty_witness = simfony::witness::WitnessValues::empty();
-        for name in examples::get_names() {
+        for name in examples::keys() {
             // Skip tutorial lessons
             if name.contains('💡') {
                 continue;
             }
 
             println!("{name}");
-            let program_str = examples::get_program_str(name).unwrap();
-            let program = SatisfiedProgram::new(program_str, &empty_witness).unwrap();
-            let mut runner = Runner::for_program(program);
+            let example = examples::get(name).unwrap();
+            let mut runner = Runner::for_program(example.satisfied());
             match runner.run() {
                 Ok(..) if name.contains('❌') => panic!("Expected failure"),
                 Ok(..) => {}
