@@ -1478,6 +1478,7 @@ dependencies = [
  "itertools 0.13.0",
  "js-sys",
  "leptos",
+ "serde_json",
  "simfony",
  "wasm-bindgen-futures",
  "wasm-bindgen-test",
