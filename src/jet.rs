@@ -1,5 +1,3 @@
-use crate::value;
-
 use simfony::simplicity;
 use simplicity::ffi::c_jets::frame_ffi::{c_readBit, c_writeBit};
 use simplicity::ffi::c_jets::uword_width;
@@ -66,7 +64,7 @@ fn value_from_frame(ty: &Final, buffer: &mut [UWORD]) -> Value {
 
     let mut it = (0..ty.bit_width()).map(|_| unsafe { c_readBit(&mut read_frame) });
 
-    value::from_padded_bits(&mut it, ty).expect("Jets return values that fit their output type")
+    Value::from_padded_bits(&mut it, ty).expect("Jets return values that fit their output type")
 }
 
 /// Execute a jet on an input and inside an environment. Return the output.

@@ -3,7 +3,6 @@ mod examples;
 mod function;
 mod jet;
 mod util;
-mod value;
 
 use components::App;
 use leptos::{mount_to_body, view};
