@@ -41,6 +41,14 @@ impl Example {
     pub fn sequence(self) -> elements::Sequence {
         elements::Sequence::from_consensus(self.sequence)
     }
+
+    #[cfg(test)]
+    pub fn tx_env(
+        self,
+    ) -> simfony::simplicity::jet::elements::ElementsEnv<std::sync::Arc<elements::Transaction>>
+    {
+        simfony::dummy_env::dummy_with(self.lock_time(), self.sequence())
+    }
 }
 
 /// Names must be unique because they serve as primary keys.

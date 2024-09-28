@@ -3,8 +3,9 @@ use std::sync::Arc;
 
 use either::Either;
 use simfony::debug::{DebugSymbols, FallibleCall, FallibleCallName};
-use simfony::simplicity;
+use simfony::simplicity::jet::elements::ElementsEnv;
 use simfony::SatisfiedProgram;
+use simfony::{elements, simplicity};
 use simplicity::node::Inner;
 use simplicity::types::Final;
 use simplicity::Value;
@@ -93,7 +94,7 @@ impl Runner {
         self.debug_output
     }
 
-    pub fn run(&mut self) -> Result<(), ErrorKind> {
+    pub fn run(&mut self, env: &ElementsEnv<Arc<elements::Transaction>>) -> Result<(), ErrorKind> {
         while let Some(task) = self.tasks.pop() {
             match task {
                 Task::Execute(expression) => {
@@ -205,11 +206,7 @@ impl Runner {
                         }
                         Inner::Witness(value) => self.output.push(value.shallow_clone()),
                         Inner::Fail(_) => return Err(self.error(ErrorKind::FailNode)),
-                        Inner::Jet(jet) => match jet::execute_jet_with_env(
-                            jet,
-                            &input,
-                            &simfony::dummy_env::dummy(),
-                        ) {
+                        Inner::Jet(jet) => match jet::execute_jet_with_env(jet, &input, env) {
                             Ok(output) => self.output.push(output),
                             Err(JetFailed) => return Err(self.error(ErrorKind::JetFailed)),
                         },
@@ -276,7 +273,7 @@ mod tests {
             println!("{name}");
             let example = examples::get(name).unwrap();
             let mut runner = Runner::for_program(example.satisfied());
-            match runner.run() {
+            match runner.run(&example.tx_env()) {
                 Ok(..) if name.contains('❌') => panic!("Expected failure"),
                 Ok(..) => {}
                 Err(..) if name.contains('❌') => {}

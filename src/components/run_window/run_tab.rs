@@ -6,7 +6,7 @@ use leptos::{
 use simfony::witness::WitnessValues;
 
 use crate::components::error::ErrorBox;
-use crate::components::program_window::Program;
+use crate::components::program_window::{Program, TxEnv};
 use crate::function::Runner;
 
 #[component]
@@ -14,12 +14,14 @@ pub fn RuntimeTab() -> impl IntoView {
     let program = use_context::<RwSignal<Program>>().expect("program exist in context");
     let witness_values =
         use_context::<RwSignal<WitnessValues>>().expect("witness values should exist in context");
+    let tx_env = use_context::<TxEnv>().expect("transaction environment should exist in context");
+    let environment = tx_env.environment();
     let debug_output = create_rw_signal("".to_string());
     let run_error = create_rw_signal("".to_string());
     let run_succeeded = create_rw_signal::<Option<bool>>(None);
 
     let run_program = move |_event: ev::MouseEvent| {
-        with!(|program, witness_values| {
+        with!(|program, witness_values, environment| {
             let satisfied_program = match program.satisfy(witness_values) {
                 Ok(x) => x,
                 Err(error) => {
@@ -28,7 +30,7 @@ pub fn RuntimeTab() -> impl IntoView {
                 }
             };
             let mut runner = Runner::for_program(satisfied_program);
-            let success = match runner.run() {
+            let success = match runner.run(environment) {
                 Ok(..) => {
                     run_error.update(String::clear);
                     true
