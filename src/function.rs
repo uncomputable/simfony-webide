@@ -73,6 +73,8 @@ pub struct Runner {
     debug_symbols: DebugSymbols,
     /// Simfony call expression that is currently running.
     active_simfony_call: Option<FallibleCall>,
+    /// Output from Simfony dbg! expressions, in order of occurrence.
+    debug_output: Vec<String>,
 }
 
 impl Runner {
@@ -83,7 +85,12 @@ impl Runner {
             output: vec![],
             debug_symbols: program.debug_symbols().clone(),
             active_simfony_call: None,
+            debug_output: vec![],
         }
+    }
+
+    pub fn debug_output(self) -> Vec<String> {
+        self.debug_output
     }
 
     pub fn run(&mut self) -> Result<(), ErrorKind> {
@@ -143,7 +150,14 @@ impl Runner {
                                             debug_assert!(replaced.is_none());
                                             self.tasks.push(Task::ResetActiveSimfonyCall);
                                         }
-                                        Some(Either::Right(_debug_value)) => {}
+                                        Some(Either::Right(debug_value)) => {
+                                            let s = format!(
+                                                "`{}` = `{}`",
+                                                debug_value.text(),
+                                                debug_value.value()
+                                            );
+                                            self.debug_output.push(s);
+                                        }
                                         None => {}
                                     }
                                 }

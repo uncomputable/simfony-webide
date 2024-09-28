@@ -1,3 +1,4 @@
+use itertools::Itertools;
 use leptos::{
     component, create_rw_signal, ev, spawn_local, use_context, view, with, Fragment, IntoView,
     RwSignal, SignalGet, SignalSet, SignalUpdate,
@@ -13,6 +14,7 @@ pub fn RuntimeTab() -> impl IntoView {
     let program = use_context::<RwSignal<Program>>().expect("program exist in context");
     let witness_values =
         use_context::<RwSignal<WitnessValues>>().expect("witness values should exist in context");
+    let debug_output = create_rw_signal("".to_string());
     let run_error = create_rw_signal("".to_string());
     let run_succeeded = create_rw_signal::<Option<bool>>(None);
 
@@ -36,6 +38,7 @@ pub fn RuntimeTab() -> impl IntoView {
                     false
                 }
             };
+            debug_output.set(runner.debug_output().into_iter().join("\n"));
             spawn_local(async move {
                 run_succeeded.set(Some(success));
                 gloo_timers::future::TimeoutFuture::new(500).await;
@@ -63,6 +66,7 @@ pub fn RuntimeTab() -> impl IntoView {
 
     view! {
         <div>
+            <ErrorBox error=debug_output />
             <ErrorBox error=run_error />
             <button
                 class="submit-button"
