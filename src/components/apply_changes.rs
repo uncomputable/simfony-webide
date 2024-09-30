@@ -30,8 +30,8 @@ impl IntoView for ApplyChanges {
         let apply_button_view = move || -> Fragment {
             match self.apply_succeeded.get() {
                 None => view! {
+                    <i class="fas fa-floppy-disk"></i>
                     Apply changes
-                    <i></i>
                 },
                 Some(true) => view! {
                     Applied

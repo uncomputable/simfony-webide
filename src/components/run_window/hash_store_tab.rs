@@ -94,16 +94,16 @@ fn CopyHashesToClipboard() -> impl IntoView {
                     type="button"
                     on:click=move |_| hashed_data.push_hash()
                 >
-                    More
                     <i class="fas fa-plus"></i>
+                    More
                 </button>
                 <button
                     class="pop-button"
                     type="button"
                     on:click=move |_| hashed_data.pop_hash()
                 >
-                    Less
                     <i class="fas fa-minus"></i>
+                    Less
                 </button>
             </div>
         </div>
@@ -138,16 +138,16 @@ fn CopyPreimagesToClipboard() -> impl IntoView {
                     type="button"
                     on:click=move |_| hashed_data.push_hash()
                 >
+                    <i class="fas fa-plus"></i>
                     More
-                    <i class="far fa-plus"></i>
                 </button>
                 <button
                     class="pop-button"
                     type="button"
                     on:click=move |_| hashed_data.pop_hash()
                 >
+                    <i class="fas fa-minus"></i>
                     Less
-                    <i class="far fa-minus"></i>
                 </button>
             </div>
         </div>

@@ -176,16 +176,16 @@ fn CopyPublicKeysToClipboard() -> impl IntoView {
                     type="button"
                     on:click=move |_| signing_keys.push_key()
                 >
-                    More
                     <i class="fas fa-plus"></i>
+                    More
                 </button>
                 <button
                     class="pop-button"
                     type="button"
                     on:click=move |_| signing_keys.pop_key()
                 >
-                    Less
                     <i class="fas fa-minus"></i>
+                    Less
                 </button>
             </div>
         </div>
@@ -223,16 +223,16 @@ fn CopySignaturesToClipboard() -> impl IntoView {
                     type="button"
                     on:click=move |_| signing_keys.push_key()
                 >
-                    More
                     <i class="fas fa-plus"></i>
+                    More
                 </button>
                 <button
                     class="pop-button"
                     type="button"
                     on:click=move |_| signing_keys.pop_key()
                 >
-                    Less
                     <i class="fas fa-minus"></i>
+                    Less
                 </button>
             </div>
         </div>
