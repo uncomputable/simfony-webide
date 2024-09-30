@@ -5,6 +5,7 @@ mod copy_to_clipboard;
 mod error;
 mod program_window;
 mod run_window;
+mod state;
 mod table_form;
 mod tabs;
 

@@ -14,8 +14,14 @@ use crate::components::copy_to_clipboard::CopyToClipboard;
 
 #[derive(Copy, Clone, Debug)]
 pub struct SigningKeys {
-    key_count: RwSignal<u32>,
-    secret_keys: Signal<Vec<secp256k1_zkp::Keypair>>,
+    pub key_count: RwSignal<u32>,
+    pub secret_keys: Signal<Vec<secp256k1_zkp::Keypair>>,
+}
+
+impl Default for SigningKeys {
+    fn default() -> Self {
+        Self::new(1)
+    }
 }
 
 impl SigningKeys {

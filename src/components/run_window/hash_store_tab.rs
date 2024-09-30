@@ -10,8 +10,14 @@ use crate::components::copy_to_clipboard::CopyToClipboard;
 
 #[derive(Clone, Copy, Debug)]
 pub struct HashedData {
-    hash_count: RwSignal<u32>,
-    preimages: Signal<Vec<[u8; 32]>>,
+    pub hash_count: RwSignal<u32>,
+    pub preimages: Signal<Vec<[u8; 32]>>,
+}
+
+impl Default for HashedData {
+    fn default() -> Self {
+        Self::new(1)
+    }
 }
 
 impl HashedData {

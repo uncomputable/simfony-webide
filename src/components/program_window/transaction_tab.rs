@@ -13,6 +13,12 @@ pub struct TxEnv {
     pub sequence: RwSignal<elements::Sequence>,
 }
 
+impl Default for TxEnv {
+    fn default() -> Self {
+        Self::new(0, 0)
+    }
+}
+
 impl TxEnv {
     pub fn new(lock_time: u32, sequence: u32) -> Self {
         Self {
