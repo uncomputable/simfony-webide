@@ -3,9 +3,14 @@ name = "simplicity-webide"
 version = "0.1.0"
 edition = "2021"
 
-[profile.release]
+[profile.wasm-release]
+inherits = "release"
 opt-level = 'z'
 lto = true
+codegen-units = 1
+
+[package.metadata.leptos]
+lib-profile-release = "wasm-release"
 
 [dependencies]
 itertools = "0.13.0"
