@@ -5,6 +5,7 @@
 @import 'components/merkle.scss';
 @import 'components/merkle_graph.scss';
 @import 'components/program_window/examples_tab.scss';
+@import 'components/navbar.scss';
 
 * {
     box-sizing: border-box;
@@ -114,28 +115,6 @@ p {
     100% {max-height: 91px;}
 }
 
-.tabs {
-    overflow: hidden;
-    border: 1px solid #ccc;
-    background-color: #f1f1f1;
-
-    button {
-        background-color: inherit;
-        float: left;
-        border: none;
-        outline: none;
-        cursor: pointer;
-        padding: 14px 16px;
-
-        &:hover {
-            background-color: #ddd; // Add hover effect
-        }
-
-        &.active {
-          background-color: #bbb; // Darker color for active tabs
-        }
-    }
-}
 
 .error-box {
     border: 1px dotted #ff0000;

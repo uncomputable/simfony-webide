@@ -5,31 +5,49 @@ mod witness_tab;
 
 use leptos::{component, view, IntoView};
 
-use self::examples_tab::ExamplesTab;
 use self::program_tab::ProgramTab;
 use self::transaction_tab::TransactionTab;
 use self::witness_tab::WitnessTab;
-use crate::components::tabs::{Tab, Tabs};
+use crate::components::navbar::{Action, Dropdown, Navbar, Navigation};
+use crate::components::program_window::examples_tab::ExamplesTab;
 
 pub use self::program_tab::Program;
 pub use self::transaction_tab::TxEnv;
 
 #[component]
 pub fn ProgramWindow() -> impl IntoView {
+    let dummy_action = move |_: ()| leptos::logging::log!("It works!");
+    let dummy_select = move |name| {
+        leptos::logging::log!("You selected {name}!");
+    };
+
+    let examples = crate::examples::keys().collect::<Vec<_>>();
+    let tools = ["🔑️ Key Store", "#️⃣ Hash Store"];
+
     view! {
-        <Tabs default_tab="Program">
-            <Tab name="Program">
+        <Navbar default_tab="Program">
+            <Action action=dummy_action>
+                <i class="fas fa-play"></i>
+                " Run (WIP)"
+            </Action>
+            <Navigation name="Program">
                 <ProgramTab />
-            </Tab>
-            <Tab name="Witness">
+            </Navigation>
+            <Navigation name="Witness">
                 <WitnessTab />
-            </Tab>
-            <Tab name="Transaction">
+            </Navigation>
+            <Navigation name="Transaction">
                 <TransactionTab />
-            </Tab>
-            <Tab name="Examples">
+            </Navigation>
+            <Navigation name="Examples">
                 <ExamplesTab />
-            </Tab>
-        </Tabs>
+            </Navigation>
+            <Dropdown name="Examples (WIP)" options=examples select_option=dummy_select />
+            <Dropdown name="Tools (WIP)" options=tools select_option=dummy_select />
+            <Action action=dummy_action>
+                <i class="fa-solid fa-share-nodes"></i>
+                " Share (WIP)"
+            </Action>
+        </Navbar>
     }
 }

@@ -1,0 +1,59 @@
+.navbar {
+    overflow: hidden;
+    border: 1px solid #ccc;
+    background-color: #f1f1f1;
+
+    button {
+        background-color: inherit;
+        float: left;
+        border: none;
+        outline: none;
+        cursor: pointer;
+        padding: 14px 16px;
+
+        &:hover {
+            background-color: #ddd; // Add hover effect
+        }
+
+        &.active {
+            background-color: #bbb; // Darker color for active tabs
+        }
+    }
+
+    .dropdown {
+        float: left;
+        overflow: hidden;
+
+        .dropdown-button {
+            font-family: inherit; // Important for vertical align on mobile phones
+            margin: 0; // Important for vertical align on mobile phones
+        }
+
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            background-color: #f1f1f1;
+            min-width: 160px;
+            box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
+            z-index: 1;
+
+            button {
+                width: 100%;
+                float: none;
+                color: black;
+                padding: 12px 16px;
+                text-decoration: none;
+                display: block;
+                text-align: left;
+
+                &:hover {
+                    background-color: #ddd; // Add hover effect
+                }
+            }
+        }
+
+        &:hover .dropdown-content {
+            display: block; // Show the dropdown menu on hover
+        }
+    }
+}
