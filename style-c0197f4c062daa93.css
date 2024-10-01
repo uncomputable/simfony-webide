@@ -165,6 +165,50 @@
   background-color: #ba0000 !important;
 }
 
+/* Tooltip container */
+.tooltip {
+  position: relative;
+  display: inline-block;
+}
+
+/* Tooltip text */
+.tooltip .tooltip-text {
+  visibility: hidden;
+  width: 60px;
+  background-color: #555;
+  color: #fff;
+  text-align: center;
+  padding: 5px 0;
+  border-radius: 6px;
+  /* Position the tooltip text */
+  position: absolute;
+  z-index: 1;
+  bottom: 125%;
+  left: 50%;
+  margin-left: -30px;
+  /* Fade in tooltip */
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+/* Tooltip arrow */
+.tooltip .tooltip-text::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  margin-left: -5px;
+  border-width: 5px;
+  border-style: solid;
+  border-color: #555 transparent transparent transparent;
+}
+
+/* Show the tooltip text when you mouse over the tooltip container */
+.tooltip:hover .tooltip-text {
+  visibility: visible;
+  opacity: 1;
+}
+
 .analysis {
   margin-top: 40px;
   padding: 30px;
@@ -591,6 +635,57 @@
   white-space: pre-wrap;
 }
 
+.navbar {
+  overflow: hidden;
+  border: 1px solid #ccc;
+  background-color: #f1f1f1;
+}
+.navbar button {
+  background-color: inherit;
+  float: left;
+  border: none;
+  outline: none;
+  cursor: pointer;
+  padding: 14px 16px;
+}
+.navbar button:hover {
+  background-color: #ddd;
+}
+.navbar button.active {
+  background-color: #bbb;
+}
+.navbar .dropdown {
+  float: left;
+  overflow: hidden;
+}
+.navbar .dropdown .dropdown-button {
+  font-family: inherit;
+  margin: 0;
+}
+.navbar .dropdown .dropdown-content {
+  display: none;
+  position: absolute;
+  background-color: #f1f1f1;
+  min-width: 160px;
+  box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
+  z-index: 1;
+}
+.navbar .dropdown .dropdown-content button {
+  width: 100%;
+  float: none;
+  color: black;
+  padding: 12px 16px;
+  text-decoration: none;
+  display: block;
+  text-align: left;
+}
+.navbar .dropdown .dropdown-content button:hover {
+  background-color: #ddd;
+}
+.navbar .dropdown:hover .dropdown-content {
+  display: block;
+}
+
 * {
   box-sizing: border-box;
 }
@@ -697,26 +792,6 @@ p {
     max-height: 91px;
   }
 }
-.tabs {
-  overflow: hidden;
-  border: 1px solid #ccc;
-  background-color: #f1f1f1;
-}
-.tabs button {
-  background-color: inherit;
-  float: left;
-  border: none;
-  outline: none;
-  cursor: pointer;
-  padding: 14px 16px;
-}
-.tabs button:hover {
-  background-color: #ddd;
-}
-.tabs button.active {
-  background-color: #bbb;
-}
-
 .error-box {
   border: 1px dotted #ff0000;
   color: #ff0000;
