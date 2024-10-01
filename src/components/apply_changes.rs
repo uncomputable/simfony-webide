@@ -1,6 +1,4 @@
-use leptos::{
-    create_rw_signal, spawn_local, view, Fragment, IntoView, RwSignal, SignalGet, SignalSet, View,
-};
+use leptos::{create_rw_signal, view, IntoView, RwSignal, SignalGet, SignalSet, View};
 
 #[derive(Copy, Clone, Debug)]
 pub struct ApplyChanges {
@@ -17,40 +15,32 @@ impl Default for ApplyChanges {
 
 impl ApplyChanges {
     pub fn set_success(self, success: bool) {
-        spawn_local(async move {
-            self.apply_succeeded.set(Some(success));
-            gloo_timers::future::TimeoutFuture::new(500).await;
-            self.apply_succeeded.set(None);
-        });
+        self.apply_succeeded.set(Some(success));
     }
 }
 
 impl IntoView for ApplyChanges {
     fn into_view(self) -> View {
-        let apply_button_view = move || -> Fragment {
+        let tooltip_text = move || -> &'static str {
             match self.apply_succeeded.get() {
-                None => view! {
-                    <i class="fas fa-floppy-disk"></i>
-                    Apply changes
-                },
-                Some(true) => view! {
-                    Applied
-                    <i class="fas fa-check"></i>
-                },
-                Some(false) => view! {
-                    Error
-                    <i class="fas fa-times"></i>
-                },
+                None => "Apply",
+                Some(true) => "Applied!",
+                Some(false) => "Error!",
             }
         };
 
         view! {
-            <button
-                class="submit-button"
-                type="submit"
-            >
-                {apply_button_view}
-            </button>
+            <div class="tooltip">
+                <button
+                    class="submit-button"
+                    type="submit"
+                    on:mouseout=move |_| self.apply_succeeded.set(None)
+                >
+                    <span class="tooltip-text">{tooltip_text}</span>
+                    <i class="fas fa-floppy-disk"></i>
+                    Apply changes
+                </button>
+            </div>
         }
         .into_view()
     }
