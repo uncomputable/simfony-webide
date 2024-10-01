@@ -162,7 +162,10 @@ fn CopyPublicKeysToClipboard() -> impl IntoView {
             let xonly_hex = format!("0x{}", key.serialize().as_hex());
 
             view! {
-                <CopyToClipboard label=label content=xonly_hex />
+                <CopyToClipboard content=xonly_hex>
+                    {label}
+                    <i class="far fa-copy"></i>
+                </CopyToClipboard>
             }
         };
 
@@ -209,7 +212,10 @@ fn CopySignaturesToClipboard() -> impl IntoView {
             let signature_hex = format!("0x{}", signature.serialize().as_hex());
 
             view! {
-                <CopyToClipboard label=label content=signature_hex />
+                <CopyToClipboard content=signature_hex>
+                    {label}
+                    <i class="far fa-copy"></i>
+                </CopyToClipboard>
             }
         };
 

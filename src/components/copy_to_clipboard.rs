@@ -1,7 +1,7 @@
-use leptos::{component, create_rw_signal, ev, view, IntoView, SignalSet};
+use leptos::{component, create_rw_signal, ev, view, Children, IntoView, SignalSet};
 
 #[component]
-pub fn CopyToClipboard(label: String, content: String) -> impl IntoView {
+pub fn CopyToClipboard(content: String, children: Children) -> impl IntoView {
     let maybe_clipboard = web_sys::window()
         .as_ref()
         .map(web_sys::Window::navigator)
@@ -28,8 +28,7 @@ pub fn CopyToClipboard(label: String, content: String) -> impl IntoView {
                         on:mouseout=button_mouseout
                     >
                         <span class="tooltip-text">{tooltip_text}</span>
-                        {label}
-                        <i class="far fa-copy"></i>
+                        {children()}
                     </button>
                 </div>
             }

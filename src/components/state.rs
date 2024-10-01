@@ -146,7 +146,10 @@ pub fn CopyStatefulUrl() -> impl IntoView {
     view! {
         {
             move || maybe_url().map(|url| view! {
-                <CopyToClipboard label="Share".to_string() content=url />
+                <CopyToClipboard content=url>
+                    <i class="fa-solid fa-share-nodes"></i>
+                    Share
+                </CopyToClipboard>
             })
         }
     }

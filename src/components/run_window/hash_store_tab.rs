@@ -80,7 +80,10 @@ fn CopyHashesToClipboard() -> impl IntoView {
         let hash_hex = format!("0x{}", hash.to_byte_array().as_hex());
 
         view! {
-            <CopyToClipboard label=label content=hash_hex />
+            <CopyToClipboard content=hash_hex>
+                {label}
+                <i class="far fa-copy"></i>
+            </CopyToClipboard>
         }
     };
 
@@ -124,7 +127,10 @@ fn CopyPreimagesToClipboard() -> impl IntoView {
         let preimage_hex = format!("0x{}", preimage.as_hex());
 
         view! {
-            <CopyToClipboard label=label content=preimage_hex />
+            <CopyToClipboard content=preimage_hex>
+                {label}
+                <i class="far fa-copy"></i>
+            </CopyToClipboard>
         }
     };
 
