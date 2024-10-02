@@ -56,9 +56,9 @@ pub fn RunButton() -> impl IntoView {
     };
 
     let button_class = move || match run_succeeded.get() {
-        None => "action-button run-button",
-        Some(false) => "action-button run-button run-failure",
-        Some(true) => "action-button run-button run-success",
+        None => "run-button",
+        Some(false) => "run-button failure",
+        Some(true) => "run-button success",
     };
 
     view! {

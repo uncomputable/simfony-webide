@@ -143,45 +143,27 @@
     100%{background-color: $body-background;}
 }
 
-// *** circle expand ***
-$circle-green: #00ad03;
-$circle-red: #ba0000;
-$button-color: #5134E0;
-
-.run-button button {
-    background-size: 0% !important;
-    background-repeat:no-repeat !important;
-    background-position: center !important;
+@keyframes run-button-success {
+    0%{background-color: MediumSeaGreen;}
+    100%{background-color: inherit;}
 }
 
-.run-button button.expand_start {
-    &.green{
-        background-image: radial-gradient(circle at center, $circle-green 10%, $button-color 11%) !important;
-    }
-    &.red {
-        background-image: radial-gradient(circle at center, $circle-red 10%, $button-color 11%) !important;
-    }
-    background-size: 1000% !important;
-    transition: background-size .2s linear;
+@keyframes run-button-failure {
+    0%{background-color: red;}
+    100%{background-color: inherit;}
 }
 
-.run-button button.expand_end {
-    &.green{
-        background-image: radial-gradient(circle at center, $button-color 10%, $circle-green 11%) !important;
+.run-button {
+    &.success {
+        animation-name: run-button-success;
+        animation-duration: 0.5s;
+        animation-fill-mode: forwards;
     }
-    &.red{
-        background-image: radial-gradient(circle at center, $button-color 10%, $circle-red 11%) !important;
-    }
-    background-size: 1000% !important;
-    transition: background-size .2s linear;
-}
 
-.run-button button.button_color {
-    &.green{
-        background-color: $circle-green !important;
-    }
-    &.red{
-        background-color: $circle-red !important;
+    &.failure {
+        animation-name: run-button-failure;
+        animation-duration: 0.5s;
+        animation-fill-mode: forwards;
     }
 }
 
