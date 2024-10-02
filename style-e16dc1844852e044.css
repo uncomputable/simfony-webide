@@ -130,39 +130,31 @@
     background-color: #0d0f11;
   }
 }
-.run-button button {
-  background-size: 0% !important;
-  background-repeat: no-repeat !important;
-  background-position: center !important;
+@keyframes run-button-success {
+  0% {
+    background-color: MediumSeaGreen;
+  }
+  100% {
+    background-color: inherit;
+  }
 }
-
-.run-button button.expand_start {
-  background-size: 1000% !important;
-  transition: background-size 0.2s linear;
+@keyframes run-button-failure {
+  0% {
+    background-color: red;
+  }
+  100% {
+    background-color: inherit;
+  }
 }
-.run-button button.expand_start.green {
-  background-image: radial-gradient(circle at center, #00ad03 10%, #5134E0 11%) !important;
+.run-button.success {
+  animation-name: run-button-success;
+  animation-duration: 0.5s;
+  animation-fill-mode: forwards;
 }
-.run-button button.expand_start.red {
-  background-image: radial-gradient(circle at center, #ba0000 10%, #5134E0 11%) !important;
-}
-
-.run-button button.expand_end {
-  background-size: 1000% !important;
-  transition: background-size 0.2s linear;
-}
-.run-button button.expand_end.green {
-  background-image: radial-gradient(circle at center, #5134E0 10%, #00ad03 11%) !important;
-}
-.run-button button.expand_end.red {
-  background-image: radial-gradient(circle at center, #5134E0 10%, #ba0000 11%) !important;
-}
-
-.run-button button.button_color.green {
-  background-color: #00ad03 !important;
-}
-.run-button button.button_color.red {
-  background-color: #ba0000 !important;
+.run-button.failure {
+  animation-name: run-button-failure;
+  animation-duration: 0.5s;
+  animation-fill-mode: forwards;
 }
 
 /* Tooltip container */
@@ -651,7 +643,7 @@
 .navbar button:hover {
   background-color: #ddd;
 }
-.navbar button.active {
+.navbar button:active {
   background-color: #bbb;
 }
 .navbar .dropdown {
@@ -678,9 +670,6 @@
   text-decoration: none;
   display: block;
   text-align: left;
-}
-.navbar .dropdown .dropdown-content button:hover {
-  background-color: #ddd;
 }
 .navbar .dropdown:hover .dropdown-content {
   display: block;
