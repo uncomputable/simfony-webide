@@ -31,8 +31,11 @@ pub fn RunButton() -> impl IntoView {
         with!(|program, witness_values, environment| {
             let satisfied_program = match program.satisfy(witness_values) {
                 Ok(x) => x,
-                Err(error) => {
-                    output.error.set(error);
+                Err(..) => {
+                    output.error.set(
+                        "Some witness names don't have a value; revise the \"Witness\" section"
+                            .to_string(),
+                    );
                     set_success(false);
                     return;
                 }
