@@ -11,6 +11,7 @@ pub struct Example {
 }
 
 impl Example {
+    #[allow(dead_code)]
     pub fn description(self) -> &'static str {
         self.description
     }

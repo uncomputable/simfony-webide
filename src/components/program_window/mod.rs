@@ -1,5 +1,4 @@
 mod examples_dropdown;
-mod examples_tab;
 mod program_tab;
 mod run_button;
 mod tools_dropdown;
