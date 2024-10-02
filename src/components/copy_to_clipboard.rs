@@ -2,14 +2,12 @@ use leptos::{component, create_rw_signal, ev, view, Children, IntoView, SignalSe
 
 #[component]
 pub fn CopyToClipboard(content: String, children: Children) -> impl IntoView {
-    let maybe_clipboard = web_sys::window()
+    web_sys::window()
         .as_ref()
         .map(web_sys::Window::navigator)
         .as_ref()
-        .map(web_sys::Navigator::clipboard);
-
-    match maybe_clipboard {
-        Some(clipboard) => {
+        .map(web_sys::Navigator::clipboard)
+        .map(|clipboard| {
             let tooltip_text = create_rw_signal("Copy");
 
             let button_click = move |_event: ev::MouseEvent| {
@@ -32,11 +30,5 @@ pub fn CopyToClipboard(content: String, children: Children) -> impl IntoView {
                     </button>
                 </div>
             }
-            .into_any()
-        }
-        None => view! {
-            <p>Clipboard not supported</p>
-        }
-        .into_any(),
-    }
+        })
 }
