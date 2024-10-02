@@ -1,8 +1,7 @@
-use leptos::{component, use_context, view, IntoView, RwSignal, SignalGet, SignalGetUntracked};
+use leptos::{use_context, RwSignal, SignalGet, SignalGetUntracked};
 use leptos_router::ParamsMap;
 use simfony::witness::WitnessValues;
 
-use crate::components::copy_to_clipboard::CopyToClipboard;
 use crate::components::program_window::{Program, TxEnv};
 use crate::components::run_window::{HashedData, SigningKeys};
 
@@ -104,53 +103,37 @@ impl ToParam for HashedData {
     }
 }
 
-#[component]
-pub fn ShareButton() -> impl IntoView {
-    let maybe_url = move || {
-        web_sys::window().map(|window| {
-            let location = window.location();
-            let origin = location.origin().unwrap_or_default();
-            let pathname = location.pathname().unwrap_or_default();
-            let mut url = format!("{}{}", origin, pathname);
+pub fn stateful_url() -> Option<String> {
+    web_sys::window().map(|window| {
+        let location = window.location();
+        let origin = location.origin().unwrap_or_default();
+        let pathname = location.pathname().unwrap_or_default();
+        let mut url = format!("{}{}", origin, pathname);
 
-            let program =
-                use_context::<RwSignal<Program>>().expect("program should exist in context");
-            let witness = use_context::<RwSignal<WitnessValues>>()
-                .expect("witness values should exist in context");
-            let tx_env =
-                use_context::<TxEnv>().expect("transaction environment should exist in context");
-            let signing_keys =
-                use_context::<SigningKeys>().expect("signing keys should exist in context");
-            let hashed_data =
-                use_context::<HashedData>().expect("hashed data should exist in context");
+        let program = use_context::<RwSignal<Program>>().expect("program should exist in context");
+        let witness = use_context::<RwSignal<WitnessValues>>()
+            .expect("witness values should exist in context");
+        let tx_env =
+            use_context::<TxEnv>().expect("transaction environment should exist in context");
+        let signing_keys =
+            use_context::<SigningKeys>().expect("signing keys should exist in context");
+        let hashed_data = use_context::<HashedData>().expect("hashed data should exist in context");
 
-            let params_values = [
-                program.get().to_param(),
-                witness.get().to_param(),
-                tx_env.to_param(),
-                signing_keys.to_param(),
-                hashed_data.to_param(),
-            ];
+        let params_values = [
+            program.get().to_param(),
+            witness.get().to_param(),
+            tx_env.to_param(),
+            signing_keys.to_param(),
+            hashed_data.to_param(),
+        ];
 
-            for (param, value) in params_values {
-                url.push('?');
-                url.push_str(param);
-                url.push('=');
-                url.push_str(value.as_str());
-            }
-
-            url
-        })
-    };
-
-    view! {
-        {
-            move || maybe_url().map(|url| view! {
-                <CopyToClipboard content=url>
-                    <i class="fa-solid fa-share-nodes"></i>
-                    " Share"
-                </CopyToClipboard>
-            })
+        for (param, value) in params_values {
+            url.push('?');
+            url.push_str(param);
+            url.push('=');
+            url.push_str(value.as_str());
         }
-    }
+
+        url
+    })
 }
