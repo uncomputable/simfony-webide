@@ -12,11 +12,11 @@
         padding: 14px 16px;
 
         &:hover {
-            background-color: #ddd; // Add hover effect
+            background-color: #ddd;
         }
 
-        &.active {
-            background-color: #bbb; // Darker color for active tabs
+        &:active {
+            background-color: #bbb;
         }
     }
 
@@ -30,7 +30,7 @@
         }
 
         .dropdown-content {
-            display: none;
+            display: none; // Hide dropdown by default
             position: absolute;
             background-color: #f1f1f1;
             min-width: 160px;
@@ -45,15 +45,11 @@
                 text-decoration: none;
                 display: block;
                 text-align: left;
-
-                &:hover {
-                    background-color: #ddd; // Add hover effect
-                }
             }
         }
 
         &:hover .dropdown-content {
-            display: block; // Show the dropdown menu on hover
+            display: block; // Show dropdown on hover
         }
     }
 }
