@@ -7,7 +7,7 @@ use leptos::{component, view, IntoView};
 use self::hash_store_tab::HashStoreTab;
 use self::key_store_tab::KeyStoreTab;
 use self::run_tab::RuntimeTab;
-use crate::components::navbar::{Navbar, Navigation};
+use crate::components::navbar::{Navbar, Tab};
 
 pub use self::hash_store_tab::HashedData;
 pub use self::key_store_tab::{SignedData, SigningKeys};
@@ -16,15 +16,15 @@ pub use self::key_store_tab::{SignedData, SigningKeys};
 pub fn RunWindow() -> impl IntoView {
     view! {
         <Navbar default_tab="Runtime">
-            <Navigation name="Runtime">
+            <Tab name="Runtime">
                 <RuntimeTab />
-            </Navigation>
-            <Navigation name="Key Store">
+            </Tab>
+            <Tab name="Key Store">
                 <KeyStoreTab />
-            </Navigation>
-            <Navigation name="Hash Store">
+            </Tab>
+            <Tab name="Hash Store">
                 <HashStoreTab />
-            </Navigation>
+            </Tab>
         </Navbar>
     }
 }

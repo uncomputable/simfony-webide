@@ -2,6 +2,7 @@ mod analysis;
 mod app;
 mod apply_changes;
 mod copy_to_clipboard;
+mod dropdown;
 mod error;
 mod navbar;
 mod program_window;

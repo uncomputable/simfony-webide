@@ -105,7 +105,7 @@ impl ToParam for HashedData {
 }
 
 #[component]
-pub fn CopyStatefulUrl() -> impl IntoView {
+pub fn ShareButton() -> impl IntoView {
     let maybe_url = move || {
         web_sys::window().map(|window| {
             let location = window.location();
@@ -148,7 +148,7 @@ pub fn CopyStatefulUrl() -> impl IntoView {
             move || maybe_url().map(|url| view! {
                 <CopyToClipboard content=url>
                     <i class="fa-solid fa-share-nodes"></i>
-                    Share
+                    " Share"
                 </CopyToClipboard>
             })
         }

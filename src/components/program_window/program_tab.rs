@@ -7,7 +7,6 @@ use simfony::{CompiledProgram, SatisfiedProgram};
 
 use crate::components::apply_changes::ApplyChanges;
 use crate::components::error::ErrorBox;
-use crate::components::state::CopyStatefulUrl;
 
 #[derive(Clone, Debug, Default)]
 pub struct Program {
@@ -71,7 +70,6 @@ pub fn ProgramTab() -> impl IntoView {
                 </textarea>
                 <ErrorBox error=parse_error />
                 {apply_changes}
-                <CopyStatefulUrl />
             </form>
         </div>
     }

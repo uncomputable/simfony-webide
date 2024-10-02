@@ -1,14 +1,16 @@
-use std::rc::Rc;
-
 use leptos::leptos_dom::Transparent;
 use leptos::{
-    component, create_rw_signal, ev, view, Callable, Callback, Children, ChildrenFn, CollectView,
+    component, create_rw_signal, ev, provide_context, use_context, view, Children, ChildrenFn,
     IntoView, RwSignal, SignalGet, SignalSet, View,
 };
+
+#[derive(Copy, Clone, Debug)]
+pub struct ActiveTab(pub RwSignal<&'static str>);
 
 #[component]
 pub fn Navbar(default_tab: &'static str, children: Children) -> impl IntoView {
     let active_tab = create_rw_signal(default_tab);
+    provide_context(ActiveTab(active_tab));
     let mut tabs_content = Vec::new();
     let mut button_bar = Vec::new();
 
@@ -20,20 +22,11 @@ pub fn Navbar(default_tab: &'static str, children: Children) -> impl IntoView {
         .cloned()
     {
         match child {
-            TabView::Navigation { name, children } => {
+            TabView::Tab { name, children } => {
                 tabs_content.push((name, children));
-                button_bar.push(view! {<RenderedNavigation tab_name=name active_tab=active_tab />})
+                button_bar.push(view! {<TabButton tab_name=name />})
             }
-            TabView::Dropdown { name, options, select_option } => {
-                button_bar.push(view! {<RenderedDropdown button_name=name options=options select_option=select_option />})
-            }
-            TabView::Action { action, children } => {
-                button_bar.push(view! {
-                    <RenderedAction action=action>
-                        {children()}
-                    </RenderedAction>
-                })
-            }
+            TabView::Button { children } => button_bar.push(children().into_view()),
         }
     }
     let active_tab_content = move || -> ChildrenFn {
@@ -54,41 +47,22 @@ pub fn Navbar(default_tab: &'static str, children: Children) -> impl IntoView {
 }
 
 #[component(transparent)]
-pub fn Navigation(name: &'static str, children: ChildrenFn) -> impl IntoView {
-    TabView::Navigation { name, children }
+pub fn Tab(name: &'static str, children: ChildrenFn) -> impl IntoView {
+    TabView::Tab { name, children }
 }
 
 #[component(transparent)]
-pub fn Dropdown(
-    name: &'static str,
-    #[prop(into)] options: Rc<[&'static str]>,
-    #[prop(into)] select_option: Callback<&'static str>,
-) -> impl IntoView {
-    TabView::Dropdown {
-        name,
-        options,
-        select_option,
-    }
-}
-
-#[component(transparent)]
-pub fn Action(#[prop(into)] action: Callback<()>, children: ChildrenFn) -> impl IntoView {
-    TabView::Action { action, children }
+pub fn Button(children: ChildrenFn) -> impl IntoView {
+    TabView::Button { children }
 }
 
 #[derive(Clone)]
 enum TabView {
-    Navigation {
+    Tab {
         name: &'static str,
         children: ChildrenFn,
     },
-    Dropdown {
-        name: &'static str,
-        options: Rc<[&'static str]>,
-        select_option: Callback<&'static str>,
-    },
-    Action {
-        action: Callback<()>,
+    Button {
         children: ChildrenFn,
     },
 }
@@ -100,64 +74,15 @@ impl IntoView for TabView {
 }
 
 #[component]
-fn RenderedNavigation(tab_name: &'static str, active_tab: RwSignal<&'static str>) -> impl IntoView {
-    let button_click = move |_event: ev::MouseEvent| active_tab.set(tab_name);
+fn TabButton(tab_name: &'static str) -> impl IntoView {
+    let active_tab = use_context::<ActiveTab>().expect("active tab should exist in context");
+    let button_click = move |_event: ev::MouseEvent| active_tab.0.set(tab_name);
     view! {
         <button
-            class="navigation-button"
+            class="tab-button"
             on:click=button_click
         >
             {tab_name}
-        </button>
-    }
-}
-
-#[component]
-fn RenderedDropdown(
-    button_name: &'static str,
-    options: Rc<[&'static str]>,
-    select_option: Callback<&'static str>,
-) -> impl IntoView {
-    let options_view = move || -> View {
-        options
-            .iter()
-            .cloned()
-            .map(|option| {
-                let button_click = move |_event: ev::MouseEvent| select_option.call(option);
-                view! {
-                     <button
-                        class="action-button"
-                        on:click=button_click
-                    >
-                        {option}
-                    </button>
-                }
-            })
-            .collect_view()
-    };
-
-    view! {
-        <div class="dropdown">
-            <button class="dropdown-button">
-                {button_name}" "
-                <i class="fa fa-caret-down"></i>
-            </button>
-            <div class="dropdown-content">
-                {options_view}
-            </div>
-        </div>
-    }
-}
-
-#[component]
-fn RenderedAction(action: Callback<()>, children: Children) -> impl IntoView {
-    let button_click = move |_event: ev::MouseEvent| action.call(());
-    view! {
-        <button
-            class="action-button"
-            on:click=button_click
-        >
-            {children()}
         </button>
     }
 }
