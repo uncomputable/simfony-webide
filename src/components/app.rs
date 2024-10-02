@@ -3,7 +3,9 @@ use leptos_router::use_query_map;
 use simfony::witness::WitnessValues;
 
 use super::program_window::{Program, ProgramWindow, TxEnv};
-use crate::components::run_window::{HashedData, RunWindow, SignedData, SigningKeys};
+use crate::components::run_window::{
+    ExecutionOutput, HashedData, RunWindow, SignedData, SigningKeys,
+};
 use crate::components::state::FromParams;
 
 #[component]
@@ -22,6 +24,7 @@ pub fn App() -> impl IntoView {
     provide_context(signed_data);
     let hashed_data = HashedData::from_map(&url_params).unwrap_or_default();
     provide_context(hashed_data);
+    provide_context(ExecutionOutput::default());
 
     view! {
         <ProgramWindow />
