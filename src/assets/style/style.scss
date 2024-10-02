@@ -6,6 +6,7 @@
 @import 'components/merkle_graph.scss';
 @import 'components/program_window/examples_tab.scss';
 @import 'components/navbar.scss';
+@import 'components/string_box.scss';
 
 * {
     box-sizing: border-box;
@@ -113,19 +114,6 @@ p {
 @keyframes grow {
     0% {max-height: 0px; padding-top: 0px; padding-bottom: 0px}
     100% {max-height: 91px;}
-}
-
-
-.error-box {
-    border: 1px dotted #ff0000;
-    color: #ff0000;
-    word-break: break-word;
-    margin-top: 10px;
-    padding: 10px;
-    overflow-x: scroll;
-
-    scrollbar-color: $background-dark #b00000;
-    scrollbar-width: thin;
 }
 
 .button-row {

@@ -6,7 +6,7 @@ use simfony::witness::WitnessValues;
 use simfony::{CompiledProgram, SatisfiedProgram};
 
 use crate::components::apply_changes::ApplyChanges;
-use crate::components::error::ErrorBox;
+use crate::components::string_box::ErrorBox;
 
 #[derive(Clone, Debug, Default)]
 pub struct Program {

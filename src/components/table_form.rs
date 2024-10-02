@@ -4,7 +4,7 @@ use leptos::{
     ReadSignal, Signal, SignalGet, SignalSet, SignalUpdate,
 };
 
-use crate::components::error::ErrorBox;
+use crate::components::string_box::ErrorBox;
 
 #[derive(Clone)]
 struct Cell {
