@@ -20,12 +20,20 @@ pub fn RunButton() -> impl IntoView {
         use_context::<ExecutionOutput>().expect("execution output should exist in context");
     let run_succeeded = create_rw_signal::<Option<bool>>(None);
 
+    let set_success = move |success: bool| {
+        spawn_local(async move {
+            run_succeeded.set(Some(success));
+            gloo_timers::future::TimeoutFuture::new(500).await;
+            run_succeeded.set(None);
+        });
+    };
     let run_program = move |_event: ev::MouseEvent| {
         with!(|program, witness_values, environment| {
             let satisfied_program = match program.satisfy(witness_values) {
                 Ok(x) => x,
                 Err(error) => {
                     output.error.set(error);
+                    set_success(false);
                     return;
                 }
             };
@@ -43,13 +51,10 @@ pub fn RunButton() -> impl IntoView {
             output
                 .debug
                 .set(runner.debug_output().into_iter().join("\n"));
-            spawn_local(async move {
-                run_succeeded.set(Some(success));
-                gloo_timers::future::TimeoutFuture::new(500).await;
-                run_succeeded.set(None);
-            });
+            set_success(success);
         });
     };
+
     let button_class = move || match run_succeeded.get() {
         None => "action-button run-button",
         Some(false) => "action-button run-button run-failure",
