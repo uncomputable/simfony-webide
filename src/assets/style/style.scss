@@ -7,6 +7,7 @@
 @import 'components/program_window/examples_tab.scss';
 @import 'components/navbar.scss';
 @import 'components/string_box.scss';
+@import 'components/tab_content.scss';
 
 * {
     box-sizing: border-box;
@@ -108,6 +109,24 @@ p {
     flex-direction: column;
 }
 
+.flat-button{
+    color: white;
+    padding: 14px 16px;
+    cursor: pointer;
+    border: none;
+    background: #5134E0;
+    border: 1px solid #5134E0;
+    margin-right: 4px;
+
+    i {
+        margin: 0 4px;
+    }
+
+    &.bordered{
+        background: #191c21;
+    }
+}
+
 .submit-button, .push-button, .pop-button, .copy-button {
     border: 1px solid #5134E0;
     padding: 4px;
@@ -125,4 +144,13 @@ p {
 
 input:invalid {
     background-color: lightpink;
+}
+
+.input{
+    background: #191c21;
+    border: 1px solid rgba(255, 255, 255, 0.10);
+    border-radius: 4px;
+    padding: 6px 12px;
+    color: white;
+    width: 260px;
 }

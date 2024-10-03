@@ -32,7 +32,7 @@ impl IntoView for ApplyChanges {
         view! {
             <div class="tooltip">
                 <button
-                    class="submit-button"
+                    class="flat-button"
                     type="submit"
                     on:mouseout=move |_| self.apply_succeeded.set(None)
                 >

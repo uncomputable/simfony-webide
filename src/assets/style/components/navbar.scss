@@ -12,7 +12,8 @@
         background: #191C21;
 
         &.active{
-            background: #2E3135;
+            background: #1d2127;
+            border: 1px solid #1d2127;
         }
     }
 
@@ -67,7 +68,7 @@
 
 .tab-content{
     padding: 10px;
-    background: #2E3135;
+    background: #1d2127;
     margin-bottom: 20px;
-    min-height: 320px;
+    min-height: 350px;
 }
