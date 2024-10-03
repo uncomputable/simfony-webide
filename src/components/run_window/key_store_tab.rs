@@ -145,9 +145,9 @@ impl SignedData {
 #[component]
 pub fn KeyStoreTab() -> impl IntoView {
     view! {
-        <div>
+        <div class="tab-content key-store-tab">
             <CopyPublicKeysToClipboard />
-            <CopySignaturesToClipboard/>
+            <CopySignaturesToClipboard />
             <SelectSignedData />
         </div>
     }
@@ -171,7 +171,7 @@ fn CopyPublicKeysToClipboard() -> impl IntoView {
 
     view! {
         <div>
-            <h3 class="program-title">
+            <h3 class="tab-title">
                 Public Keys
             </h3>
             <div class="button-row">
@@ -181,7 +181,7 @@ fn CopyPublicKeysToClipboard() -> impl IntoView {
                     children=copy_single_public_key
                 />
                 <button
-                    class="push-button"
+                    class="flat-button bordered"
                     type="button"
                     on:click=move |_| signing_keys.push_key()
                 >
@@ -189,7 +189,7 @@ fn CopyPublicKeysToClipboard() -> impl IntoView {
                     More
                 </button>
                 <button
-                    class="pop-button"
+                    class="flat-button bordered"
                     type="button"
                     on:click=move |_| signing_keys.pop_key()
                 >
@@ -221,7 +221,7 @@ fn CopySignaturesToClipboard() -> impl IntoView {
 
     view! {
         <div>
-            <h3 class="program-title">
+            <h3 class="tab-title">
                 Signatures
             </h3>
             <div class="button-row">
@@ -231,7 +231,7 @@ fn CopySignaturesToClipboard() -> impl IntoView {
                     children=copy_single_signature
                 />
                 <button
-                    class="push-button"
+                    class="flat-button bordered"
                     type="button"
                     on:click=move |_| signing_keys.push_key()
                 >
@@ -239,7 +239,7 @@ fn CopySignaturesToClipboard() -> impl IntoView {
                     More
                 </button>
                 <button
-                    class="pop-button"
+                    class="flat-button bordered"
                     type="button"
                     on:click=move |_| signing_keys.pop_key()
                 >
@@ -344,11 +344,11 @@ fn SelectSignedData() -> impl IntoView {
 
     view! {
         <div>
-            <h3 class="program-title">
+            <h3 class="tab-title">
                 Signed Data
             </h3>
-            <fieldset class="button-col">
-                <label>
+            <fieldset class="button-col signed-data-content">
+                <label class="key-store-display-row">
                     <input
                         type="radio"
                         name="signed_data"
@@ -356,9 +356,11 @@ fn SelectSignedData() -> impl IntoView {
                         on:change=select_sighash_all
                         node_ref=sighash_all_radio_ref
                     />
-                    SIGHASH_ALL
+                    <div class="display-row-label">
+                        SIGHASH_ALL
+                    </div>
                 </label>
-                <label>
+                <label class="key-store-display-row">
                     <input
                         type="radio"
                         name="signed_data"
@@ -366,8 +368,11 @@ fn SelectSignedData() -> impl IntoView {
                         on:change=select_thirty_two_bytes
                         disabled=thirty_two_bytes_is_insane
                     />
-                    raw bytes
+                    <div class="display-row-label">
+                        raw bytes
+                    </div>
                     <input
+                        class="input"
                         type="text"
                         placeholder="Enter hex bytes"
                         on:input=update_thirty_two_bytes
@@ -375,7 +380,7 @@ fn SelectSignedData() -> impl IntoView {
                         node_ref=thirty_two_bytes_text_ref
                     />
                 </label>
-                <label>
+                <label class="key-store-display-row">
                     <input
                         type="radio"
                         name="signed_data"
@@ -383,8 +388,11 @@ fn SelectSignedData() -> impl IntoView {
                         on:change=select_hash_preimage_bytes
                         disabled=hash_preimage_bytes_is_insane
                     />
-                    byte hash
+                    <div class="display-row-label">
+                        byte hash
+                    </div>
                     <input
+                        class="input"
                         type="text"
                         placeholder="Enter hex bytes"
                         on:input=update_hash_preimage_bytes

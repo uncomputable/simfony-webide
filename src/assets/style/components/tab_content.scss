@@ -16,7 +16,7 @@
 // transaction tab
 .transaction-tab{
     position: relative;
-    
+
     .transaction-display-row{
         margin-bottom: 10px;
 
@@ -32,6 +32,33 @@
         position: absolute;
         bottom: 20px;
         right: 20px;
+    }
+}
+
+// key store tab
+.key-store-tab{
+    .copy-button{
+        @extend .flat-button;
+    }
+
+    .key-store-display-row{
+        display: flex;
+        margin-bottom: 10px;
+
+        .display-row-label{
+            display: inline-block;
+            margin: 0 10px;
+        }
+
+        .input{
+            flex-grow: 2;
+        }
+    }
+
+    .signed-data-content{
+        border: 1px solid #5134e0;
+        border-radius: 8px;
+        padding-top: 20px;
     }
 }
 
