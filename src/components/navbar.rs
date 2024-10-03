@@ -77,9 +77,16 @@ impl IntoView for TabView {
 fn TabButton(tab_name: &'static str) -> impl IntoView {
     let active_tab = use_context::<ActiveTab>().expect("active tab should exist in context");
     let button_click = move |_event: ev::MouseEvent| active_tab.0.set(tab_name);
+    let is_active = move || active_tab.0.get() == tab_name;
     view! {
         <button
-            class="tab-button"
+        class=move || {
+            if is_active() {
+                "tab active"
+            } else {
+                "tab"
+            }
+        }
             on:click=button_click
         >
             {tab_name}

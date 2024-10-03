@@ -71,7 +71,7 @@ pub fn TransactionTab() -> impl IntoView {
     let sequence_initial_value = tx_env.sequence.get_untracked().to_string();
 
     view! {
-        <div>
+        <div class="tab-content">
             <h3 class="program-title">
                 Transaction Environment
             </h3>

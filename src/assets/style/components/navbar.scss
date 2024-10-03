@@ -1,32 +1,43 @@
 .navbar {
     overflow: hidden;
-    border: 1px solid #ccc;
-    background-color: #f1f1f1;
+    display: flex;
+    align-items: stretch;
+    background-color: #00000000;
 
-    button {
-        background-color: inherit;
-        float: left;
-        border: none;
-        outline: none;
-        cursor: pointer;
+    .tab{
+        color: white;
         padding: 14px 16px;
+        cursor: pointer;
+        border: 1px solid #2E3135;
+        background: #191C21;
 
-        &:hover {
-            background-color: #ddd;
-        }
-
-        &:active {
-            background-color: #bbb;
+        &.active{
+            background: #2E3135;
         }
     }
 
+    .button{
+        color: white;
+        padding: 14px 16px;
+        cursor: pointer;
+        border: none;
+        background: #606060;
+        margin: 2px 0 2px 2px;
+    }
+
+    .run-button{
+        background: #5134E0;
+        margin-right: 2px;
+    }
+
+    .share-button{
+
+    }
+
     .dropdown {
-        float: left;
-        overflow: hidden;
 
         .dropdown-button {
-            font-family: inherit; // Important for vertical align on mobile phones
-            margin: 0; // Important for vertical align on mobile phones
+            
         }
 
         .dropdown-content {
@@ -52,4 +63,11 @@
             display: block; // Show dropdown on hover
         }
     }
+}
+
+.tab-content{
+    padding: 10px;
+    background: #2E3135;
+    margin-bottom: 20px;
+    min-height: 320px;
 }
