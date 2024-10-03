@@ -18,6 +18,8 @@
     position: relative;
 
     .transaction-display-row{
+        display: flex;
+        align-items: center;
         margin-bottom: 10px;
 
         .display-row-label{
@@ -43,6 +45,7 @@
 
     .key-store-display-row{
         display: flex;
+        align-items: center;
         margin-bottom: 10px;
 
         .display-row-label{
@@ -59,6 +62,12 @@
         border: 1px solid #5134e0;
         border-radius: 8px;
         padding-top: 20px;
+    }
+}
+
+.hash-store-tab{
+    .copy-button{
+        @extend .flat-button;
     }
 }
 

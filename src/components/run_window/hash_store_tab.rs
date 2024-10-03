@@ -65,7 +65,7 @@ fn new_preimage(index: u32) -> [u8; 32] {
 #[component]
 pub fn HashStoreTab() -> impl IntoView {
     view! {
-        <div>
+        <div class="tab-content hash-store-tab">
             <CopyHashesToClipboard />
             <CopyPreimagesToClipboard />
         </div>
@@ -89,7 +89,7 @@ fn CopyHashesToClipboard() -> impl IntoView {
 
     view! {
         <div>
-            <h3 class="program-title">
+            <h3 class="tab-title">
                 Hashes
             </h3>
             <div class="button-row">
@@ -99,7 +99,7 @@ fn CopyHashesToClipboard() -> impl IntoView {
                     children=copy_single_hash
                 />
                 <button
-                    class="push-button"
+                    class="flat-button bordered"
                     type="button"
                     on:click=move |_| hashed_data.push_hash()
                 >
@@ -107,7 +107,7 @@ fn CopyHashesToClipboard() -> impl IntoView {
                     More
                 </button>
                 <button
-                    class="pop-button"
+                    class="flat-button bordered"
                     type="button"
                     on:click=move |_| hashed_data.pop_hash()
                 >
@@ -136,7 +136,7 @@ fn CopyPreimagesToClipboard() -> impl IntoView {
 
     view! {
         <div>
-            <h3 class="program-title">
+            <h3 class="tab-title">
                 Preimages
             </h3>
             <div class="button-row">
@@ -146,7 +146,7 @@ fn CopyPreimagesToClipboard() -> impl IntoView {
                     children=copy_single_preimage
                 />
                 <button
-                    class="push-button"
+                    class="flat-button bordered"
                     type="button"
                     on:click=move |_| hashed_data.push_hash()
                 >
@@ -154,7 +154,7 @@ fn CopyPreimagesToClipboard() -> impl IntoView {
                     More
                 </button>
                 <button
-                    class="pop-button"
+                    class="flat-button bordered"
                     type="button"
                     on:click=move |_| hashed_data.pop_hash()
                 >
