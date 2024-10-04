@@ -144,26 +144,24 @@
 }
 
 @keyframes run-button-success {
-    0%{background-color: MediumSeaGreen;}
-    100%{background-color: inherit;}
+    0%, 100% { background-color: initial; }
+    50% { background-color: MediumSeaGreen; }
 }
 
 @keyframes run-button-failure {
-    0%{background-color: red;}
-    100%{background-color: inherit;}
+    0%, 100% { background-color: initial; }
+    50% { background-color: red; }
 }
 
 .run-button {
     &.success {
         animation-name: run-button-success;
         animation-duration: 0.5s;
-        animation-fill-mode: forwards;
     }
 
     &.failure {
         animation-name: run-button-failure;
         animation-duration: 0.5s;
-        animation-fill-mode: forwards;
     }
 }
 
