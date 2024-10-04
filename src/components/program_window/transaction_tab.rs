@@ -6,6 +6,7 @@ use simfony::{elements, simplicity};
 use std::sync::Arc;
 
 use crate::components::apply_changes::ApplyChanges;
+use crate::components::string_box::ErrorBox;
 
 #[derive(Copy, Clone, Debug)]
 pub struct TxEnv {
@@ -39,6 +40,7 @@ impl TxEnv {
 #[component]
 pub fn TransactionTab() -> impl IntoView {
     let tx_env = use_context::<TxEnv>().expect("tx environment should exist in context");
+    let parse_error = create_rw_signal("".to_string());
     let apply_changes = ApplyChanges::default();
 
     let lock_time_ref: NodeRef<html::Input> = create_node_ref();
@@ -46,22 +48,34 @@ pub fn TransactionTab() -> impl IntoView {
 
     let submit_transaction = move |event: ev::SubmitEvent| {
         event.prevent_default(); // stop page from reloading
-        let lock_time = lock_time_ref
+        let lock_time_string = lock_time_ref
             .get()
             .expect("<input> should be mounted")
-            .value()
-            .parse::<u32>()
-            .expect("<input> should be valid u32");
-        let lock_time = elements::LockTime::from_consensus(lock_time);
+            .value();
+        let lock_time = match lock_time_string.parse::<u32>() {
+            Ok(x) => elements::LockTime::from_consensus(x),
+            Err(error) => {
+                parse_error.set(format!(
+                    "Malformed nLockTime: `{lock_time_string}`: `{error}`"
+                ));
+                return;
+            }
+        };
         tx_env.lock_time.set(lock_time);
 
-        let sequence = sequence_ref
+        let sequence_string = sequence_ref
             .get()
             .expect("<input> should be mounted")
-            .value()
-            .parse::<u32>()
-            .expect("<input> should be valid u32");
-        let sequence = elements::Sequence::from_consensus(sequence);
+            .value();
+        let sequence = match sequence_string.parse::<u32>() {
+            Ok(x) => elements::Sequence::from_consensus(x),
+            Err(error) => {
+                parse_error.set(format!(
+                    "Malformed nSequence: `{lock_time_string}`: `{error}`"
+                ));
+                return;
+            }
+        };
         tx_env.sequence.set(sequence);
 
         apply_changes.set_success(true);
@@ -85,29 +99,29 @@ pub fn TransactionTab() -> impl IntoView {
             <form on:submit=submit_transaction>
                 <div>
                     <div class="transaction-display-row">
-                        <div class="display-row-label">nLockTime</div>
+                        <div class="display-row-label">"nLockTime (u32)"</div>
                         <input
                             class="input"
-                            type="number"
-                            min=0
-                            max=2147483647
+                            type="text"
+                            inputmode="numeric"
+                            pattern="\\d*"
                             value=lock_time_initial_value
                             node_ref=lock_time_ref
                         />
                     </div>
                     <div class="transaction-display-row">
-                        <div class="display-row-label">nSequence</div>
+                        <div class="display-row-label">"nSequence (u32)"</div>
                         <input
                             class="input"
-                            type="number"
-                            min=0
-                            max=2147483647
+                            type="text"
+                            inputmode="numeric"
+                            pattern="\\d*"
                             value=sequence_initial_value
                             node_ref=sequence_ref
                         />
                     </div>
                 </div>
-
+                <ErrorBox error=parse_error />
                 <div class="transaction-tab-apply-button">
                     {apply_changes}
                 </div>
