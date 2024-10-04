@@ -61,7 +61,7 @@ pub fn ProgramTab() -> impl IntoView {
                 <textarea
                     class="program-input-field"
                     placeholder="Enter your program here"
-                    rows="15"
+                    rows="25"
                     cols="80"
                     spellcheck="false"
                     node_ref=textarea_ref
