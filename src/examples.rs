@@ -118,7 +118,7 @@ The coins move if 2 of 3 people agree to move them. These people provide their s
 
 fn checksig(pk: Pubkey, sig: Signature) {
     let msg: u256 = jet::sig_all_hash();
-    jet::bip_0340_verify((pk, msg), sig);
+    jet::bip_0340_verify((dbg!(pk), msg), sig);
 }
 
 fn checksig_add(counter: u8, pk: Pubkey, maybe_sig: Option<Signature>) -> u8 {
@@ -383,7 +383,7 @@ const HASH_LOOP: Example = Example {
     description: r#"Test how fast your browser is with this explosive program."#,
     program: r#"// Add counter to streaming hash and finalize when the loop exists
 fn hash_counter_8(ctx: Ctx8, unused: (), byte: u8) -> Either<u256, Ctx8> {
-    let new_ctx: Ctx8 = jet::sha_256_ctx_8_add_1(ctx, byte);
+    let new_ctx: Ctx8 = jet::sha_256_ctx_8_add_1(ctx, dbg!(byte));
     match jet::all_8(byte) {
         true => Left(jet::sha_256_ctx_8_finalize(new_ctx)),
         false => Right(new_ctx),
