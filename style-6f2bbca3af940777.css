@@ -131,30 +131,28 @@
   }
 }
 @keyframes run-button-success {
-  0% {
-    background-color: MediumSeaGreen;
+  0%, 100% {
+    background-color: initial;
   }
-  100% {
-    background-color: inherit;
+  50% {
+    background-color: MediumSeaGreen;
   }
 }
 @keyframes run-button-failure {
-  0% {
-    background-color: red;
+  0%, 100% {
+    background-color: initial;
   }
-  100% {
-    background-color: inherit;
+  50% {
+    background-color: red;
   }
 }
 .run-button.success {
   animation-name: run-button-success;
   animation-duration: 0.5s;
-  animation-fill-mode: forwards;
 }
 .run-button.failure {
   animation-name: run-button-failure;
   animation-duration: 0.5s;
-  animation-fill-mode: forwards;
 }
 
 /* Tooltip container */
@@ -652,6 +650,9 @@
   background: #424953;
   margin: 2px 0 2px 2px;
 }
+.navbar .button:active {
+  background: #2E3135;
+}
 .navbar .run-button {
   background: #5134E0;
   margin-right: 2px;
@@ -678,6 +679,9 @@
 .navbar .dropdown .dropdown-content button:hover {
   background: #3c424c;
 }
+.navbar .dropdown .dropdown-content button:active {
+  background: #2E3135;
+}
 .navbar .dropdown:hover .dropdown-content {
   display: block;
 }
@@ -694,7 +698,7 @@
   padding: 10px;
   background: #1d2127;
   margin-bottom: 20px;
-  min-height: 350px;
+  min-height: 520px;
 }
 
 .string-box, .error-box, .neutral-box, .success-box {
@@ -740,7 +744,7 @@
 }
 .transaction-tab .transaction-display-row .display-row-label {
   display: inline-block;
-  width: 120px;
+  width: 140px;
   text-align: right;
   margin-right: 10px;
 }
