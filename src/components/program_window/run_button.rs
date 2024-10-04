@@ -1,7 +1,7 @@
 use itertools::Itertools;
 use leptos::{
-    component, create_rw_signal, ev, spawn_local, use_context, view, with, IntoView, RwSignal,
-    SignalGet, SignalSet, SignalUpdate,
+    component, create_node_ref, create_rw_signal, ev, html, spawn_local, use_context, view, with,
+    IntoView, RwSignal, SignalGet, SignalSet, SignalUpdate,
 };
 use simfony::witness::WitnessValues;
 
@@ -19,6 +19,8 @@ pub fn RunButton() -> impl IntoView {
     let output =
         use_context::<ExecutionOutput>().expect("execution output should exist in context");
     let run_succeeded = create_rw_signal::<Option<bool>>(None);
+
+    let audio_ref = create_node_ref::<html::Audio>();
 
     let set_success = move |success: bool| {
         spawn_local(async move {
@@ -48,6 +50,7 @@ pub fn RunButton() -> impl IntoView {
                 }
                 Err(error) => {
                     output.error.set(error.to_string());
+                    let _promise = audio_ref.get().expect("<audio> should be mounted").play();
                     false
                 }
             };
@@ -72,5 +75,11 @@ pub fn RunButton() -> impl IntoView {
             <i class="fas fa-play"></i>
             " Run"
         </button>
+        <audio
+            preload="auto"
+            node_ref=audio_ref
+        >
+          <source src="images/alarm.ogg" type="audio/ogg" />
+        </audio>
     }
 }
