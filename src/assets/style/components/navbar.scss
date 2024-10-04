@@ -24,6 +24,10 @@
         border: none;
         background: #424953;
         margin: 2px 0 2px 2px;
+
+        &:active{
+            background: #2E3135;
+        }
     }
 
     .run-button{
@@ -62,6 +66,10 @@
 
                 &:hover{
                     background: #3c424c;
+                }
+
+                &:active{
+                    background: #2E3135;
                 }
             }
         }
