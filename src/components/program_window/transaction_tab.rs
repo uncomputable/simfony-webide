@@ -93,7 +93,7 @@ pub fn TransactionTab() -> impl IntoView {
                 "Currently, the runtime uses a "
                 <a href="https://github.com/BlockstreamResearch/simfony/blob/master/src/dummy_env.rs">
                     dummy transaction environment</a>.
-                "Only the lock time and sequence number can be changed. "
+                " Only the lock time and sequence number can be changed. "
                 "More customization will follow in future updates."
             </p>
             <form on:submit=submit_transaction>
