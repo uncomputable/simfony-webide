@@ -22,7 +22,7 @@
         padding: 14px 16px;
         cursor: pointer;
         border: none;
-        background: #606060;
+        background: #424953;
         margin: 2px 0 2px 2px;
     }
 
@@ -44,7 +44,6 @@
         .dropdown-content {
             display: none; // Hide dropdown by default
             position: absolute;
-            background-color: #f1f1f1;
             min-width: 160px;
             box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
             z-index: 1;
@@ -52,16 +51,29 @@
             button {
                 width: 100%;
                 float: none;
-                color: black;
+                color: white;
                 padding: 12px 16px;
                 text-decoration: none;
                 display: block;
                 text-align: left;
+                background: #2e333b;
+                border: 1px solid #0d0e10;
+                cursor: pointer;
+
+                &:hover{
+                    background: #3c424c;
+                }
             }
         }
 
-        &:hover .dropdown-content {
-            display: block; // Show dropdown on hover
+        &:hover {
+            .dropdown-content {
+                display: block; // Show dropdown on hover
+            }
+
+            .dropdown-button{
+                background: #2e333b;
+            }
         }
     }
 }
