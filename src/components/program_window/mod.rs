@@ -12,7 +12,6 @@ use self::examples_dropdown::ExamplesDropdown;
 use self::program_tab::ProgramTab;
 use self::run_button::RunButton;
 use self::share_button::ShareButton;
-use self::tools_dropdown::ToolsDropdown;
 use self::transaction_tab::TransactionTab;
 use self::witness_tab::WitnessTab;
 use crate::components::navbar::{Button, Navbar, Tab};
@@ -38,9 +37,6 @@ pub fn ProgramWindow() -> impl IntoView {
             </Tab>
             <Button>
                 <ExamplesDropdown />
-            </Button>
-            <Button>
-                <ToolsDropdown />
             </Button>
             <Button>
                 <ShareButton />
