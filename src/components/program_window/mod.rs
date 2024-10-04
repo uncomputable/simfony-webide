@@ -45,6 +45,10 @@ pub fn ProgramWindow() -> impl IntoView {
             <Button>
                 <ShareButton />
             </Button>
+
+            <Button>
+                <div class="beta-tag">beta</div>
+            </Button>
         </Navbar>
     }
 }

@@ -71,42 +71,46 @@ pub fn TransactionTab() -> impl IntoView {
     let sequence_initial_value = tx_env.sequence.get_untracked().to_string();
 
     view! {
-        <div>
-            <h3 class="program-title">
+        <div class="tab-content transaction-tab">
+            <h3 class="tab-title">
                 Transaction Environment
             </h3>
-            <p>
+            <p class="tab-description">
                 "Currently, the runtime uses a "
                 <a href="https://github.com/BlockstreamResearch/simfony/blob/master/src/dummy_env.rs">
-                    dummy transaction environment
-                </a>
-                ". Only the lock time and sequence number can be changed. "
+                    dummy transaction environment</a>.
+                "Only the lock time and sequence number can be changed. "
                 "More customization will follow in future updates."
             </p>
             <form on:submit=submit_transaction>
-                <div class="button-col">
-                    <label>
-                        nLockTime
+                <div>
+                    <div class="transaction-display-row">
+                        <div class="display-row-label">nLockTime</div>
                         <input
+                            class="input"
                             type="number"
                             min=0
                             max=2147483647
                             value=lock_time_initial_value
                             node_ref=lock_time_ref
                         />
-                    </label>
-                    <label>
-                        nSequence
+                    </div>
+                    <div class="transaction-display-row">
+                        <div class="display-row-label">nSequence</div>
                         <input
+                            class="input"
                             type="number"
                             min=0
                             max=2147483647
                             value=sequence_initial_value
                             node_ref=sequence_ref
                         />
-                    </label>
+                    </div>
                 </div>
-                {apply_changes}
+
+                <div class="transaction-tab-apply-button">
+                    {apply_changes}
+                </div>
             </form>
         </div>
     }

@@ -17,6 +17,7 @@ pub fn ShareButton() -> impl IntoView {
             view! {
                 <div>
                     <button
+                        class="button share-button"
                         on:click=button_click
                     >
                         <i class="fa-solid fa-share-nodes"></i>

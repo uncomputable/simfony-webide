@@ -88,16 +88,16 @@ where
     };
 
     view! {
-        <div>
+        <div class="table-form">
             <form on:submit=submit_form>
                 <table>
                     <Header header=header />
                     <Body rows=rows />
                 </table>
                 <ErrorBox error=error />
-                <div class="button-row">
+                <div class="table-form-buttons button-row">
                     <button
-                        class="push-button"
+                        class="flat-button bordered"
                         type="button"
                         on:click=push_row
                     >
@@ -105,7 +105,7 @@ where
                         <i class="fas fa-plus"></i>
                     </button>
                     <button
-                        class="pop-button"
+                        class="flat-button bordered"
                         type="button"
                         on:click=pop_row
                     >
@@ -145,7 +145,7 @@ fn Body<const N: usize>(rows: ReadSignal<Vec<Row<N>>>) -> impl IntoView {
                     let cell_value = cell.value.unwrap_or_default();
                     view! {
                         <td>
-                            <input type="text" node_ref=cell_node_ref value=cell_value />
+                            <input class="input" type="text" node_ref=cell_node_ref value=cell_value />
                         </td>
                     }
                 }).collect_view()

@@ -27,7 +27,7 @@ pub fn ExecutionTab() -> impl IntoView {
     };
 
     view! {
-        <div>
+        <div class="tab-content">
             <SuccessBox success=success_string />
             <ErrorBox error=failure_string />
             <NeutralBox neutral=output.debug />

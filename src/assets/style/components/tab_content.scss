@@ -1,0 +1,93 @@
+
+// witness tab
+.witness-table{
+    position: relative;
+
+    .table-form{
+
+        .table-form-buttons{
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+        }
+    }
+}
+
+// transaction tab
+.transaction-tab{
+    position: relative;
+
+    .transaction-display-row{
+        display: flex;
+        align-items: center;
+        margin-bottom: 10px;
+
+        .display-row-label{
+            display: inline-block;
+            width: 120px;
+            text-align: right;
+            margin-right: 10px;
+        }
+    }
+
+    .transaction-tab-apply-button{
+        position: absolute;
+        bottom: 20px;
+        right: 20px;
+    }
+}
+
+// key store tab
+.key-store-tab{
+    .copy-button{
+        @extend .flat-button;
+    }
+
+    .key-store-display-row{
+        display: flex;
+        align-items: center;
+        margin-bottom: 10px;
+
+        .display-row-label{
+            display: inline-block;
+            margin: 0 10px;
+        }
+
+        .input{
+            flex-grow: 2;
+        }
+    }
+
+    .signed-data-content{
+        border: 1px solid #5134e0;
+        border-radius: 8px;
+        padding-top: 20px;
+    }
+}
+
+.hash-store-tab{
+    .copy-button{
+        @extend .flat-button;
+    }
+}
+
+.tab-title{
+    font-size: 28px;
+    font-style: normal;
+    font-weight: 700;
+    line-height: normal;
+    margin-bottom: 12px;
+}
+
+.tab-description{
+    font-size: 16px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: normal;
+    color: #b5bdc2;
+    margin-bottom: 20px;
+
+    a {
+        color: #7973f4;
+    }
+}

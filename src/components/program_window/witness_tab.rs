@@ -62,7 +62,7 @@ pub fn WitnessTab() -> impl IntoView {
     };
 
     view! {
-        <div class="witness-table">
+        <div class="tab-content witness-table">
             <TableForm
                 header=header
                 initial_rows=initial_rows

@@ -21,7 +21,7 @@ pub fn Dropdown(
 
     view! {
         <div class="dropdown">
-            <button class="dropdown-button">
+            <button class="button dropdown-button">
                 {name}" "
                 <i class="fa fa-caret-down"></i>
             </button>

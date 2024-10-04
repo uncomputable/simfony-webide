@@ -56,7 +56,7 @@ pub fn ProgramTab() -> impl IntoView {
     let program_text_initial_value = program.get_untracked().text;
 
     view! {
-        <div>
+        <div class="tab-content">
             <form on:submit=submit_program>
                 <textarea
                     class="program-input-field"
