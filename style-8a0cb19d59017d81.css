@@ -611,7 +611,7 @@
 
 .program-title {
   margin: 0 0 7px 0;
-  font-size: 20px;
+  font-size: 28px;
   font-style: normal;
   font-weight: 700;
   line-height: normal;
@@ -629,35 +629,36 @@
 
 .navbar {
   overflow: hidden;
-  border: 1px solid #ccc;
-  background-color: #f1f1f1;
+  display: flex;
+  align-items: stretch;
+  background-color: rgba(0, 0, 0, 0);
 }
-.navbar button {
-  background-color: inherit;
-  float: left;
-  border: none;
-  outline: none;
-  cursor: pointer;
+.navbar .tab {
+  color: white;
   padding: 14px 16px;
+  cursor: pointer;
+  border: 1px solid #2E3135;
+  background: #191C21;
 }
-.navbar button:hover {
-  background-color: #ddd;
+.navbar .tab.active {
+  background: #1d2127;
+  border: 1px solid #1d2127;
 }
-.navbar button:active {
-  background-color: #bbb;
+.navbar .button {
+  color: white;
+  padding: 14px 16px;
+  cursor: pointer;
+  border: none;
+  background: #424953;
+  margin: 2px 0 2px 2px;
 }
-.navbar .dropdown {
-  float: left;
-  overflow: hidden;
-}
-.navbar .dropdown .dropdown-button {
-  font-family: inherit;
-  margin: 0;
+.navbar .run-button {
+  background: #5134E0;
+  margin-right: 2px;
 }
 .navbar .dropdown .dropdown-content {
   display: none;
   position: absolute;
-  background-color: #f1f1f1;
   min-width: 160px;
   box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
   z-index: 1;
@@ -665,14 +666,35 @@
 .navbar .dropdown .dropdown-content button {
   width: 100%;
   float: none;
-  color: black;
+  color: white;
   padding: 12px 16px;
   text-decoration: none;
   display: block;
   text-align: left;
+  background: #2e333b;
+  border: 1px solid #0d0e10;
+  cursor: pointer;
+}
+.navbar .dropdown .dropdown-content button:hover {
+  background: #3c424c;
 }
 .navbar .dropdown:hover .dropdown-content {
   display: block;
+}
+.navbar .dropdown:hover .dropdown-button {
+  background: #2e333b;
+}
+.navbar .beta-tag {
+  position: absolute;
+  right: 40px;
+  top: 20px;
+}
+
+.tab-content {
+  padding: 10px;
+  background: #1d2127;
+  margin-bottom: 20px;
+  min-height: 350px;
 }
 
 .string-box, .error-box, .neutral-box, .success-box {
@@ -696,6 +718,74 @@
 .error-box {
   border: 1px dotted #ff0000;
   color: #ff0000;
+  margin-bottom: 10px;
+}
+
+.witness-table {
+  position: relative;
+}
+.witness-table .table-form .table-form-buttons {
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+}
+
+.transaction-tab {
+  position: relative;
+}
+.transaction-tab .transaction-display-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+}
+.transaction-tab .transaction-display-row .display-row-label {
+  display: inline-block;
+  width: 120px;
+  text-align: right;
+  margin-right: 10px;
+}
+.transaction-tab .transaction-tab-apply-button {
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+}
+
+.key-store-tab .key-store-display-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+}
+.key-store-tab .key-store-display-row .display-row-label {
+  display: inline-block;
+  margin: 0 10px;
+}
+.key-store-tab .key-store-display-row .input {
+  flex-grow: 2;
+}
+.key-store-tab .signed-data-content {
+  border: 1px solid #5134e0;
+  border-radius: 8px;
+  padding-top: 20px;
+}
+
+.tab-title {
+  font-size: 28px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: normal;
+  margin-bottom: 12px;
+}
+
+.tab-description {
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: normal;
+  color: #b5bdc2;
+  margin-bottom: 20px;
+}
+.tab-description a {
+  color: #7973f4;
 }
 
 * {
@@ -799,6 +889,23 @@ p {
   flex-direction: column;
 }
 
+.flat-button, .key-store-tab .copy-button, .hash-store-tab .copy-button {
+  color: white;
+  padding: 14px 16px;
+  cursor: pointer;
+  border: none;
+  background: #5134E0;
+  border: 1px solid #5134E0;
+  border-radius: 4px;
+  margin-right: 4px;
+}
+.flat-button i, .key-store-tab .copy-button i, .hash-store-tab .copy-button i {
+  margin: 0 4px;
+}
+.flat-button.bordered, .key-store-tab .bordered.copy-button, .hash-store-tab .bordered.copy-button {
+  background: #191c21;
+}
+
 .submit-button, .push-button, .pop-button, .copy-button {
   border: 1px solid #5134E0;
   padding: 4px;
@@ -815,4 +922,17 @@ p {
 
 input:invalid {
   background-color: lightpink;
+}
+
+.input {
+  background: #191c21;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  padding: 6px 12px;
+  color: white;
+  width: 260px;
+}
+.input:focus-visible {
+  outline: none;
+  border: 1px solid rgba(255, 255, 255, 0.18);
 }
