@@ -80,13 +80,13 @@ fn TabButton(tab_name: &'static str) -> impl IntoView {
     let is_active = move || active_tab.0.get() == tab_name;
     view! {
         <button
-        class=move || {
-            if is_active() {
-                "tab active"
-            } else {
-                "tab"
+            class=move || {
+                if is_active() {
+                    "tab active"
+                } else {
+                    "tab"
+                }
             }
-        }
             on:click=button_click
         >
             {tab_name}
