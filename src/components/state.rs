@@ -1,6 +1,5 @@
-use leptos::{create_rw_signal, use_context, RwSignal, SignalGet, SignalGetUntracked};
+use leptos::{create_rw_signal, use_context, SignalGet, SignalGetUntracked};
 use leptos_router::ParamsMap;
-use simfony::witness::WitnessValues;
 
 use crate::components::program_window::{ProgramText, TxEnv};
 use crate::components::run_window::{HashedData, SigningKeys};
@@ -33,27 +32,6 @@ impl ToParam for ProgramText {
         (
             "program",
             lz_str::compress_to_encoded_uri_component(&self.0.get()),
-        )
-    }
-}
-
-impl FromParams for WitnessValues {
-    fn from_map(map: &ParamsMap) -> Option<Self> {
-        map.get("witness")
-            .map(String::as_str)
-            .and_then(lz_str::decompress_from_encoded_uri_component)
-            .and_then(|v| String::from_utf16(&v).ok())
-            .and_then(|s| serde_json::from_str(s.as_str()).ok())
-    }
-}
-
-impl ToParam for WitnessValues {
-    fn to_param(&self) -> (&'static str, String) {
-        (
-            "witness",
-            lz_str::compress_to_encoded_uri_component(
-                &serde_json::to_string(&self).expect("witness should serialize"),
-            ),
         )
     }
 }
@@ -112,8 +90,6 @@ pub fn stateful_url() -> Option<String> {
         let mut url = format!("{}{}", origin, pathname);
 
         let program = use_context::<ProgramText>().expect("program text should exist in context");
-        let witness = use_context::<RwSignal<WitnessValues>>()
-            .expect("witness values should exist in context");
         let tx_env =
             use_context::<TxEnv>().expect("transaction environment should exist in context");
         let signing_keys =
@@ -122,7 +98,6 @@ pub fn stateful_url() -> Option<String> {
 
         let params_values = [
             program.to_param(),
-            witness.get().to_param(),
             tx_env.to_param(),
             signing_keys.to_param(),
             hashed_data.to_param(),

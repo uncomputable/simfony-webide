@@ -4,7 +4,6 @@ mod run_button;
 mod share_button;
 mod tools_dropdown;
 mod transaction_tab;
-mod witness_tab;
 
 use leptos::{component, view, IntoView};
 
@@ -13,7 +12,6 @@ use self::program_tab::ProgramTab;
 use self::run_button::RunButton;
 use self::share_button::ShareButton;
 use self::transaction_tab::TransactionTab;
-use self::witness_tab::WitnessTab;
 use crate::components::navbar::{Button, Navbar, Tab};
 
 pub use self::program_tab::ProgramText;
@@ -28,9 +26,6 @@ pub fn ProgramWindow() -> impl IntoView {
             </Button>
             <Tab name="Program">
                 <ProgramTab />
-            </Tab>
-            <Tab name="Witness">
-                <WitnessTab />
             </Tab>
             <Tab name="Transaction">
                 <TransactionTab />

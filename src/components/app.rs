@@ -1,6 +1,5 @@
-use leptos::{component, create_rw_signal, provide_context, view, IntoView, SignalGetUntracked};
+use leptos::{component, provide_context, view, IntoView, SignalGetUntracked};
 use leptos_router::use_query_map;
-use simfony::witness::WitnessValues;
 
 use super::program_window::{ProgramText, ProgramWindow, TxEnv};
 use crate::components::run_window::{
@@ -14,8 +13,6 @@ pub fn App() -> impl IntoView {
 
     let program_text = ProgramText::from_map(&url_params).unwrap_or_default();
     provide_context(program_text);
-    let witness_values = create_rw_signal(WitnessValues::from_map(&url_params).unwrap_or_default());
-    provide_context(witness_values);
     let tx_env = TxEnv::from_map(&url_params).unwrap_or_default();
     provide_context(tx_env);
     let signing_keys = SigningKeys::from_map(&url_params).unwrap_or_default();

@@ -8,6 +8,5 @@ mod program_window;
 mod run_window;
 mod state;
 mod string_box;
-mod table_form;
 
 pub use app::App;
