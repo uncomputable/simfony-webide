@@ -1,8 +1,8 @@
 use leptos::{create_rw_signal, use_context, SignalGet, SignalGetUntracked};
 use leptos_router::ParamsMap;
 
-use crate::components::program_window::{ProgramText, TxEnv};
-use crate::components::run_window::{HashedData, SigningKeys};
+use crate::components::program_window::ProgramText;
+use crate::components::run_window::{HashedData, SigningKeys, TxEnv};
 
 /// [`leptos_router::Params`] with simpler error handling via [`Option`].
 pub trait FromParams: Sized {

@@ -1,16 +1,15 @@
 use leptos::leptos_dom::Transparent;
 use leptos::{
-    component, create_rw_signal, ev, provide_context, use_context, view, Children, ChildrenFn,
-    IntoView, RwSignal, SignalGet, SignalSet, View,
+    component, ev, view, Children, ChildrenFn, IntoView, RwSignal, SignalGet, SignalSet, View,
 };
 
-#[derive(Copy, Clone, Debug)]
-pub struct ActiveTab(pub RwSignal<&'static str>);
-
 #[component]
-pub fn Navbar(default_tab: &'static str, children: Children) -> impl IntoView {
-    let active_tab = create_rw_signal(default_tab);
-    provide_context(ActiveTab(active_tab));
+pub fn Navbar(
+    default_tab: &'static str,
+    children: Children,
+    active_tab: RwSignal<&'static str>,
+) -> impl IntoView {
+    active_tab.set(default_tab);
     let mut tabs_content = Vec::new();
     let mut button_bar = Vec::new();
 
@@ -24,7 +23,7 @@ pub fn Navbar(default_tab: &'static str, children: Children) -> impl IntoView {
         match child {
             TabView::Tab { name, children } => {
                 tabs_content.push((name, children));
-                button_bar.push(view! {<TabButton tab_name=name />})
+                button_bar.push(view! {<TabButton tab_name=name active_tab=active_tab />})
             }
             TabView::Button { children } => button_bar.push(children().into_view()),
         }
@@ -74,10 +73,9 @@ impl IntoView for TabView {
 }
 
 #[component]
-fn TabButton(tab_name: &'static str) -> impl IntoView {
-    let active_tab = use_context::<ActiveTab>().expect("active tab should exist in context");
-    let button_click = move |_event: ev::MouseEvent| active_tab.0.set(tab_name);
-    let button_class = move || match active_tab.0.get() == tab_name {
+fn TabButton(tab_name: &'static str, active_tab: RwSignal<&'static str>) -> impl IntoView {
+    let button_click = move |_event: ev::MouseEvent| active_tab.set(tab_name);
+    let button_class = move || match active_tab.get() == tab_name {
         true => "tab active",
         false => "tab",
     };

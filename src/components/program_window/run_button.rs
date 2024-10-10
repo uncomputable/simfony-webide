@@ -4,8 +4,8 @@ use leptos::{
     IntoView, SignalGet, SignalSet, SignalUpdate,
 };
 
-use crate::components::program_window::{ProgramText, TxEnv};
-use crate::components::run_window::ExecutionOutput;
+use crate::components::program_window::ProgramText;
+use crate::components::run_window::{ExecutionOutput, TxEnv};
 use crate::function::Runner;
 
 #[component]

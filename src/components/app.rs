@@ -1,11 +1,16 @@
-use leptos::{component, provide_context, view, IntoView, SignalGetUntracked};
+use leptos::{
+    component, create_rw_signal, provide_context, view, IntoView, RwSignal, SignalGetUntracked,
+};
 use leptos_router::use_query_map;
 
-use super::program_window::{ProgramText, ProgramWindow, TxEnv};
+use super::program_window::{ProgramText, ProgramWindow};
 use crate::components::run_window::{
-    ExecutionOutput, HashedData, RunWindow, SignedData, SigningKeys,
+    ExecutionOutput, HashedData, RunWindow, SignedData, SigningKeys, TxEnv,
 };
 use crate::components::state::FromParams;
+
+#[derive(Copy, Clone, Debug)]
+pub(crate) struct ActiveRunTab(pub RwSignal<&'static str>);
 
 #[component]
 pub fn App() -> impl IntoView {
@@ -23,8 +28,11 @@ pub fn App() -> impl IntoView {
     provide_context(hashed_data);
     provide_context(ExecutionOutput::default());
 
+    let active_run_tab = create_rw_signal("");
+    provide_context(ActiveRunTab(active_run_tab));
+
     view! {
         <ProgramWindow />
-        <RunWindow />
+        <RunWindow active_tab=active_run_tab />
     }
 }
