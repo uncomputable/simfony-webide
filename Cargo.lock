@@ -1510,7 +1510,7 @@ dependencies = [
 [[package]]
 name = "simfony"
 version = "0.1.0"
-source = "git+https://github.com/BlockstreamResearch/simfony?rev=f15dcc4ba57c2e7b174df6b9c36328267c3fe526#f15dcc4ba57c2e7b174df6b9c36328267c3fe526"
+source = "git+https://github.com/BlockstreamResearch/simfony?rev=f877c7b2d15787317e514b684fa2561e971fb93c#f877c7b2d15787317e514b684fa2561e971fb93c"
 dependencies = [
  "base64 0.21.7",
  "either",
@@ -1555,7 +1555,6 @@ name = "simplicity-webide"
 version = "0.1.0"
 dependencies = [
  "console_error_panic_hook",
- "either",
  "gloo-timers",
  "hex-conservative",
  "itertools 0.13.0",

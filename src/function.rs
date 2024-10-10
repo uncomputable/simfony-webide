@@ -3,6 +3,7 @@ use std::sync::Arc;
 
 use either::Either;
 use simfony::debug::{DebugSymbols, FallibleCall, FallibleCallName};
+use simfony::either;
 use simfony::simplicity::jet::elements::ElementsEnv;
 use simfony::SatisfiedProgram;
 use simfony::{elements, simplicity};

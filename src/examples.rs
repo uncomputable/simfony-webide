@@ -61,11 +61,10 @@ The coins move if the person with the given public key signs the transaction."#,
     program: r#"fn main() {
     let pk: Pubkey = 0x79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798; // 1 * G
     let msg: u256 = jet::sig_all_hash();
-    let sig: Signature = witness("sig");
-    jet::bip_0340_verify((pk, msg), sig)
+    jet::bip_0340_verify((pk, msg), witness::SIG)
 }"#,
     witness: r#"{
-    "sig": {
+    "SIG": {
         "value": "0xf74b3ca574647f8595624b129324afa2f38b598a9c1c7cfc5f08a9c036ec5acd3c0fbb9ed3dae5ca23a0a65a34b5d6cccdd6ba248985d6041f7b21262b17af6f",
         "type": "Signature"
     }
@@ -85,21 +84,20 @@ The coins move if the person with the public key that matches the given hash sig
 }
 
 fn main() {
-    let pk: Pubkey = witness("pk");
+    let pk: Pubkey = witness::PK;
     let expected_pk_hash: u256 = 0x132f39a98c31baaddba6525f5d43f2954472097fa15265f45130bfdb70e51def; // sha2(1 * G)
     let pk_hash: u256 = sha2(pk);
     assert!(jet::eq_256(pk_hash, expected_pk_hash));
 
     let msg: u256 = jet::sig_all_hash();
-    let sig: Signature = witness("sig");
-    jet::bip_0340_verify((pk, msg), sig)
+    jet::bip_0340_verify((pk, msg), witness::SIG)
 }"#,
     witness: r#"{
-    "pk": {
+    "PK": {
         "value": "0x79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
         "type": "Pubkey"
     },
-    "sig": {
+    "SIG": {
         "value": "0xf74b3ca574647f8595624b129324afa2f38b598a9c1c7cfc5f08a9c036ec5acd3c0fbb9ed3dae5ca23a0a65a34b5d6cccdd6ba248985d6041f7b21262b17af6f",
         "type": "Signature"
     }
@@ -151,11 +149,10 @@ fn main() {
         0xc6047f9441ed7d6d3045406e95c07cd85c778e4b8cef3ca7abac09b95c709ee5, // 2 * G
         0xf9308a019258c31049344f85f89d5229b531c845836f99b08601f113bce036f9, // 3 * G
     ];
-    let maybe_sigs: [Option<Signature>; 3] = witness("maybe_sigs");
-    check2of3multisig(pks, maybe_sigs);
+    check2of3multisig(pks, witness::MAYBE_SIGS);
 }"#,
     witness: r#"{
-    "maybe_sigs": {
+    "MAYBE_SIGS": {
         "value": "[Some(0xf74b3ca574647f8595624b129324afa2f38b598a9c1c7cfc5f08a9c036ec5acd3c0fbb9ed3dae5ca23a0a65a34b5d6cccdd6ba248985d6041f7b21262b17af6f), None, Some(0x29dbeab5628ae472bce3e08728ead1997ef789d4f04b5be39cc08b362dc229f553fd353f8a0acffdfbddd471d15a0dda3b306842416ff246bc07462e5667eb89)]",
         "type": "[Option<Signature>; 3]"
     }
@@ -193,11 +190,10 @@ The transaction input can be exchanged by a third party with a "similar" input w
     let msg: u256 = jet::sha_256_ctx_8_finalize(ctx);
 
     let pk: Pubkey = 0x79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798; // 1 * G
-    let sig: Signature = witness("sig");
-    jet::bip_0340_verify((pk, msg), sig);
+    jet::bip_0340_verify((pk, msg), witness::SIG);
 }"#,
     witness: r#"{
-    "sig": {
+    "SIG": {
         "value": "0x171678f669e1a81980b94e7677dcc827d5d0d429d8fde0503c333eab4781ae9e4861eeef3a7e9f6d840e330fcc70bf9f3b3723594b0dd4093b211de995b30e52",
         "type": "Signature"
     }
@@ -240,8 +236,7 @@ fn cancel_spend(sender_sig: Signature) {
 }
 
 fn main() {
-    let complete_or_cancel: Either<(u256, Signature), Signature> = witness("complete_or_cancel");
-    match complete_or_cancel {
+    match witness::COMPLETE_OR_CANCEL {
         Left(preimage_sig: (u256, Signature)) => {
             let (preimage, recipient_sig): (u256, Signature) = preimage_sig;
             complete_spend(preimage, recipient_sig);
@@ -250,7 +245,7 @@ fn main() {
     }
 }"#,
     witness: r#"{
-    "complete_or_cancel": {
+    "COMPLETE_OR_CANCEL": {
         "value": "Left((0x0000000000000000000000000000000000000000000000000000000000000000, 0xf74b3ca574647f8595624b129324afa2f38b598a9c1c7cfc5f08a9c036ec5acd3c0fbb9ed3dae5ca23a0a65a34b5d6cccdd6ba248985d6041f7b21262b17af6f))",
         "type": "Either<(u256, Signature), Signature>"
     }
@@ -282,36 +277,36 @@ fn checksigfromstack(pk: Pubkey, bytes: [u32; 2], sig: Signature) {
 
 fn main() {
     let min_height: Height = 1000;
-    let oracle_height: Height = witness("oracle_height");
+    let oracle_height: Height = witness::ORACLE_HEIGHT;
     assert!(jet::le_32(min_height, oracle_height));
     jet::check_lock_height(oracle_height);
 
     let target_price: u32 = 100000; // laser eyes until 100k
-    let oracle_price: u32 = witness("oracle_price");
+    let oracle_price: u32 = witness::ORACLE_PRICE;
     assert!(jet::le_32(target_price, oracle_price));
 
     let oracle_pk: Pubkey = 0x79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798; // 1 * G
-    let oracle_sig: Signature = witness("oracle_sig");
+    let oracle_sig: Signature = witness::ORACLE_SIG;
     checksigfromstack(oracle_pk, [oracle_height, oracle_price], oracle_sig);
 
     let owner_pk: Pubkey = 0xc6047f9441ed7d6d3045406e95c07cd85c778e4b8cef3ca7abac09b95c709ee5; // 2 * G
-    let owner_sig: Signature = witness("owner_sig");
+    let owner_sig: Signature = witness::OWNER_SIG;
     checksig(owner_pk, owner_sig);
 }"#,
     witness: r#"{
-    "oracle_height": {
+    "ORACLE_HEIGHT": {
         "value": "1000",
         "type": "u32"
     },
-    "oracle_price": {
+    "ORACLE_PRICE": {
         "value": "100000",
         "type": "u32"
     },
-    "oracle_sig": {
+    "ORACLE_SIG": {
         "value": "0x90231b8de96a1f940ddcf406fe8389417ca8fb0b03151608e2f94b31b443a7e0d26a12e437df69028f09027c37d5f6742a10c1e8864061d119b8bbce962d26d3",
         "type": "Signature"
     },
-    "owner_sig": {
+    "OWNER_SIG": {
         "value": "0xf2341f571f069216edfc72822f6094b8ec339c2f72dc64aea0eed1e3d60abf4572fdd04618e5b5bc672ccd71cfaf125b6c1b101aeca3a7b938fe83932ab38743",
         "type": "Signature"
     }
@@ -360,8 +355,7 @@ fn refresh_spend(hot_sig: Signature) {
 }
 
 fn main() {
-    let inherit_or_not: Either<Signature, Either<Signature, Signature>> = witness("inherit_or_not");
-    match inherit_or_not {
+    match witness::INHERIT_OR_NOT {
         Left(inheritor_sig: Signature) => inherit_spend(inheritor_sig),
         Right(cold_or_hot: Either<Signature, Signature>) => match cold_or_hot {
             Left(cold_sig: Signature) => cold_spend(cold_sig),
@@ -370,7 +364,7 @@ fn main() {
     }
 }"#,
     witness: r#"{
-    "inherit_or_not": {
+    "INHERIT_OR_NOT": {
         "value": "Left(0x755201bb62b0a8b8d18fd12fc02951ea3998ba42bfc6664daaf8a0d2298cad43cdc21358c7c82f37654275dc2fea8c858adbe97bac92828b498a5a237004db6f)",
         "type": "Either<Signature, Either<Signature, Signature>>"
     }
