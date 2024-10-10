@@ -1,11 +1,9 @@
 use simfony::elements;
-use simfony::witness::WitnessValues;
 
 #[derive(Clone, Copy, Debug)]
 pub struct Example {
     description: &'static str,
     program: &'static str,
-    witness: &'static str,
     lock_time: u32,
     sequence: u32,
 }
@@ -16,23 +14,21 @@ impl Example {
         self.description
     }
 
-    #[cfg(test)]
-    pub fn compiled(self) -> simfony::CompiledProgram {
-        simfony::CompiledProgram::new(self.program).expect("example program should compile")
-    }
-
     pub fn program_text(self) -> &'static str {
         self.program
     }
 
-    pub fn witness_values(self) -> WitnessValues {
-        serde_json::from_str(self.witness).expect("example witness should parse")
-    }
-
     #[cfg(test)]
     pub fn satisfied(self) -> simfony::SatisfiedProgram {
-        self.compiled()
-            .satisfy(&self.witness_values())
+        let compiled =
+            simfony::CompiledProgram::new(self.program).expect("example program should compile");
+        let witness_values =
+            <simfony::witness::WitnessValues as simfony::parse::ParseFromStr>::parse_from_str(
+                self.program_text(),
+            )
+            .expect("example witness should parse");
+        compiled
+            .satisfy(&witness_values)
             .expect("example program should be satisfied")
     }
 
@@ -59,16 +55,14 @@ const P2PK: Example = Example {
     description: r#"Pay to public key.
 
 The coins move if the person with the given public key signs the transaction."#,
-    program: r#"fn main() {
+    program: r#"mod witness {
+    const SIG: Signature = 0xf74b3ca574647f8595624b129324afa2f38b598a9c1c7cfc5f08a9c036ec5acd3c0fbb9ed3dae5ca23a0a65a34b5d6cccdd6ba248985d6041f7b21262b17af6f;
+}
+
+fn main() {
     let pk: Pubkey = 0x79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798; // 1 * G
     let msg: u256 = jet::sig_all_hash();
     jet::bip_0340_verify((pk, msg), witness::SIG)
-}"#,
-    witness: r#"{
-    "SIG": {
-        "value": "0xf74b3ca574647f8595624b129324afa2f38b598a9c1c7cfc5f08a9c036ec5acd3c0fbb9ed3dae5ca23a0a65a34b5d6cccdd6ba248985d6041f7b21262b17af6f",
-        "type": "Signature"
-    }
 }"#,
     lock_time: 0,
     sequence: u32::MAX,
@@ -78,7 +72,12 @@ const P2PKH: Example = Example {
     description: r#"Pay to public key hash.
 
 The coins move if the person with the public key that matches the given hash signs the transaction."#,
-    program: r#"fn sha2(string: u256) -> u256 {
+    program: r#"mod witness {
+    const PK: Pubkey = 0x79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798;
+    const SIG: Signature = 0xf74b3ca574647f8595624b129324afa2f38b598a9c1c7cfc5f08a9c036ec5acd3c0fbb9ed3dae5ca23a0a65a34b5d6cccdd6ba248985d6041f7b21262b17af6f;
+}
+
+fn sha2(string: u256) -> u256 {
     let hasher: Ctx8 = jet::sha_256_ctx_8_init();
     let hasher: Ctx8 = jet::sha_256_ctx_8_add_32(hasher, string);
     jet::sha_256_ctx_8_finalize(hasher)
@@ -93,16 +92,6 @@ fn main() {
     let msg: u256 = jet::sig_all_hash();
     jet::bip_0340_verify((pk, msg), witness::SIG)
 }"#,
-    witness: r#"{
-    "PK": {
-        "value": "0x79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
-        "type": "Pubkey"
-    },
-    "SIG": {
-        "value": "0xf74b3ca574647f8595624b129324afa2f38b598a9c1c7cfc5f08a9c036ec5acd3c0fbb9ed3dae5ca23a0a65a34b5d6cccdd6ba248985d6041f7b21262b17af6f",
-        "type": "Signature"
-    }
-}"#,
     lock_time: 0,
     sequence: u32::MAX,
 };
@@ -111,7 +100,12 @@ const P2MS: Example = Example {
     description: r#"Pay to multisig.
 
 The coins move if 2 of 3 people agree to move them. These people provide their signatures, of which exactly 2 are required."#,
-    program: r#"fn not(bit: bool) -> bool {
+    program: r#"mod witness {
+    const MAYBE_SIGS: [Option<Signature>; 3] =
+        [Some(0xf74b3ca574647f8595624b129324afa2f38b598a9c1c7cfc5f08a9c036ec5acd3c0fbb9ed3dae5ca23a0a65a34b5d6cccdd6ba248985d6041f7b21262b17af6f), None, Some(0x29dbeab5628ae472bce3e08728ead1997ef789d4f04b5be39cc08b362dc229f553fd353f8a0acffdfbddd471d15a0dda3b306842416ff246bc07462e5667eb89)];
+}
+
+fn not(bit: bool) -> bool {
     <u1>::into(jet::complement_1(<bool>::into(bit)))
 }
 
@@ -152,12 +146,6 @@ fn main() {
     ];
     check2of3multisig(pks, witness::MAYBE_SIGS);
 }"#,
-    witness: r#"{
-    "MAYBE_SIGS": {
-        "value": "[Some(0xf74b3ca574647f8595624b129324afa2f38b598a9c1c7cfc5f08a9c036ec5acd3c0fbb9ed3dae5ca23a0a65a34b5d6cccdd6ba248985d6041f7b21262b17af6f), None, Some(0x29dbeab5628ae472bce3e08728ead1997ef789d4f04b5be39cc08b362dc229f553fd353f8a0acffdfbddd471d15a0dda3b306842416ff246bc07462e5667eb89)]",
-        "type": "[Option<Signature>; 3]"
-    }
-}"#,
     lock_time: 0,
     sequence: u32::MAX,
 };
@@ -167,7 +155,11 @@ const SIGHASH_ANYPREVOUT: Example = Example {
 
 The coins move if the person with the given public key signs the transaction.
 The transaction input can be exchanged by a third party with a "similar" input while the signature remains valid."#,
-    program: r#"fn main() {
+    program: r#"mod witness {
+    const SIG: Signature = 0x171678f669e1a81980b94e7677dcc827d5d0d429d8fde0503c333eab4781ae9e4861eeef3a7e9f6d840e330fcc70bf9f3b3723594b0dd4093b211de995b30e52;
+}
+
+fn main() {
     let ctx: Ctx8 = jet::sha_256_ctx_8_init();
     // Blockchain
     let ctx: Ctx8 = jet::sha_256_ctx_8_add_32(ctx, jet::genesis_block_hash());
@@ -193,12 +185,6 @@ The transaction input can be exchanged by a third party with a "similar" input w
     let pk: Pubkey = 0x79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798; // 1 * G
     jet::bip_0340_verify((pk, msg), witness::SIG);
 }"#,
-    witness: r#"{
-    "SIG": {
-        "value": "0x171678f669e1a81980b94e7677dcc827d5d0d429d8fde0503c333eab4781ae9e4861eeef3a7e9f6d840e330fcc70bf9f3b3723594b0dd4093b211de995b30e52",
-        "type": "Signature"
-    }
-}"#,
     lock_time: 0,
     sequence: u32::MAX,
 };
@@ -210,7 +196,12 @@ The recipient can spend the coins by providing the secret preimage of a hash.
 The sender can cancel the transfer after a fixed block height.
 
 HTLCs enable two-way payment channels and multi-hop payments, such as on the Lightning network."#,
-    program: r#"fn sha2(string: u256) -> u256 {
+    program: r#"mod witness {
+    const COMPLETE_OR_CANCEL: Either<(u256, Signature), Signature> =
+        Left((0x0000000000000000000000000000000000000000000000000000000000000000, 0xf74b3ca574647f8595624b129324afa2f38b598a9c1c7cfc5f08a9c036ec5acd3c0fbb9ed3dae5ca23a0a65a34b5d6cccdd6ba248985d6041f7b21262b17af6f));
+}
+
+fn sha2(string: u256) -> u256 {
     let hasher: Ctx8 = jet::sha_256_ctx_8_init();
     let hasher: Ctx8 = jet::sha_256_ctx_8_add_32(hasher, string);
     jet::sha_256_ctx_8_finalize(hasher)
@@ -245,12 +236,6 @@ fn main() {
         Right(sender_sig: Signature) => cancel_spend(sender_sig),
     }
 }"#,
-    witness: r#"{
-    "COMPLETE_OR_CANCEL": {
-        "value": "Left((0x0000000000000000000000000000000000000000000000000000000000000000, 0xf74b3ca574647f8595624b129324afa2f38b598a9c1c7cfc5f08a9c036ec5acd3c0fbb9ed3dae5ca23a0a65a34b5d6cccdd6ba248985d6041f7b21262b17af6f))",
-        "type": "Either<(u256, Signature), Signature>"
-    }
-}"#,
     lock_time: 0,
     sequence: u32::MAX,
 };
@@ -262,7 +247,14 @@ An oracle signs a message with the current block height and the current Bitcoin 
 The block height is compared with a minimum height to prevent the use of old data.
 The transaction is timelocked to the oracle height,
 which means that the transaction becomes valid after the oracle height."#,
-    program: r#"fn checksig(pk: Pubkey, sig: Signature) {
+    program: r#"mod witness {
+    const ORACLE_HEIGHT: u32 = 1000;
+    const ORACLE_PRICE: u32 = 100000;
+    const ORACLE_SIG: Signature = 0x90231b8de96a1f940ddcf406fe8389417ca8fb0b03151608e2f94b31b443a7e0d26a12e437df69028f09027c37d5f6742a10c1e8864061d119b8bbce962d26d3;
+    const OWNER_SIG: Signature = 0xf2341f571f069216edfc72822f6094b8ec339c2f72dc64aea0eed1e3d60abf4572fdd04618e5b5bc672ccd71cfaf125b6c1b101aeca3a7b938fe83932ab38743;
+}
+
+fn checksig(pk: Pubkey, sig: Signature) {
     let msg: u256 = jet::sig_all_hash();
     jet::bip_0340_verify((pk, msg), sig);
 }
@@ -294,24 +286,6 @@ fn main() {
     let owner_sig: Signature = witness::OWNER_SIG;
     checksig(owner_pk, owner_sig);
 }"#,
-    witness: r#"{
-    "ORACLE_HEIGHT": {
-        "value": "1000",
-        "type": "u32"
-    },
-    "ORACLE_PRICE": {
-        "value": "100000",
-        "type": "u32"
-    },
-    "ORACLE_SIG": {
-        "value": "0x90231b8de96a1f940ddcf406fe8389417ca8fb0b03151608e2f94b31b443a7e0d26a12e437df69028f09027c37d5f6742a10c1e8864061d119b8bbce962d26d3",
-        "type": "Signature"
-    },
-    "OWNER_SIG": {
-        "value": "0xf2341f571f069216edfc72822f6094b8ec339c2f72dc64aea0eed1e3d60abf4572fdd04618e5b5bc672ccd71cfaf125b6c1b101aeca3a7b938fe83932ab38743",
-        "type": "Signature"
-    }
-}"#,
     lock_time: 1000,
     sequence: ENABLE_LOCKTIME_NO_RBF,
 };
@@ -320,7 +294,12 @@ const LAST_WILL: Example = Example {
     description: r#"The inheritor can spend the coins if the owner doesn't move the them for 180 days.
 The owner has to repeat the covenant when he moves the coins with his hot key.
 The owner can break out of the covenant with his cold key."#,
-    program: r#"fn checksig(pk: Pubkey, sig: Signature) {
+    program: r#"mod witness {
+    const INHERIT_OR_NOT: Either<Signature, Either<Signature, Signature>> =
+        Left(0x755201bb62b0a8b8d18fd12fc02951ea3998ba42bfc6664daaf8a0d2298cad43cdc21358c7c82f37654275dc2fea8c858adbe97bac92828b498a5a237004db6f);
+}
+
+fn checksig(pk: Pubkey, sig: Signature) {
     let msg: u256 = jet::sig_all_hash();
     jet::bip_0340_verify((pk, msg), sig);
 }
@@ -364,19 +343,15 @@ fn main() {
         },
     }
 }"#,
-    witness: r#"{
-    "INHERIT_OR_NOT": {
-        "value": "Left(0x755201bb62b0a8b8d18fd12fc02951ea3998ba42bfc6664daaf8a0d2298cad43cdc21358c7c82f37654275dc2fea8c858adbe97bac92828b498a5a237004db6f)",
-        "type": "Either<Signature, Either<Signature, Signature>>"
-    }
-}"#,
     lock_time: 0,
     sequence: 25920,
 };
 
 const HASH_LOOP: Example = Example {
     description: r#"Test how fast your browser is with this explosive program."#,
-    program: r#"// Add counter to streaming hash and finalize when the loop exists
+    program: r#"mod witness {}
+
+// Add counter to streaming hash and finalize when the loop exists
 fn hash_counter_8(ctx: Ctx8, unused: (), byte: u8) -> Either<u256, Ctx8> {
     let new_ctx: Ctx8 = jet::sha_256_ctx_8_add_1(ctx, dbg!(byte));
     match jet::all_8(byte) {
@@ -408,7 +383,6 @@ fn main() {
     // let expected: u256 = 0x281f79f89f0121c31db2bea5d7151db246349b25f5901c114505c18bfaa50ba1;
     // assert!(jet::eq_256(expected, unwrap_left::<Ctx8>(out)));
 }"#,
-    witness: "{}",
     lock_time: 0,
     sequence: 0,
 };
@@ -448,6 +422,9 @@ mod tests {
     #[test]
     #[wasm_bindgen_test::wasm_bindgen_test]
     fn name_primary_key() {
-        assert_eq!(keys().len(), keys().collect::<HashSet<_>>().len());
+        assert_eq!(
+            keys().len(),
+            keys().collect::<HashSet<&'static str>>().len()
+        );
     }
 }
