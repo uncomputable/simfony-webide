@@ -1520,8 +1520,6 @@ dependencies = [
  "miniscript",
  "pest",
  "pest_derive",
- "serde",
- "serde_json",
  "simplicity-lang",
 ]
 
@@ -1562,7 +1560,6 @@ dependencies = [
  "leptos",
  "leptos_router",
  "lz-str",
- "serde_json",
  "simfony",
  "wasm-bindgen-futures",
  "wasm-bindgen-test",
