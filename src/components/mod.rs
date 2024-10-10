@@ -8,5 +8,6 @@ mod program_window;
 mod run_window;
 mod state;
 mod string_box;
+mod toolbar;
 
 pub use app::App;
