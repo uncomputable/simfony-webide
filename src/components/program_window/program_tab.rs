@@ -1,76 +1,46 @@
 use leptos::{
-    component, create_node_ref, create_rw_signal, ev, html, use_context, view, IntoView, NodeRef,
-    RwSignal, SignalGetUntracked, SignalSet, SignalUpdate,
+    component, ev, event_target_value, use_context, view, IntoView, RwSignal, SignalGetUntracked,
+    SignalSet, SignalWith,
 };
+use simfony::parse::ParseFromStr;
 use simfony::witness::WitnessValues;
 use simfony::{CompiledProgram, SatisfiedProgram};
 
-use crate::components::apply_changes::ApplyChanges;
-use crate::components::string_box::ErrorBox;
-
 #[derive(Clone, Debug, Default)]
-pub struct Program {
-    pub compiled: CompiledProgram,
-    pub text: String,
-}
+pub struct ProgramText(pub RwSignal<String>);
 
-impl Program {
-    pub fn compile(text: String) -> Result<Self, String> {
-        match CompiledProgram::new(text.as_str()) {
-            Ok(compiled) => Ok(Self { compiled, text }),
-            Err(error) => Err(error),
-        }
-    }
-
-    pub fn satisfy(&self, witness_values: &WitnessValues) -> Result<SatisfiedProgram, String> {
-        self.compiled.satisfy(witness_values)
+impl ProgramText {
+    pub fn satisfy(&self) -> Result<SatisfiedProgram, String> {
+        self.0.with(|text| {
+            let compiled = CompiledProgram::new(text)?;
+            let witness_values = WitnessValues::parse_from_str(text)?;
+            compiled.satisfy(&witness_values)
+        })
     }
 }
 
 #[component]
 pub fn ProgramTab() -> impl IntoView {
-    let program = use_context::<RwSignal<Program>>().expect("program should exist in context");
-    let parse_error = create_rw_signal("".to_string());
-    let apply_changes = ApplyChanges::default();
-    let textarea_ref: NodeRef<html::Textarea> = create_node_ref();
+    let program_text = use_context::<ProgramText>().expect("program text should exist in context");
 
-    let submit_program = move |event: ev::SubmitEvent| {
-        event.prevent_default(); // stop page from reloading
-        let textarea_value = textarea_ref
-            .get()
-            .expect("<textarea> should be mounted")
-            .value();
-        match Program::compile(textarea_value) {
-            Ok(x) => {
-                program.set(x);
-                parse_error.update(String::clear);
-                apply_changes.set_success(true);
-            }
-            Err(error) => {
-                parse_error.set(error);
-                apply_changes.set_success(false);
-            }
-        }
+    let update_program_text = move |event: ev::Event| {
+        program_text.0.set(event_target_value(&event));
     };
-
-    let program_text_initial_value = program.get_untracked().text;
+    let program_text_initial_value = program_text.0.get_untracked();
 
     view! {
         <div class="tab-content">
-            <form on:submit=submit_program>
-                <textarea
-                    class="program-input-field"
-                    placeholder="Enter your program here"
-                    rows="25"
-                    cols="80"
-                    spellcheck="false"
-                    node_ref=textarea_ref
-                >
-                    {program_text_initial_value}
-                </textarea>
-                <ErrorBox error=parse_error />
-                {apply_changes}
-            </form>
+            <textarea
+                class="program-input-field"
+                placeholder="Enter your program here"
+                rows="25"
+                cols="80"
+                spellcheck="false"
+                prop:value=program_text.0
+                on:input=update_program_text
+            >
+                {program_text_initial_value}
+            </textarea>
         </div>
     }
 }

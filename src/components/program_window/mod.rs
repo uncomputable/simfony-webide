@@ -16,7 +16,7 @@ use self::transaction_tab::TransactionTab;
 use self::witness_tab::WitnessTab;
 use crate::components::navbar::{Button, Navbar, Tab};
 
-pub use self::program_tab::Program;
+pub use self::program_tab::ProgramText;
 pub use self::transaction_tab::TxEnv;
 
 #[component]

@@ -2,7 +2,7 @@ use leptos::{component, create_rw_signal, provide_context, view, IntoView, Signa
 use leptos_router::use_query_map;
 use simfony::witness::WitnessValues;
 
-use super::program_window::{Program, ProgramWindow, TxEnv};
+use super::program_window::{ProgramText, ProgramWindow, TxEnv};
 use crate::components::run_window::{
     ExecutionOutput, HashedData, RunWindow, SignedData, SigningKeys,
 };
@@ -12,8 +12,8 @@ use crate::components::state::FromParams;
 pub fn App() -> impl IntoView {
     let url_params = use_query_map().get_untracked();
 
-    let program = create_rw_signal(Program::from_map(&url_params).unwrap_or_default());
-    provide_context(program);
+    let program_text = ProgramText::from_map(&url_params).unwrap_or_default();
+    provide_context(program_text);
     let witness_values = create_rw_signal(WitnessValues::from_map(&url_params).unwrap_or_default());
     provide_context(witness_values);
     let tx_env = TxEnv::from_map(&url_params).unwrap_or_default();

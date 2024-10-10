@@ -1,5 +1,5 @@
+use simfony::elements;
 use simfony::witness::WitnessValues;
-use simfony::{elements, CompiledProgram};
 
 #[derive(Clone, Copy, Debug)]
 pub struct Example {
@@ -16,8 +16,9 @@ impl Example {
         self.description
     }
 
-    pub fn compiled(self) -> CompiledProgram {
-        CompiledProgram::new(self.program).expect("example program should compile")
+    #[cfg(test)]
+    pub fn compiled(self) -> simfony::CompiledProgram {
+        simfony::CompiledProgram::new(self.program).expect("example program should compile")
     }
 
     pub fn program_text(self) -> &'static str {

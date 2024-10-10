@@ -1,8 +1,8 @@
-use leptos::{use_context, RwSignal, SignalGet, SignalGetUntracked};
+use leptos::{create_rw_signal, use_context, RwSignal, SignalGet, SignalGetUntracked};
 use leptos_router::ParamsMap;
 use simfony::witness::WitnessValues;
 
-use crate::components::program_window::{Program, TxEnv};
+use crate::components::program_window::{ProgramText, TxEnv};
 use crate::components::run_window::{HashedData, SigningKeys};
 
 /// [`leptos_router::Params`] with simpler error handling via [`Option`].
@@ -17,21 +17,22 @@ pub trait ToParam {
     fn to_param(&self) -> (&'static str, String);
 }
 
-impl FromParams for Program {
+impl FromParams for ProgramText {
     fn from_map(map: &ParamsMap) -> Option<Self> {
         map.get("program")
             .map(String::as_str)
             .and_then(lz_str::decompress_from_encoded_uri_component)
             .and_then(|v| String::from_utf16(&v).ok())
-            .and_then(|s| Self::compile(s).ok())
+            .map(create_rw_signal)
+            .map(Self)
     }
 }
 
-impl ToParam for Program {
+impl ToParam for ProgramText {
     fn to_param(&self) -> (&'static str, String) {
         (
             "program",
-            lz_str::compress_to_encoded_uri_component(&self.text),
+            lz_str::compress_to_encoded_uri_component(&self.0.get()),
         )
     }
 }
@@ -110,7 +111,7 @@ pub fn stateful_url() -> Option<String> {
         let pathname = location.pathname().unwrap_or_default();
         let mut url = format!("{}{}", origin, pathname);
 
-        let program = use_context::<RwSignal<Program>>().expect("program should exist in context");
+        let program = use_context::<ProgramText>().expect("program text should exist in context");
         let witness = use_context::<RwSignal<WitnessValues>>()
             .expect("witness values should exist in context");
         let tx_env =
@@ -120,7 +121,7 @@ pub fn stateful_url() -> Option<String> {
         let hashed_data = use_context::<HashedData>().expect("hashed data should exist in context");
 
         let params_values = [
-            program.get().to_param(),
+            program.to_param(),
             witness.get().to_param(),
             tx_env.to_param(),
             signing_keys.to_param(),

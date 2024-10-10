@@ -22,7 +22,7 @@ pub fn ExecutionTab() -> impl IntoView {
     let failure_string = move || {
         output.error.with(|error| match error.is_empty() {
             true => "".to_string(),
-            false => format!("{}: {error}", get_local_datetime()),
+            false => format!("{}:\n{error}", get_local_datetime()),
         })
     };
 
