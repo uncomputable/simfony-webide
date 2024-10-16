@@ -20,6 +20,13 @@ pub fn RunButton() -> impl IntoView {
     let audio_ref = create_node_ref::<html::Audio>();
 
     let set_success = move |success: bool| {
+        web_sys::window()
+            .as_ref()
+            .map(web_sys::Window::navigator)
+            .map(|navigator| match success {
+                true => navigator.vibrate_with_duration(200),
+                false => navigator.vibrate_with_duration(500),
+            });
         spawn_local(async move {
             run_succeeded.set(Some(success));
             gloo_timers::future::TimeoutFuture::new(500).await;
