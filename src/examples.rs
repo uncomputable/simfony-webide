@@ -56,7 +56,7 @@ const P2PK: Example = Example {
 
 The coins move if the person with the given public key signs the transaction."#,
     program: r#"mod witness {
-    const SIG: Signature = 0xf74b3ca574647f8595624b129324afa2f38b598a9c1c7cfc5f08a9c036ec5acd3c0fbb9ed3dae5ca23a0a65a34b5d6cccdd6ba248985d6041f7b21262b17af6f;
+    const SIG: Signature = 0x70108d0391cb2818ccae48e70f3495105b2315a7b7d56e08c890aaadebf7948b6cc584c07fc34f3d4abae703e53215aed30e73c0448954f1ce61793fc8778952;
 }
 
 fn main() {
@@ -65,7 +65,7 @@ fn main() {
     jet::bip_0340_verify((pk, msg), witness::SIG)
 }"#,
     lock_time: 0,
-    sequence: u32::MAX,
+    sequence: 0,
 };
 
 const P2PKH: Example = Example {

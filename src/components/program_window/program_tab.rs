@@ -1,12 +1,12 @@
 use leptos::{
-    component, ev, event_target_value, use_context, view, IntoView, RwSignal, SignalGetUntracked,
-    SignalSet, SignalWith,
+    component, create_rw_signal, ev, event_target_value, use_context, view, IntoView, RwSignal,
+    SignalGetUntracked, SignalSet, SignalWith,
 };
 use simfony::parse::ParseFromStr;
 use simfony::witness::WitnessValues;
 use simfony::{CompiledProgram, SatisfiedProgram};
 
-#[derive(Clone, Debug, Default)]
+#[derive(Clone, Debug)]
 pub struct ProgramText(pub RwSignal<String>);
 
 impl ProgramText {
@@ -16,6 +16,15 @@ impl ProgramText {
             let witness_values = WitnessValues::parse_from_str(text)?;
             compiled.satisfy(&witness_values)
         })
+    }
+}
+
+impl Default for ProgramText {
+    fn default() -> Self {
+        let text = crate::examples::get("✍️️ P2PK")
+            .expect("P2PK example should exist")
+            .program_text();
+        Self(create_rw_signal(text.to_string()))
     }
 }
 
