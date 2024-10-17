@@ -1,6 +1,7 @@
 use std::fmt;
 
-use simfony::simplicity;
+use elements::secp256k1_zkp as secp256k1;
+use simfony::{elements, simplicity};
 use simplicity::dag::{DagLike, MaxSharing, NoSharing};
 use simplicity::jet::Elements;
 use simplicity::node::Inner;
@@ -51,4 +52,43 @@ impl<'a, M: node::Marker> fmt::Debug for DisplayInner<'a, M> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt::Display::fmt(self, f)
     }
+}
+
+fn unspendable_internal_key() -> secp256k1::XOnlyPublicKey {
+    secp256k1::XOnlyPublicKey::from_slice(&[
+        0xf5, 0x91, 0x9f, 0xa6, 0x4c, 0xe4, 0x5f, 0x83, 0x06, 0x84, 0x90, 0x72, 0xb2, 0x6c, 0x1b,
+        0xfd, 0xd2, 0x93, 0x7e, 0x6b, 0x81, 0x77, 0x47, 0x96, 0xff, 0x37, 0x2b, 0xd1, 0xeb, 0x53,
+        0x62, 0xd2,
+    ])
+    .expect("key should be valid")
+}
+
+fn script_ver(
+    compiled: &simfony::CompiledProgram,
+) -> (elements::Script, elements::taproot::LeafVersion) {
+    let script = elements::script::Script::from(compiled.commit().cmr().as_ref().to_vec());
+    (script, simplicity::leaf_version())
+}
+
+fn taproot_spend_info(compiled: &simfony::CompiledProgram) -> elements::taproot::TaprootSpendInfo {
+    let builder = elements::taproot::TaprootBuilder::new();
+    let (script, version) = script_ver(compiled);
+    let builder = builder
+        .add_leaf_with_ver(0, script, version)
+        .expect("tap tree should be valid");
+    builder
+        .finalize(secp256k1::SECP256K1, unspendable_internal_key())
+        .expect("tap tree should be valid")
+}
+
+pub fn liquid_testnet_address(compiled: &simfony::CompiledProgram) -> elements::Address {
+    let info = taproot_spend_info(compiled);
+    let blinder = None;
+    elements::Address::p2tr(
+        secp256k1::SECP256K1,
+        info.internal_key(),
+        info.merkle_root(),
+        blinder,
+        &elements::AddressParams::LIQUID_TESTNET,
+    )
 }

@@ -10,6 +10,10 @@ use simfony::{CompiledProgram, SatisfiedProgram};
 pub struct ProgramText(pub RwSignal<String>);
 
 impl ProgramText {
+    pub fn compile(&self) -> Result<CompiledProgram, String> {
+        self.0.with(|text| CompiledProgram::new(text))
+    }
+
     pub fn satisfy(&self) -> Result<SatisfiedProgram, String> {
         self.0.with(|text| {
             let compiled = CompiledProgram::new(text)?;
