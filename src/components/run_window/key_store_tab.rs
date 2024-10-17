@@ -159,10 +159,10 @@ fn CopyPublicKeysToClipboard() -> impl IntoView {
     let copy_single_public_key =
         move |(index, key): (usize, secp256k1_zkp::XOnlyPublicKey)| -> View {
             let label = format!("Key {}", index);
-            let xonly_hex = format!("0x{}", key.serialize().as_hex());
+            let xonly_hex = move || format!("0x{}", key.serialize().as_hex());
 
             view! {
-                <CopyToClipboard content=xonly_hex>
+                <CopyToClipboard content=xonly_hex class="copy-button">
                     {label}
                     <i class="far fa-copy"></i>
                 </CopyToClipboard>
@@ -209,10 +209,10 @@ fn CopySignaturesToClipboard() -> impl IntoView {
     let copy_single_signature =
         move |(index, signature): (usize, secp256k1_zkp::schnorr::Signature)| -> View {
             let label = format!("Sig {}", index);
-            let signature_hex = format!("0x{}", signature.serialize().as_hex());
+            let signature_hex = move || format!("0x{}", signature.serialize().as_hex());
 
             view! {
-                <CopyToClipboard content=signature_hex>
+                <CopyToClipboard content=signature_hex class="copy-button">
                     {label}
                     <i class="far fa-copy"></i>
                 </CopyToClipboard>

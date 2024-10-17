@@ -77,10 +77,10 @@ fn CopyHashesToClipboard() -> impl IntoView {
     let hashed_data = use_context::<HashedData>().expect("hashed data should exist in context");
     let copy_single_hash = move |(index, hash): (usize, sha256::Hash)| -> View {
         let label = format!("Hash {}", index);
-        let hash_hex = format!("0x{}", hash.to_byte_array().as_hex());
+        let hash_hex = move || format!("0x{}", hash.to_byte_array().as_hex());
 
         view! {
-            <CopyToClipboard content=hash_hex>
+            <CopyToClipboard content=hash_hex class="copy-button">
                 {label}
                 <i class="far fa-copy"></i>
             </CopyToClipboard>
@@ -124,10 +124,10 @@ fn CopyPreimagesToClipboard() -> impl IntoView {
     let hashed_data = use_context::<HashedData>().expect("hashed data should exist in context");
     let copy_single_preimage = move |(index, preimage): (usize, [u8; 32])| -> View {
         let label = format!("Pre {}", index);
-        let preimage_hex = format!("0x{}", preimage.as_hex());
+        let preimage_hex = move || format!("0x{}", preimage.as_hex());
 
         view! {
-            <CopyToClipboard content=preimage_hex>
+            <CopyToClipboard content=preimage_hex class="copy-button">
                 {label}
                 <i class="far fa-copy"></i>
             </CopyToClipboard>
