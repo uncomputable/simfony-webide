@@ -4,7 +4,7 @@ use leptos::{component, create_rw_signal, ev, view, with, Children, IntoView, Si
 pub fn CopyToClipboard(
     #[prop(into)] content: Signal<String>,
     #[prop(into)] class: String,
-    #[prop(default = false)] tooltip_above: bool,
+    #[prop(default = false)] tooltip_below: bool,
     children: Children,
 ) -> impl IntoView {
     web_sys::window()
@@ -22,9 +22,9 @@ pub fn CopyToClipboard(
             let button_mouseout = move |_event: ev::MouseEvent| {
                 tooltip_text.set("Copy");
             };
-            let tooltip_class = match tooltip_above {
-                false => "tooltip-below",
-                true => "tooltip-above",
+            let tooltip_class = match tooltip_below {
+                false => "tooltip-above",
+                true => "tooltip-below",
             };
 
             view! {

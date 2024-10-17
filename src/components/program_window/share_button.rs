@@ -7,7 +7,7 @@ use crate::components::state::stateful_url;
 pub fn ShareButton() -> impl IntoView {
     let url = move || stateful_url().unwrap_or_default();
     view! {
-        <CopyToClipboard content=url class="button">
+        <CopyToClipboard content=url class="button" tooltip_below=true>
             <i class="fa-solid fa-share-nodes"></i>
             " Share"
         </CopyToClipboard>
