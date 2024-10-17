@@ -19,7 +19,7 @@ pub fn CopyToClipboard(content: String, children: Children) -> impl IntoView {
             };
 
             view! {
-                <div class="tooltip">
+                <div class="tooltip-above">
                     <button
                         class="copy-button"
                         on:click=button_click
