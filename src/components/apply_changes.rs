@@ -30,7 +30,7 @@ impl IntoView for ApplyChanges {
         };
 
         view! {
-            <div class="tooltip">
+            <div class="tooltip-above">
                 <button
                     class="flat-button"
                     type="submit"
