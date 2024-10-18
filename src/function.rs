@@ -273,12 +273,19 @@ mod tests {
 
             println!("{name}");
             let example = examples::get(name).unwrap();
+            let tx_env = example.tx_env();
             let mut runner = Runner::for_program(example.satisfied());
-            match runner.run(&example.tx_env()) {
+            match runner.run(&tx_env) {
                 Ok(..) if name.contains('❌') => panic!("Expected failure"),
                 Ok(..) => {}
                 Err(..) if name.contains('❌') => {}
-                Err(error) => panic!("Unexpected error: {error}"),
+                Err(error) => {
+                    println!("sighash all = {}", tx_env.c_tx_env().sighash_all());
+                    for debug_line in runner.debug_output() {
+                        println!("{debug_line}");
+                    }
+                    panic!("Unexpected error: {error}")
+                }
             }
         }
     }
