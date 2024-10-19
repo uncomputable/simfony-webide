@@ -23,7 +23,7 @@ impl Example {
         let compiled =
             simfony::CompiledProgram::new(self.program).expect("example program should compile");
         let witness_values =
-            <simfony::witness::WitnessValues as simfony::parse::ParseFromStr>::parse_from_str(
+            <simfony::WitnessValues as simfony::parse::ParseFromStr>::parse_from_str(
                 self.program_text(),
             )
             .expect("example witness should parse");

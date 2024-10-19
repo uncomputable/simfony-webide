@@ -1,12 +1,12 @@
 use std::sync::Arc;
 
-use elements::hashes;
+use elements::hashes::{sha256, Hash};
 use elements::secp256k1_zkp;
 use hex_conservative::{DisplayHex, FromHex};
 use leptos::{
     component, create_rw_signal, ev, event_target_value, html, use_context, view, with, For,
     IntoView, NodeRef, RwSignal, Signal, SignalGet, SignalGetUntracked, SignalSet, SignalUpdate,
-    View,
+    SignalWith, View,
 };
 use simfony::{elements, simplicity};
 
@@ -108,7 +108,7 @@ enum SignedDataMode {
 #[derive(Clone, Copy, Debug)]
 pub struct SignedData {
     mode: RwSignal<SignedDataMode>,
-    sighash_all: Signal<hashes::sha256::Hash>,
+    sighash_all: Signal<sha256::Hash>,
     thirty_two_bytes: RwSignal<[u8; 32]>,
     hash_preimage_bytes: RwSignal<Vec<u8>>,
 }
@@ -129,15 +129,15 @@ impl SignedData {
 
     pub fn message(self) -> Signal<secp256k1_zkp::Message> {
         Signal::derive(move || match self.mode.get() {
-            SignedDataMode::SighashAll => self.sighash_all.get().into(),
+            SignedDataMode::SighashAll => {
+                secp256k1_zkp::Message::from_digest(self.sighash_all.get().to_byte_array())
+            }
             SignedDataMode::ThirtyTwoBytes => {
                 secp256k1_zkp::Message::from_digest(self.thirty_two_bytes.get())
             }
-            SignedDataMode::HashPreimageBytes => {
-                secp256k1_zkp::Message::from_hashed_data::<hashes::sha256::Hash>(
-                    self.hash_preimage_bytes.get().as_ref(),
-                )
-            }
+            SignedDataMode::HashPreimageBytes => self.hash_preimage_bytes.with(|bytes| {
+                secp256k1_zkp::Message::from_digest(sha256::Hash::hash(bytes).to_byte_array())
+            }),
         })
     }
 }

@@ -211,7 +211,7 @@ impl Runner {
                             Ok(output) => self.output.push(output),
                             Err(JetFailed) => return Err(self.error(ErrorKind::JetFailed)),
                         },
-                        Inner::Word(value) => self.output.push(value.shallow_clone()),
+                        Inner::Word(word) => self.output.push(word.as_value().shallow_clone()),
                     }
                 }
                 Task::MoveLeftCompOutput => {

@@ -3,7 +3,7 @@ use leptos::{
     SignalGetUntracked, SignalSet, SignalWith,
 };
 use simfony::parse::ParseFromStr;
-use simfony::witness::WitnessValues;
+use simfony::WitnessValues;
 use simfony::{CompiledProgram, SatisfiedProgram};
 
 #[derive(Clone, Debug)]

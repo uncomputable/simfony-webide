@@ -14,16 +14,19 @@ lib-profile-release = "wasm-release"
 
 [dependencies]
 itertools = "0.13.0"
-simfony = { git = "https://github.com/BlockstreamResearch/simfony", rev = "f877c7b2d15787317e514b684fa2561e971fb93c" }
+simfony = { git = "https://github.com/uncomputable/simfony", branch = "2024-10-fix-wasm" }
 leptos = { version = "0.6.14", features = ["csr"] }
 leptos_router = { version = "0.6.15", features = ["csr"] }
 console_error_panic_hook = "0.1.7"
-hex-conservative = "0.1.1"
+hex-conservative = "0.2.1"
 js-sys = "0.3.70"
 web-sys = { version = "0.3.70", features = ["Navigator", "Clipboard"] }
 wasm-bindgen-futures = "0.4.43"
 gloo-timers = { version = "0.3.0", features = ["futures"] }
 lz-str = "0.2.1"
+
+[patch.crates-io]
+secp256k1-zkp = { git = "https://github.com/BlockstreamResearch/rust-secp256k1-zkp", rev = "0a3e73cf77236f967b2faab47909ba535273fd9a" }
 
 [dev-dependencies]
 wasm-bindgen-test = "0.3.43"
