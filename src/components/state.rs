@@ -1,7 +1,7 @@
-use leptos::{create_rw_signal, use_context, SignalGet, SignalGetUntracked};
+use leptos::{use_context, SignalGetUntracked, SignalWith};
 use leptos_router::ParamsMap;
 
-use crate::components::program_window::ProgramText;
+use crate::components::program_window::Program;
 use crate::components::run_window::{HashedData, SigningKeys, TxEnv};
 
 /// [`leptos_router::Params`] with simpler error handling via [`Option`].
@@ -16,23 +16,20 @@ pub trait ToParam {
     fn to_param(&self) -> (&'static str, String);
 }
 
-impl FromParams for ProgramText {
+impl FromParams for Program {
     fn from_map(map: &ParamsMap) -> Option<Self> {
         map.get("program")
             .map(String::as_str)
             .and_then(lz_str::decompress_from_encoded_uri_component)
             .and_then(|v| String::from_utf16(&v).ok())
-            .map(create_rw_signal)
-            .map(Self)
+            .map(Self::new)
     }
 }
 
-impl ToParam for ProgramText {
+impl ToParam for Program {
     fn to_param(&self) -> (&'static str, String) {
-        (
-            "program",
-            lz_str::compress_to_encoded_uri_component(&self.0.get()),
-        )
+        self.text
+            .with(|text| ("program", lz_str::compress_to_encoded_uri_component(text)))
     }
 }
 
@@ -89,7 +86,7 @@ pub fn stateful_url() -> Option<String> {
         let pathname = location.pathname().unwrap_or_default();
         let mut url = format!("{}{}", origin, pathname);
 
-        let program = use_context::<ProgramText>().expect("program text should exist in context");
+        let program = use_context::<Program>().expect("program should exist in context");
         let tx_env =
             use_context::<TxEnv>().expect("transaction environment should exist in context");
         let signing_keys =

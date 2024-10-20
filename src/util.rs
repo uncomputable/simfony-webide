@@ -63,16 +63,14 @@ fn unspendable_internal_key() -> secp256k1::XOnlyPublicKey {
     .expect("key should be valid")
 }
 
-fn script_ver(
-    compiled: &simfony::CompiledProgram,
-) -> (elements::Script, elements::taproot::LeafVersion) {
-    let script = elements::script::Script::from(compiled.commit().cmr().as_ref().to_vec());
+fn script_ver(cmr: simplicity::Cmr) -> (elements::Script, elements::taproot::LeafVersion) {
+    let script = elements::script::Script::from(cmr.as_ref().to_vec());
     (script, simplicity::leaf_version())
 }
 
-fn taproot_spend_info(compiled: &simfony::CompiledProgram) -> elements::taproot::TaprootSpendInfo {
+fn taproot_spend_info(cmr: simplicity::Cmr) -> elements::taproot::TaprootSpendInfo {
     let builder = elements::taproot::TaprootBuilder::new();
-    let (script, version) = script_ver(compiled);
+    let (script, version) = script_ver(cmr);
     let builder = builder
         .add_leaf_with_ver(0, script, version)
         .expect("tap tree should be valid");
@@ -81,8 +79,8 @@ fn taproot_spend_info(compiled: &simfony::CompiledProgram) -> elements::taproot:
         .expect("tap tree should be valid")
 }
 
-pub fn liquid_testnet_address(compiled: &simfony::CompiledProgram) -> elements::Address {
-    let info = taproot_spend_info(compiled);
+pub fn liquid_testnet_address(cmr: simplicity::Cmr) -> elements::Address {
+    let info = taproot_spend_info(cmr);
     let blinder = None;
     elements::Address::p2tr(
         secp256k1::SECP256K1,

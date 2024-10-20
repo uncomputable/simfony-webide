@@ -4,13 +4,13 @@ use leptos::{
     IntoView, SignalGet, SignalSet, SignalUpdate,
 };
 
-use crate::components::program_window::ProgramText;
+use crate::components::program_window::Program;
 use crate::components::run_window::{ExecutionOutput, TxEnv};
 use crate::function::Runner;
 
 #[component]
 pub fn RunButton() -> impl IntoView {
-    let program_text = use_context::<ProgramText>().expect("program text should exist in context");
+    let program = use_context::<Program>().expect("program should exist in context");
     let tx_env = use_context::<TxEnv>().expect("transaction environment should exist in context");
     let environment = tx_env.environment();
     let output =
@@ -35,7 +35,7 @@ pub fn RunButton() -> impl IntoView {
     };
     let run_program = move |_event: ev::MouseEvent| {
         with!(|environment| {
-            let satisfied_program = match program_text.satisfy() {
+            let satisfied_program = match program.satisfied() {
                 Ok(x) => x,
                 Err(error) => {
                     output.error.set(error);

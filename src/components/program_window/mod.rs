@@ -14,7 +14,7 @@ use self::run_button::RunButton;
 use self::share_button::ShareButton;
 use crate::components::toolbar::Toolbar;
 
-pub use self::program_tab::ProgramText;
+pub use self::program_tab::Program;
 
 #[component]
 pub fn ProgramWindow() -> impl IntoView {

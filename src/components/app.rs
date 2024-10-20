@@ -3,7 +3,7 @@ use leptos::{
 };
 use leptos_router::use_query_map;
 
-use super::program_window::{ProgramText, ProgramWindow};
+use super::program_window::{Program, ProgramWindow};
 use crate::components::run_window::{
     ExecutionOutput, HashedData, RunWindow, SignedData, SigningKeys, TxEnv,
 };
@@ -16,8 +16,8 @@ pub(crate) struct ActiveRunTab(pub RwSignal<&'static str>);
 pub fn App() -> impl IntoView {
     let url_params = use_query_map().get_untracked();
 
-    let program_text = ProgramText::from_map(&url_params).unwrap_or_default();
-    provide_context(program_text);
+    let program = Program::from_map(&url_params).unwrap_or_default();
+    provide_context(program);
     let tx_env = TxEnv::from_map(&url_params).unwrap_or_default();
     provide_context(tx_env);
     let signing_keys = SigningKeys::from_map(&url_params).unwrap_or_default();
