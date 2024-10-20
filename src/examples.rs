@@ -180,7 +180,7 @@ fn main() {
     let ctx: Ctx8 = jet::sha_256_ctx_8_add_32(ctx, jet::output_surjection_proofs_hash());
     // No current index
     // Message
-    let msg: u256 = jet::sha_256_ctx_8_finalize(ctx);
+    let msg: u256 = dbg!(jet::sha_256_ctx_8_finalize(ctx));
 
     let pk: Pubkey = 0x79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798; // 1 * G
     jet::bip_0340_verify((pk, msg), witness::SIG);
@@ -264,7 +264,7 @@ fn checksigfromstack(pk: Pubkey, bytes: [u32; 2], sig: Signature) {
     let hasher: Ctx8 = jet::sha_256_ctx_8_init();
     let hasher: Ctx8 = jet::sha_256_ctx_8_add_4(hasher, word1);
     let hasher: Ctx8 = jet::sha_256_ctx_8_add_4(hasher, word2);
-    let msg: u256 = jet::sha_256_ctx_8_finalize(hasher);
+    let msg: u256 = dbg!(jet::sha_256_ctx_8_finalize(hasher));
     jet::bip_0340_verify((pk, msg), sig);
 }
 
