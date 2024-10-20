@@ -2,6 +2,7 @@ mod components;
 mod examples;
 mod function;
 mod jet;
+mod transaction;
 mod util;
 
 use components::App;

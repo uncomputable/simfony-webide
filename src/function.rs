@@ -273,8 +273,9 @@ mod tests {
 
             println!("{name}");
             let example = examples::get(name).unwrap();
-            let tx_env = example.tx_env();
-            let mut runner = Runner::for_program(example.satisfied());
+            let satisfied = example.satisfied();
+            let tx_env = example.params().tx_env(satisfied.redeem().cmr());
+            let mut runner = Runner::for_program(satisfied);
             match runner.run(&tx_env) {
                 Ok(..) if name.contains('❌') => panic!("Expected failure"),
                 Ok(..) => {}

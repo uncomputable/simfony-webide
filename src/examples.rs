@@ -1,4 +1,7 @@
+use elements::hashes::Hash;
 use simfony::elements;
+
+use crate::transaction::TxParams;
 
 #[derive(Clone, Copy, Debug)]
 pub struct Example {
@@ -32,31 +35,24 @@ impl Example {
             .expect("example program should be satisfied")
     }
 
-    pub fn lock_time(self) -> elements::LockTime {
-        elements::LockTime::from_consensus(self.lock_time)
-    }
-
-    pub fn sequence(self) -> elements::Sequence {
-        elements::Sequence::from_consensus(self.sequence)
-    }
-
-    #[cfg(test)]
-    pub fn tx_env(
-        self,
-    ) -> simfony::simplicity::jet::elements::ElementsEnv<std::sync::Arc<elements::Transaction>>
-    {
-        simfony::dummy_env::dummy_with(self.lock_time(), self.sequence())
+    pub fn params(self) -> TxParams {
+        TxParams {
+            txid: elements::Txid::all_zeros(),
+            vout: 0,
+            recipient_address: None,
+            fee: 0,
+            lock_time: elements::LockTime::from_consensus(self.lock_time),
+            sequence: elements::Sequence::from_consensus(self.sequence),
+        }
     }
 }
-
-const ENABLE_LOCKTIME_NO_RBF: u32 = 0xFFFFFFFE;
 
 const P2PK: Example = Example {
     description: r#"Pay to public key.
 
 The coins move if the person with the given public key signs the transaction."#,
     program: r#"mod witness {
-    const SIG: Signature = 0x70108d0391cb2818ccae48e70f3495105b2315a7b7d56e08c890aaadebf7948b6cc584c07fc34f3d4abae703e53215aed30e73c0448954f1ce61793fc8778952;
+    const SIG: Signature = 0xaccfc933a1c06154168e0a74aa784190c5ed8991575fce55c612fac6746c5247598e8a2b04e360c72e67c9a18f423c3fb78dbcba9c72b32431e207d0e8c03398;
 }
 
 fn main() {
@@ -74,7 +70,7 @@ const P2PKH: Example = Example {
 The coins move if the person with the public key that matches the given hash signs the transaction."#,
     program: r#"mod witness {
     const PK: Pubkey = 0x79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798;
-    const SIG: Signature = 0xf74b3ca574647f8595624b129324afa2f38b598a9c1c7cfc5f08a9c036ec5acd3c0fbb9ed3dae5ca23a0a65a34b5d6cccdd6ba248985d6041f7b21262b17af6f;
+    const SIG: Signature = 0x4c81b57a24205f61af1b01a0a13bdb98e30d6cca554ed48ad58d2b65742cbbf4753a95fab83dea422a5370e80d12c133178fa63c3c26502510475c13e13774fc;
 }
 
 fn sha2(string: u256) -> u256 {
@@ -93,7 +89,7 @@ fn main() {
     jet::bip_0340_verify((pk, msg), witness::SIG)
 }"#,
     lock_time: 0,
-    sequence: u32::MAX,
+    sequence: 0,
 };
 
 const P2MS: Example = Example {
@@ -102,7 +98,7 @@ const P2MS: Example = Example {
 The coins move if 2 of 3 people agree to move them. These people provide their signatures, of which exactly 2 are required."#,
     program: r#"mod witness {
     const MAYBE_SIGS: [Option<Signature>; 3] =
-        [Some(0xf74b3ca574647f8595624b129324afa2f38b598a9c1c7cfc5f08a9c036ec5acd3c0fbb9ed3dae5ca23a0a65a34b5d6cccdd6ba248985d6041f7b21262b17af6f), None, Some(0x29dbeab5628ae472bce3e08728ead1997ef789d4f04b5be39cc08b362dc229f553fd353f8a0acffdfbddd471d15a0dda3b306842416ff246bc07462e5667eb89)];
+        [Some(0x51ad758272eb0ac32c1ba50fbd4b273aaaa34a7e8bffdec3efc9c349598ffd956165bf3e7b49e402f0f88be5023a347a43fe66d67b9cbaea6aa54207367c93cc), None, Some(0xb170f1a3ba8e73b4197426e1f9c01d4880705e2ec3f6c638f7f1d6ecde067918356211d765ef7df2de35e0d6940016b5d47ae54bb60ac9fdcdef4ff98b01455e)];
 }
 
 fn not(bit: bool) -> bool {
@@ -147,7 +143,7 @@ fn main() {
     check2of3multisig(pks, witness::MAYBE_SIGS);
 }"#,
     lock_time: 0,
-    sequence: u32::MAX,
+    sequence: 0,
 };
 
 const SIGHASH_ANYPREVOUT: Example = Example {
@@ -156,7 +152,7 @@ const SIGHASH_ANYPREVOUT: Example = Example {
 The coins move if the person with the given public key signs the transaction.
 The transaction input can be exchanged by a third party with a "similar" input while the signature remains valid."#,
     program: r#"mod witness {
-    const SIG: Signature = 0x171678f669e1a81980b94e7677dcc827d5d0d429d8fde0503c333eab4781ae9e4861eeef3a7e9f6d840e330fcc70bf9f3b3723594b0dd4093b211de995b30e52;
+    const SIG: Signature = 0x060aa7249e2576644e346433acd1d2de0be618c48f02d95848e523548cdb21d8eca2a9d322ae33c5ddd02ee5aeb9bed0ee260f9100336151f650122f575f7ee7;
 }
 
 fn main() {
@@ -186,7 +182,7 @@ fn main() {
     jet::bip_0340_verify((pk, msg), witness::SIG);
 }"#,
     lock_time: 0,
-    sequence: u32::MAX,
+    sequence: 0,
 };
 
 const HTLC: Example = Example {
@@ -198,7 +194,7 @@ The sender can cancel the transfer after a fixed block height.
 HTLCs enable two-way payment channels and multi-hop payments, such as on the Lightning network."#,
     program: r#"mod witness {
     const COMPLETE_OR_CANCEL: Either<(u256, Signature), Signature> =
-        Left((0x0000000000000000000000000000000000000000000000000000000000000000, 0xf74b3ca574647f8595624b129324afa2f38b598a9c1c7cfc5f08a9c036ec5acd3c0fbb9ed3dae5ca23a0a65a34b5d6cccdd6ba248985d6041f7b21262b17af6f));
+        Left((0x0000000000000000000000000000000000000000000000000000000000000000, 0x34d06ab7ad974a70dc0caa98c3db27abbd6e557b0a8017b22d313916f6f28712dabce5fcee472954c9457d9a1af26bdd523253d0b2535857e44c541fce2696a5));
 }
 
 fn sha2(string: u256) -> u256 {
@@ -237,7 +233,7 @@ fn main() {
     }
 }"#,
     lock_time: 0,
-    sequence: u32::MAX,
+    sequence: 0,
 };
 
 const HOLD_VAULT: Example = Example {
@@ -251,7 +247,7 @@ which means that the transaction becomes valid after the oracle height."#,
     const ORACLE_HEIGHT: u32 = 1000;
     const ORACLE_PRICE: u32 = 100000;
     const ORACLE_SIG: Signature = 0x90231b8de96a1f940ddcf406fe8389417ca8fb0b03151608e2f94b31b443a7e0d26a12e437df69028f09027c37d5f6742a10c1e8864061d119b8bbce962d26d3;
-    const OWNER_SIG: Signature = 0xf2341f571f069216edfc72822f6094b8ec339c2f72dc64aea0eed1e3d60abf4572fdd04618e5b5bc672ccd71cfaf125b6c1b101aeca3a7b938fe83932ab38743;
+    const OWNER_SIG: Signature = 0x9af4adaa7a34404cdcff9f149bf1d98b105da624203401ab1e2ac33f52d1ab5c49f9ad1f0ee2d0b07277171b39bd6fd38db14c5446210df2aef3c6949c5d5e89;
 }
 
 fn checksig(pk: Pubkey, sig: Signature) {
@@ -287,7 +283,7 @@ fn main() {
     checksig(owner_pk, owner_sig);
 }"#,
     lock_time: 1000,
-    sequence: ENABLE_LOCKTIME_NO_RBF,
+    sequence: 0,
 };
 
 const LAST_WILL: Example = Example {
@@ -296,7 +292,7 @@ The owner has to repeat the covenant when he moves the coins with his hot key.
 The owner can break out of the covenant with his cold key."#,
     program: r#"mod witness {
     const INHERIT_OR_NOT: Either<Signature, Either<Signature, Signature>> =
-        Left(0x755201bb62b0a8b8d18fd12fc02951ea3998ba42bfc6664daaf8a0d2298cad43cdc21358c7c82f37654275dc2fea8c858adbe97bac92828b498a5a237004db6f);
+        Left(0x33d5d85eaba98b7706fe03f1eea088fd5874b66b7778ae6468d889bd65f5decde48637b3868682ba2531fa2d3fd154f8d5de1bf76ca0b4e0fa1919dcf72a51f2);
 }
 
 fn checksig(pk: Pubkey, sig: Signature) {

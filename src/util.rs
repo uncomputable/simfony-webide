@@ -1,5 +1,6 @@
 use std::fmt;
 
+use elements::hashes::{sha256, sha256d, Hash};
 use elements::secp256k1_zkp as secp256k1;
 use simfony::{elements, simplicity};
 use simplicity::dag::{DagLike, MaxSharing, NoSharing};
@@ -89,4 +90,31 @@ pub fn liquid_testnet_address(cmr: simplicity::Cmr) -> elements::Address {
         blinder,
         &elements::AddressParams::LIQUID_TESTNET,
     )
+}
+
+pub fn liquid_testnet_bitcoin_asset() -> elements::AssetId {
+    elements::AssetId::from_inner(sha256::Midstate([
+        0x49, 0x9a, 0x81, 0x85, 0x45, 0xf6, 0xba, 0xe3, 0x9f, 0xc0, 0x3b, 0x63, 0x7f, 0x2a, 0x4e,
+        0x1e, 0x64, 0xe5, 0x90, 0xca, 0xc1, 0xbc, 0x3a, 0x6f, 0x6d, 0x71, 0xaa, 0x44, 0x43, 0x65,
+        0x4c, 0x14,
+    ]))
+}
+
+pub fn liquid_testnet_genesis() -> elements::BlockHash {
+    elements::BlockHash::from_raw_hash(sha256d::Hash::from_byte_array([
+        0xc1, 0xb1, 0x6a, 0xe2, 0x4f, 0x24, 0x23, 0xae, 0xa2, 0xea, 0x34, 0x55, 0x22, 0x92, 0x79,
+        0x3b, 0x5b, 0x5e, 0x82, 0x99, 0x9a, 0x1e, 0xed, 0x81, 0xd5, 0x6a, 0xee, 0x52, 0x8e, 0xda,
+        0x71, 0xa7,
+    ]))
+}
+
+pub fn script_control_block(
+    cmr: simplicity::Cmr,
+) -> (elements::Script, elements::taproot::ControlBlock) {
+    let info = taproot_spend_info(cmr);
+    let script_ver = script_ver(cmr);
+    let control_block = info
+        .control_block(&script_ver)
+        .expect("control block should exist");
+    (script_ver.0, control_block)
 }
