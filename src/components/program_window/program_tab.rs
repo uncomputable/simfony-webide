@@ -10,7 +10,7 @@ use simfony::{CompiledProgram, SatisfiedProgram, WitnessValues};
 pub struct Program {
     pub text: RwSignal<String>,
     cached_text: RwSignal<String>,
-    lazy_cmr: RwSignal<Result<simplicity::Cmr, String>>,
+    pub lazy_cmr: RwSignal<Result<simplicity::Cmr, String>>,
     lazy_satisfied: RwSignal<Result<SatisfiedProgram, String>>,
 }
 

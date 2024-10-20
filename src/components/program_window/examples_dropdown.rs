@@ -17,9 +17,7 @@ pub fn ExamplesDropdown() -> impl IntoView {
         Some(example) => {
             program.text.set(example.program_text().to_string());
             program.update_on_read();
-            let params = example.params();
-            tx_env.lock_time.set(params.lock_time);
-            tx_env.sequence.set(params.sequence);
+            tx_env.params.set(example.params());
             active_run_tab.0.update(|_| {}); // refresh active tab
         }
         None => {

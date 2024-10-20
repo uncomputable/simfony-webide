@@ -1,7 +1,7 @@
 use itertools::Itertools;
 use leptos::{
-    component, create_node_ref, create_rw_signal, ev, html, spawn_local, use_context, view, with,
-    IntoView, SignalGet, SignalSet, SignalUpdate,
+    component, create_node_ref, create_rw_signal, ev, html, spawn_local, use_context, view,
+    IntoView, SignalGet, SignalSet, SignalUpdate, SignalWith,
 };
 
 use crate::components::program_window::Program;
@@ -12,7 +12,6 @@ use crate::function::Runner;
 pub fn RunButton() -> impl IntoView {
     let program = use_context::<Program>().expect("program should exist in context");
     let tx_env = use_context::<TxEnv>().expect("transaction environment should exist in context");
-    let environment = tx_env.environment();
     let output =
         use_context::<ExecutionOutput>().expect("execution output should exist in context");
     let run_succeeded = create_rw_signal::<Option<bool>>(None);
@@ -34,32 +33,30 @@ pub fn RunButton() -> impl IntoView {
         });
     };
     let run_program = move |_event: ev::MouseEvent| {
-        with!(|environment| {
-            let satisfied_program = match program.satisfied() {
-                Ok(x) => x,
-                Err(error) => {
-                    output.error.set(error);
-                    set_success(false);
-                    return;
-                }
-            };
-            let mut runner = Runner::for_program(satisfied_program);
-            let success = match runner.run(environment) {
-                Ok(..) => {
-                    output.error.update(String::clear);
-                    true
-                }
-                Err(error) => {
-                    output.error.set(error.to_string());
-                    let _promise = audio_ref.get().expect("<audio> should be mounted").play();
-                    false
-                }
-            };
-            output
-                .debug
-                .set(runner.debug_output().into_iter().join("\n"));
-            set_success(success);
+        let satisfied_program = match program.satisfied() {
+            Ok(x) => x,
+            Err(error) => {
+                output.error.set(error);
+                set_success(false);
+                return;
+            }
+        };
+        let mut runner = Runner::for_program(satisfied_program);
+        let success = tx_env.lazy_env.with(|env| match runner.run(env) {
+            Ok(..) => {
+                output.error.update(String::clear);
+                true
+            }
+            Err(error) => {
+                output.error.set(error.to_string());
+                let _promise = audio_ref.get().expect("<audio> should be mounted").play();
+                false
+            }
         });
+        output
+            .debug
+            .set(runner.debug_output().into_iter().join("\n"));
+        set_success(success);
     };
 
     let button_class = move || match run_succeeded.get() {

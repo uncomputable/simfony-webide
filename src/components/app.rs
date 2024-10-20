@@ -18,11 +18,11 @@ pub fn App() -> impl IntoView {
 
     let program = Program::from_map(&url_params).unwrap_or_default();
     provide_context(program);
-    let tx_env = TxEnv::from_map(&url_params).unwrap_or_default();
+    let tx_env = TxEnv::new(program);
     provide_context(tx_env);
     let signing_keys = SigningKeys::from_map(&url_params).unwrap_or_default();
     provide_context(signing_keys);
-    let signed_data = SignedData::new(tx_env.environment());
+    let signed_data = SignedData::new(tx_env.lazy_env);
     provide_context(signed_data);
     let hashed_data = HashedData::from_map(&url_params).unwrap_or_default();
     provide_context(hashed_data);

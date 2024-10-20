@@ -1,88 +1,58 @@
-use leptos::{
-    component, create_node_ref, create_rw_signal, ev, html, use_context, view, IntoView, NodeRef,
-    RwSignal, Signal, SignalGet, SignalGetUntracked, SignalSet,
-};
-use simfony::{elements, simplicity};
 use std::sync::Arc;
 
-use crate::components::apply_changes::ApplyChanges;
+use leptos::{
+    component, create_rw_signal, ev, event_target_value, use_context, view, with, IntoView,
+    RwSignal, Signal, SignalGetUntracked, SignalSet, SignalUpdate,
+};
+use simfony::{elements, simplicity};
+use simplicity::jet::elements::ElementsEnv;
+
+use crate::components::program_window::Program;
 use crate::components::string_box::ErrorBox;
+use crate::transaction::TxParams;
 
 #[derive(Copy, Clone, Debug)]
 pub struct TxEnv {
-    pub lock_time: RwSignal<elements::LockTime>,
-    pub sequence: RwSignal<elements::Sequence>,
-}
-
-impl Default for TxEnv {
-    fn default() -> Self {
-        Self::new(0, 0)
-    }
+    pub params: RwSignal<TxParams>,
+    pub lazy_env: Signal<ElementsEnv<Arc<elements::Transaction>>>,
 }
 
 impl TxEnv {
-    pub fn new(lock_time: u32, sequence: u32) -> Self {
-        Self {
-            lock_time: create_rw_signal(elements::LockTime::from_consensus(lock_time)),
-            sequence: create_rw_signal(elements::Sequence::from_consensus(sequence)),
-        }
-    }
-
-    pub fn environment(
-        self,
-    ) -> Signal<simplicity::jet::elements::ElementsEnv<Arc<elements::Transaction>>> {
-        Signal::derive(move || {
-            simfony::dummy_env::dummy_with(self.lock_time.get(), self.sequence.get())
-        })
+    pub fn new(program: Program) -> Self {
+        let params = create_rw_signal(TxParams::default());
+        let lazy_cmr = program.lazy_cmr;
+        let lazy_env = Signal::derive(move || {
+            with!(|params, lazy_cmr| match lazy_cmr {
+                Ok(cmr) => params.tx_env(*cmr),
+                Err(..) => params.tx_env(simplicity::Cmr::unit()),
+            })
+        });
+        Self { params, lazy_env }
     }
 }
 
 #[component]
 pub fn TransactionTab() -> impl IntoView {
-    let tx_env = use_context::<TxEnv>().expect("tx environment should exist in context");
-    let parse_error = create_rw_signal("".to_string());
-    let apply_changes = ApplyChanges::default();
+    let tx_env = use_context::<TxEnv>().expect("transaction environment should exist in context");
+    let lock_time_parse_error = create_rw_signal("".to_string());
+    let sequence_parse_error = create_rw_signal("".to_string());
 
-    let lock_time_ref: NodeRef<html::Input> = create_node_ref();
-    let sequence_ref: NodeRef<html::Input> = create_node_ref();
-
-    let submit_transaction = move |event: ev::SubmitEvent| {
-        event.prevent_default(); // stop page from reloading
-        let lock_time_string = lock_time_ref
-            .get()
-            .expect("<input> should be mounted")
-            .value();
-        let lock_time = match lock_time_string.parse::<u32>() {
-            Ok(x) => elements::LockTime::from_consensus(x),
-            Err(error) => {
-                parse_error.set(format!(
-                    "Malformed nLockTime: `{lock_time_string}`: `{error}`"
-                ));
-                return;
-            }
-        };
-        tx_env.lock_time.set(lock_time);
-
-        let sequence_string = sequence_ref
-            .get()
-            .expect("<input> should be mounted")
-            .value();
-        let sequence = match sequence_string.parse::<u32>() {
-            Ok(x) => elements::Sequence::from_consensus(x),
-            Err(error) => {
-                parse_error.set(format!(
-                    "Malformed nSequence: `{lock_time_string}`: `{error}`"
-                ));
-                return;
-            }
-        };
-        tx_env.sequence.set(sequence);
-
-        apply_changes.set_success(true);
+    let update_lock_time = move |e: ev::Event| match event_target_value(&e).parse::<u32>() {
+        Ok(lock_time) => {
+            let lock_time = elements::LockTime::from_consensus(lock_time);
+            tx_env.params.update(|x| x.lock_time = lock_time);
+            lock_time_parse_error.update(String::clear);
+        }
+        Err(error) => lock_time_parse_error.set(error.to_string()),
     };
-
-    let lock_time_initial_value = tx_env.lock_time.get_untracked().to_string();
-    let sequence_initial_value = tx_env.sequence.get_untracked().to_string();
+    let update_sequence = move |e: ev::Event| match event_target_value(&e).parse::<u32>() {
+        Ok(sequence) => {
+            let sequence = elements::Sequence::from_consensus(sequence);
+            tx_env.params.update(|x| x.sequence = sequence);
+            sequence_parse_error.update(String::clear);
+        }
+        Err(error) => sequence_parse_error.set(error.to_string()),
+    };
 
     view! {
         <div class="tab-content transaction-tab">
@@ -96,36 +66,30 @@ pub fn TransactionTab() -> impl IntoView {
                 " Only the lock time and sequence number can be changed. "
                 "More customization will follow in future updates."
             </p>
-            <form on:submit=submit_transaction>
-                <div>
-                    <div class="transaction-display-row">
-                        <div class="display-row-label">"nLockTime (u32)"</div>
-                        <input
-                            class="input"
-                            type="text"
-                            inputmode="numeric"
-                            pattern="\\d*"
-                            value=lock_time_initial_value
-                            node_ref=lock_time_ref
-                        />
-                    </div>
-                    <div class="transaction-display-row">
-                        <div class="display-row-label">"nSequence (u32)"</div>
-                        <input
-                            class="input"
-                            type="text"
-                            inputmode="numeric"
-                            pattern="\\d*"
-                            value=sequence_initial_value
-                            node_ref=sequence_ref
-                        />
-                    </div>
+            <div>
+                <div class="transaction-display-row">
+                    <div class="display-row-label">"nLockTime"</div>
+                    <input
+                        class="input"
+                        type="number"
+                        on:input=update_lock_time
+                        min=0
+                        value=tx_env.params.get_untracked().lock_time.to_string()
+                    />
                 </div>
-                <ErrorBox error=parse_error />
-                <div class="transaction-tab-apply-button">
-                    {apply_changes}
+                <ErrorBox error=lock_time_parse_error />
+                <div class="transaction-display-row">
+                    <div class="display-row-label">"nSequence"</div>
+                    <input
+                        class="input"
+                        type="number"
+                        on:input=update_sequence
+                        min=0
+                        value=tx_env.params.get_untracked().sequence.to_string()
+                    />
                 </div>
-            </form>
+                <ErrorBox error=lock_time_parse_error />
+            </div>
         </div>
     }
 }

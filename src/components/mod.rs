@@ -1,6 +1,5 @@
 mod analysis;
 mod app;
-mod apply_changes;
 mod copy_to_clipboard;
 mod dropdown;
 mod navbar;
