@@ -102,6 +102,12 @@ p {
 
 .button-row {
     display: flex;
+
+    &.is-small{
+        button{
+            padding: 8px 12px;
+        }
+    }
 }
 
 .button-col {
@@ -126,6 +132,10 @@ p {
     &.bordered{
         background: #191c21;
     }
+
+    &.is-small{
+        padding: 8px 12px;
+    }
 }
 
 .submit-button, .push-button, .pop-button, .copy-button {
@@ -140,6 +150,10 @@ p {
 
     &:hover {
         background: #b26e0f;
+    }
+
+    &.is-small{
+        padding: 8px 12px;
     }
 }
 
