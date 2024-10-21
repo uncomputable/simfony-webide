@@ -85,7 +85,7 @@
             align-items: center;
             gap: 8px;
             color: #fff;
-            background: #5134E0;
+            background: #b26e0f;
             border: none;
             font-family: 'rigid-square';
             font-size: 16px;
@@ -95,7 +95,7 @@
             max-width: 100%;
             cursor: pointer;
             &:hover {
-                // background: #7973f4;
+                // background: #ea9606;
             }
         }
     }
@@ -151,7 +151,7 @@
         background-color: $background-dark;
         border-radius: 7.5px;
         border: 1px solid rgba(255, 255, 255, 0.10);
-        color: #c2c2ff;
+        color: #fdc667;
         font-family: 'Roboto Mono';
         font-size: 12px;
         resize: none;
@@ -192,7 +192,7 @@
             gap: 4px;
 
             .copy-button{
-                border: 1px solid #5134E0;
+                border: 1px solid #b26e0f;
                 padding: 4px;
                 border-radius: 4px;
                 height: 34px;
@@ -203,7 +203,7 @@
                 background: #191C21;
 
                 &:hover {
-                    background: #5134e0;
+                    background: #b26e0f;
                 }
             }
             #copy-button-success{
@@ -212,7 +212,7 @@
                 background: #191C21;
 
                 padding: 6px 10px;
-                border: 1px solid #5134e0;
+                border: 1px solid #b26e0f;
                 border-radius: 4px;
             }
             .copy-show{

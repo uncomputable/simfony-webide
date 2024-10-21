@@ -174,7 +174,7 @@ fn CopyPublicKeysToClipboard() -> impl IntoView {
             <h3 class="tab-title">
                 Public Keys
             </h3>
-            <div class="button-row">
+            <div class="button-row is-small">
                 <For
                     each=move || signing_keys.public_keys().get().into_iter().enumerate()
                     key=|(_index, key)| *key
@@ -224,7 +224,7 @@ fn CopySignaturesToClipboard() -> impl IntoView {
             <h3 class="tab-title">
                 Signatures
             </h3>
-            <div class="button-row">
+            <div class="button-row is-small">
                 <For
                     each=move || signing_keys.signatures(signed_data.message()).get().into_iter().enumerate()
                     key=|(_index, signature)| *signature

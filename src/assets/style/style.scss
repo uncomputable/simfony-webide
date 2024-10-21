@@ -30,7 +30,7 @@ h1, h2, h3, h4, h5, h6{
 }
 
 a {
-    color: #7973F4;
+    color: #ea9606;
 
     &:hover {
         color: white;
@@ -102,6 +102,12 @@ p {
 
 .button-row {
     display: flex;
+
+    &.is-small{
+        button{
+            padding: 8px 12px;
+        }
+    }
 }
 
 .button-col {
@@ -114,8 +120,8 @@ p {
     padding: 14px 16px;
     cursor: pointer;
     border: none;
-    background: #5134E0;
-    border: 1px solid #5134E0;
+    background: #b26e0f;
+    border: 1px solid #b26e0f;
     border-radius: 4px;
     margin-right: 4px;
 
@@ -126,10 +132,14 @@ p {
     &.bordered{
         background: #191c21;
     }
+
+    &.is-small{
+        padding: 8px 12px;
+    }
 }
 
 .submit-button, .push-button, .pop-button, .copy-button {
-    border: 1px solid #5134E0;
+    border: 1px solid #b26e0f;
     padding: 4px;
     border-radius: 4px;
     display: flex;
@@ -139,12 +149,20 @@ p {
     background: #191C21;
 
     &:hover {
-        background: #5134e0;
+        background: #b26e0f;
+    }
+
+    &.is-small{
+        padding: 8px 12px;
     }
 }
 
 input:invalid {
     background-color: lightpink;
+}
+
+input[type="radio"]{
+    accent-color: #ea9606;
 }
 
 .input{

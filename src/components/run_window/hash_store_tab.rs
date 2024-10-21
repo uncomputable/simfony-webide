@@ -92,7 +92,7 @@ fn CopyHashesToClipboard() -> impl IntoView {
             <h3 class="tab-title">
                 Hashes
             </h3>
-            <div class="button-row">
+            <div class="button-row is-small">
                 <For
                     each=move || hashed_data.hashes().get().into_iter().enumerate()
                     key=|(_index, hash)| *hash
@@ -139,7 +139,7 @@ fn CopyPreimagesToClipboard() -> impl IntoView {
             <h3 class="tab-title">
                 Preimages
             </h3>
-            <div class="button-row">
+            <div class="button-row is-small">
                 <For
                     each=move || hashed_data.preimages.get().into_iter().enumerate()
                     key=|(_index, preimage)| *preimage
