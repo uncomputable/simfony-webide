@@ -1,6 +1,6 @@
 use std::fmt;
 
-use elements::hashes::{sha256, sha256d, Hash};
+use elements::hashes::{sha256, Hash};
 use elements::secp256k1_zkp as secp256k1;
 use simfony::{elements, simplicity};
 use simplicity::dag::{DagLike, MaxSharing, NoSharing};
@@ -101,11 +101,11 @@ pub fn liquid_testnet_bitcoin_asset() -> elements::AssetId {
 }
 
 pub fn liquid_testnet_genesis() -> elements::BlockHash {
-    elements::BlockHash::from_raw_hash(sha256d::Hash::from_byte_array([
+    elements::BlockHash::from_byte_array([
         0xc1, 0xb1, 0x6a, 0xe2, 0x4f, 0x24, 0x23, 0xae, 0xa2, 0xea, 0x34, 0x55, 0x22, 0x92, 0x79,
         0x3b, 0x5b, 0x5e, 0x82, 0x99, 0x9a, 0x1e, 0xed, 0x81, 0xd5, 0x6a, 0xee, 0x52, 0x8e, 0xda,
         0x71, 0xa7,
-    ]))
+    ])
 }
 
 pub fn script_control_block(
