@@ -108,13 +108,9 @@ pub fn liquid_testnet_genesis() -> elements::BlockHash {
     ])
 }
 
-pub fn script_control_block(
-    cmr: simplicity::Cmr,
-) -> (elements::Script, elements::taproot::ControlBlock) {
+pub fn control_block(cmr: simplicity::Cmr) -> elements::taproot::ControlBlock {
     let info = taproot_spend_info(cmr);
     let script_ver = script_ver(cmr);
-    let control_block = info
-        .control_block(&script_ver)
-        .expect("control block should exist");
-    (script_ver.0, control_block)
+    info.control_block(&script_ver)
+        .expect("control block should exist")
 }

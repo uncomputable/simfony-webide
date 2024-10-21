@@ -72,15 +72,15 @@ impl TxParams {
     }
 
     pub fn tx_env(&self, cmr: simplicity::Cmr) -> ElementsEnv<Arc<elements::Transaction>> {
+        let script_pubkey = util::liquid_testnet_address(cmr).script_pubkey();
         let index = 0;
-        let (script_pubkey, control_block) = util::script_control_block(cmr);
         let annex = None;
         ElementsEnv::new(
             Arc::new(self.unsatisfied_transaction()),
             vec![self.utxo(script_pubkey)],
             index,
             cmr,
-            control_block,
+            util::control_block(cmr),
             annex,
             util::liquid_testnet_genesis(),
         )
@@ -90,15 +90,15 @@ impl TxParams {
         let mut tx = self.unsatisfied_transaction();
         let (simplicity_program_bytes, simplicity_witness_bytes) =
             satisfied.redeem().encode_to_vec();
-        let (script_pubkey, control_block) = util::script_control_block(satisfied.redeem().cmr());
+        let cmr = satisfied.redeem().cmr();
         tx.input[0].witness = elements::TxInWitness {
             amount_rangeproof: None,
             inflation_keys_rangeproof: None,
             script_witness: vec![
                 simplicity_witness_bytes,
                 simplicity_program_bytes,
-                script_pubkey.into_bytes(),
-                control_block.serialize(),
+                cmr.as_ref().to_vec(),
+                util::control_block(cmr).serialize(),
             ],
             pegin_witness: vec![],
         };
