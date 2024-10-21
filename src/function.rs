@@ -266,11 +266,6 @@ mod tests {
     #[wasm_bindgen_test::wasm_bindgen_test]
     fn test() {
         for name in examples::keys() {
-            // Skip tutorial lessons
-            if name.contains('💡') {
-                continue;
-            }
-
             println!("{name}");
             let example = examples::get(name).unwrap();
             let satisfied = example.satisfied();
@@ -287,6 +282,29 @@ mod tests {
                     }
                     panic!("Unexpected error: {error}")
                 }
+            }
+        }
+    }
+
+    #[test]
+    #[wasm_bindgen_test::wasm_bindgen_test]
+    fn compare_with_rust_simplicity() {
+        for name in examples::keys() {
+            println!("{name}");
+            let example = examples::get(name).unwrap();
+            let satisfied = example.satisfied();
+            let tx_env = example.params().tx_env(satisfied.redeem().cmr());
+            let rust_simplicity_result = simplicity::BitMachine::for_program(satisfied.redeem())
+                .exec(satisfied.redeem(), &tx_env);
+            let webide_result = Runner::for_program(satisfied).run(&tx_env);
+            match (rust_simplicity_result, webide_result) {
+                (Ok(..), Err(error)) => {
+                    panic!("rust-simplicity accepted but web IDE rejected: {error}")
+                }
+                (Err(error), Ok(..)) => {
+                    panic!("web IDE accepted but rust-simplicity rejected: {error}")
+                }
+                _ => {}
             }
         }
     }
