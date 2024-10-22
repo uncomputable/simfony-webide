@@ -40,7 +40,7 @@ impl Example {
             txid: elements::Txid::all_zeros(),
             vout: 0,
             recipient_address: None,
-            fee: 0,
+            fee: 1_000,
             lock_time: elements::LockTime::from_consensus(self.lock_time),
             sequence: elements::Sequence::from_consensus(self.sequence),
         }
@@ -52,7 +52,7 @@ const P2PK: Example = Example {
 
 The coins move if the person with the given public key signs the transaction."#,
     program: r#"mod witness {
-    const SIG: Signature = 0xb11edaa3b82dc7e4ca7e774508b6ba05389830adac4c0f9ada9bf52a66d6aa61d3b395c3c63787d185758ca97a6da9d76a3b56a10d69e5c26770fc5862fdb421;
+    const SIG: Signature = 0x1d7d93f350e2db564f90da49fb00ee47294bb6d8f061929818b26065a3e50fdd87e0e8ab45eecd04df0b92b427e6d49a5c96810c23706566e9093c992e075dc5;
 }
 
 fn main() {
@@ -70,7 +70,7 @@ const P2PKH: Example = Example {
 The coins move if the person with the public key that matches the given hash signs the transaction."#,
     program: r#"mod witness {
     const PK: Pubkey = 0x79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798;
-    const SIG: Signature = 0xb98ae711983193afdef5b913fa857eab8798c09b33177e877ce13bfcf230df97bb8007366a94f4b42296bd25bbc5af609f81329eb0182bcebcdb78c6e0924630;
+    const SIG: Signature = 0xcdd52dd650ad4628d0813e9c4533abb21de4c6ee69ef4512c60ffb1c93d1dbb12ef081b1d60e3ecdd23155efe45a52d19088b6cf8073dac8cd356b1eddb5ce8f;
 }
 
 fn sha2(string: u256) -> u256 {
@@ -98,7 +98,7 @@ const P2MS: Example = Example {
 The coins move if 2 of 3 people agree to move them. These people provide their signatures, of which exactly 2 are required."#,
     program: r#"mod witness {
     const MAYBE_SIGS: [Option<Signature>; 3] =
-        [Some(0xb7c4a783e0e8f2729018b875405b0d58281919221f7c58137fc6aa8555b2048bdc139c55deec2b069308e91e32882553486ce34e7b39406226d02bfc4a5df2d8), None, Some(0xd04c7dd83eac79e27d47fc4dc462140381d7c55df9ac54e717fb4207b51655353bde00e345e854640f106522ad3a9e61554e729726190eb10b97b6bb5707b985)];
+        [Some(0x2747bff425b0a94b12b60aa9c4e6091c8a0adbdd2536780023ab6d4883bdddaa43587a8e29bbaccbd71001ef5ba3cd06f26f0347773761124dfa2a20ada8aeb0), None, Some(0x768db05f0402104962f2cd0a1f235cde45b284a664123b9f4606d119b95feb011a28e33d2af5c6b565107e8edc5326a33dbf3f7e2c97d959e21345749c2c244c)];
 }
 
 fn not(bit: bool) -> bool {
@@ -152,7 +152,7 @@ const SIGHASH_ANYPREVOUT: Example = Example {
 The coins move if the person with the given public key signs the transaction.
 The transaction input can be exchanged by a third party with a "similar" input while the signature remains valid."#,
     program: r#"mod witness {
-    const SIG: Signature = 0x6b53ac94c539786186053ae5aaf3bbc686f2a4dc3ccd65c895d5bf6d57709170f14f5079781de04e44409148efd667bf77f97c920cd01de5a8b2a9704b91efc0;
+    const SIG: Signature = 0x1d63cf0bc063d44f7546c67d7a3abcd15ef5a64aa4bb2a04e342a0a512b63d82e88638e2f85e21da67d1f709bbea6043aa59b47a3ed7e6147190ac92438824aa;
 }
 
 fn main() {
@@ -194,7 +194,7 @@ The sender can cancel the transfer after a fixed block height.
 HTLCs enable two-way payment channels and multi-hop payments, such as on the Lightning network."#,
     program: r#"mod witness {
     const COMPLETE_OR_CANCEL: Either<(u256, Signature), Signature> =
-        Left((0x0000000000000000000000000000000000000000000000000000000000000000, 0x6a2ee3a26d4f602ff9c2bdb413db07cd3a427e69bde2628fa68ed8752779ead0a02e920d7dc33419543bdfeca668a65f512d1c0b2cf0202b211eb7abb69fe650));
+        Left((0x0000000000000000000000000000000000000000000000000000000000000000, 0x9d59801a7d276756c61aac762f2009ccf48a824941aacf993bd33e383b77c8de54d346824635bceb6455574b4c2150a6205f99bb7bf8d195bd05ec7e5613583c));
 }
 
 fn sha2(string: u256) -> u256 {
@@ -247,7 +247,7 @@ which means that the transaction becomes valid after the oracle height."#,
     const ORACLE_HEIGHT: u32 = 1000;
     const ORACLE_PRICE: u32 = 100000;
     const ORACLE_SIG: Signature = 0x90231b8de96a1f940ddcf406fe8389417ca8fb0b03151608e2f94b31b443a7e0d26a12e437df69028f09027c37d5f6742a10c1e8864061d119b8bbce962d26d3;
-    const OWNER_SIG: Signature = 0xcc4c3755b29403004949f036cffee02ca8ef42c82eb59665c9992fd77ba516c0c8f0cfa49a4e633dd24bbee7bd308747253f5fba691676fecedc43fdd79795ff;
+    const OWNER_SIG: Signature = 0x34e36ba57db85d092c6cd7b820209839aa9a3936f5d843700b1f4d9b0b29a8ca64b13cdb6e1aef1bab64e712e9ee663cbddb5f269ba85b87af6ef5f2cba3a327;
 }
 
 fn checksig(pk: Pubkey, sig: Signature) {
@@ -292,7 +292,7 @@ The owner has to repeat the covenant when he moves the coins with his hot key.
 The owner can break out of the covenant with his cold key."#,
     program: r#"mod witness {
     const INHERIT_OR_NOT: Either<Signature, Either<Signature, Signature>> =
-        Left(0x9470a0dfb581a1e3e36183dcb5a5a31c8206844543283c920a37c501e8972e4abe573e80ebac77ca5ba3ea4b6cdf41614a38f2cb515079de0f7c290319b884f8);
+        Left(0x940cd8a1261a08e677eeefab5d93ba617a92a45c7eaab8cd03c1675b3bd0b1c9bb81ce0301d74fa46fd5cb8402b758462cacfb8b08b9b28e13eb97adb963fa6c);
 }
 
 fn checksig(pk: Pubkey, sig: Signature) {

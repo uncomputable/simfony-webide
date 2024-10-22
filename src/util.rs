@@ -108,6 +108,12 @@ pub fn liquid_testnet_genesis() -> elements::BlockHash {
     ])
 }
 
+pub fn liquid_testnet_faucet_script_pubkey() -> elements::Script {
+    "tlq1qqd0qxdqsag3t63gfzq4xr25fcjvsujun6ycx9jtd9jufarrrwtseyf05kf0qz62u09wpnj064cycfvtlxuz4xj4j48wxpsrs2"
+        .parse::<elements::Address>()
+        .expect("address should be valid").script_pubkey()
+}
+
 pub fn control_block(cmr: simplicity::Cmr) -> elements::taproot::ControlBlock {
     let info = taproot_spend_info(cmr);
     let script_ver = script_ver(cmr);

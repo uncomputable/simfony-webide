@@ -102,7 +102,7 @@ pub fn TransactionTab() -> impl IntoView {
                 "Only a limited number of fields are available. "
                 "More customization will follow in future updates."
             </p>
-            <Section name="Previous Outpoint">
+            <Section name="UTXO">
                 <Item name="txid" error=txid_parse_error>
                     <input
                         class="input"
@@ -128,6 +128,7 @@ pub fn TransactionTab() -> impl IntoView {
                         type="text"
                         on:input=update_recipient_address
                         value=tx_env.params.get_untracked().recipient_address.as_ref().map(ToString::to_string).unwrap_or_default()
+                        placeholder="(Send back to faucet)"
                     />
                 </Item>
                 <Item name="fee (sats)" error=fee_parse_error>

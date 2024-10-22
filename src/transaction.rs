@@ -23,7 +23,7 @@ impl Default for TxParams {
             txid: elements::Txid::all_zeros(),
             vout: 0,
             recipient_address: None,
-            fee: 0,
+            fee: 1_000,
             lock_time: elements::LockTime::from_consensus(0),
             sequence: elements::Sequence::from_consensus(0),
         }
@@ -55,7 +55,7 @@ impl TxParams {
                         .recipient_address
                         .as_ref()
                         .map(elements::Address::script_pubkey)
-                        .unwrap_or_default(),
+                        .unwrap_or_else(util::liquid_testnet_faucet_script_pubkey),
                     witness: elements::TxOutWitness::empty(),
                 },
                 elements::TxOut::new_fee(self.fee, util::liquid_testnet_bitcoin_asset()),
