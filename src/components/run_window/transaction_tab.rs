@@ -37,6 +37,7 @@ pub fn TransactionTab() -> impl IntoView {
     let tx_env = use_context::<TxEnv>().expect("transaction environment should exist in context");
     let txid_parse_error = create_rw_signal("".to_string());
     let vout_parse_error = create_rw_signal("".to_string());
+    let value_in_parse_error = create_rw_signal("".to_string());
     let recipient_address_parse_error = create_rw_signal("".to_string());
     let fee_parse_error = create_rw_signal("".to_string());
     let lock_time_parse_error = create_rw_signal("".to_string());
@@ -55,6 +56,13 @@ pub fn TransactionTab() -> impl IntoView {
             vout_parse_error.update(String::clear);
         }
         Err(error) => vout_parse_error.set(error.to_string()),
+    };
+    let update_value_in = move |e: ev::Event| match event_target_value(&e).parse::<u64>() {
+        Ok(value_in) => {
+            tx_env.params.update(|x| x.value_in = value_in);
+            value_in_parse_error.update(String::clear);
+        }
+        Err(error) => value_in_parse_error.set(error.to_string()),
     };
     let update_recipient_address = move |e: ev::Event| {
         let s = event_target_value(&e);
@@ -118,6 +126,15 @@ pub fn TransactionTab() -> impl IntoView {
                         min=0
                         on:input=update_vout
                         value=tx_env.params.get_untracked().vout
+                    />
+                </Item>
+                <Item name="value (sats)" error=value_in_parse_error>
+                    <input
+                        class="input"
+                        type="number"
+                        min=0
+                        on:input=update_value_in
+                        value=tx_env.params.get_untracked().value_in
                     />
                 </Item>
             </Section>

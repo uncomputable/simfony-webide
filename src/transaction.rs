@@ -11,6 +11,7 @@ use crate::util;
 pub struct TxParams {
     pub txid: elements::Txid,
     pub vout: u32,
+    pub value_in: u64,
     pub recipient_address: Option<elements::Address>,
     pub fee: u64,
     pub lock_time: elements::LockTime,
@@ -22,6 +23,7 @@ impl Default for TxParams {
         Self {
             txid: elements::Txid::all_zeros(),
             vout: 0,
+            value_in: 100_000,
             recipient_address: None,
             fee: 1_000,
             lock_time: elements::LockTime::from_consensus(0),
@@ -49,7 +51,7 @@ impl TxParams {
             output: vec![
                 elements::TxOut {
                     asset: confidential::Asset::Explicit(util::liquid_testnet_bitcoin_asset()),
-                    value: confidential::Value::Explicit(100_000u64.saturating_sub(self.fee)),
+                    value: confidential::Value::Explicit(self.value_in.saturating_sub(self.fee)),
                     nonce: confidential::Nonce::Null,
                     script_pubkey: self
                         .recipient_address
@@ -67,7 +69,7 @@ impl TxParams {
         ElementsUtxo {
             script_pubkey,
             asset: confidential::Asset::Explicit(util::liquid_testnet_bitcoin_asset()),
-            value: confidential::Value::Explicit(100_000),
+            value: confidential::Value::Explicit(self.value_in),
         }
     }
 

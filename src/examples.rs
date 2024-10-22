@@ -39,6 +39,7 @@ impl Example {
         TxParams {
             txid: elements::Txid::all_zeros(),
             vout: 0,
+            value_in: 100_000,
             recipient_address: None,
             fee: 1_000,
             lock_time: elements::LockTime::from_consensus(self.lock_time),
