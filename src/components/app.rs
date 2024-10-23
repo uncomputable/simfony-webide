@@ -8,6 +8,7 @@ use crate::components::run_window::{
     ExecutionOutput, HashedData, RunWindow, SignedData, SigningKeys, TxEnv,
 };
 use crate::components::state::FromParams;
+use crate::transaction::TxParams;
 
 #[derive(Copy, Clone, Debug)]
 pub(crate) struct ActiveRunTab(pub RwSignal<&'static str>);
@@ -18,7 +19,8 @@ pub fn App() -> impl IntoView {
 
     let program = Program::from_map(&url_params).unwrap_or_default();
     provide_context(program);
-    let tx_env = TxEnv::new(program);
+    let tx_params = TxParams::from_map(&url_params).unwrap_or_default();
+    let tx_env = TxEnv::new(program, tx_params);
     provide_context(tx_env);
     let signing_keys = SigningKeys::from_map(&url_params).unwrap_or_default();
     provide_context(signing_keys);

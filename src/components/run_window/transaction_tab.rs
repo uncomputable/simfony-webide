@@ -19,8 +19,8 @@ pub struct TxEnv {
 }
 
 impl TxEnv {
-    pub fn new(program: Program) -> Self {
-        let params = create_rw_signal(TxParams::default());
+    pub fn new(program: Program, params: TxParams) -> Self {
+        let params = create_rw_signal(params);
         let lazy_cmr = program.lazy_cmr;
         let lazy_env = Signal::derive(move || {
             with!(|params, lazy_cmr| match lazy_cmr {
