@@ -18,7 +18,7 @@ pub trait ToParams {
 
 impl FromParams for SigningKeys {
     fn from_map(map: &ParamsMap) -> Option<Self> {
-        map.get("key_count")
+        map.get("keys")
             .and_then(|s| s.parse::<u32>().ok())
             .map(Self::new)
     }
@@ -26,13 +26,13 @@ impl FromParams for SigningKeys {
 
 impl ToParams for SigningKeys {
     fn to_params(&self) -> impl Iterator<Item = (&'static str, String)> {
-        [("key_count", self.key_count.get_untracked().to_string())].into_iter()
+        [("keys", self.key_count.get_untracked().to_string())].into_iter()
     }
 }
 
 impl FromParams for HashedData {
     fn from_map(map: &ParamsMap) -> Option<Self> {
-        map.get("hash_count")
+        map.get("hashes")
             .and_then(|s| s.parse::<u32>().ok())
             .map(Self::new)
     }
@@ -40,7 +40,7 @@ impl FromParams for HashedData {
 
 impl ToParams for HashedData {
     fn to_params(&self) -> impl Iterator<Item = (&'static str, String)> {
-        [("hash_count", self.hash_count.get_untracked().to_string())].into_iter()
+        [("hashes", self.hash_count.get_untracked().to_string())].into_iter()
     }
 }
 
