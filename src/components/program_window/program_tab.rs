@@ -1,3 +1,4 @@
+use crate::components::copy_to_clipboard::CopyToClipboard;
 use leptos::{
     component, create_rw_signal, ev, event_target_value, use_context, view, with, IntoView,
     RwSignal, SignalGetUntracked, SignalSet,
@@ -74,6 +75,11 @@ pub fn ProgramTab() -> impl IntoView {
 
     view! {
         <div class="tab-content">
+            <div class="copy-program">
+                <CopyToClipboard content=program.text class="copy-button" tooltip_below=true>
+                    <i class="far fa-copy"></i>
+                </CopyToClipboard>
+            </div>
             <textarea
                 class="program-input-field"
                 placeholder="Enter your program here"

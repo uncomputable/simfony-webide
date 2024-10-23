@@ -1,7 +1,6 @@
-use leptos::{use_context, SignalGetUntracked, SignalWith};
+use leptos::{use_context, SignalGetUntracked};
 use leptos_router::ParamsMap;
 
-use crate::components::program_window::Program;
 use crate::components::run_window::{HashedData, SigningKeys, TxEnv};
 use crate::transaction::TxParams;
 
@@ -15,25 +14,6 @@ pub trait FromParams: Sized {
 pub trait ToParams {
     /// Convert the value into route parameters and route values.
     fn to_params(&self) -> impl Iterator<Item = (&'static str, String)>;
-}
-
-impl FromParams for Program {
-    fn from_map(map: &ParamsMap) -> Option<Self> {
-        map.get("program")
-            .map(String::as_str)
-            .and_then(lz_str::decompress_from_encoded_uri_component)
-            .and_then(|v| String::from_utf16(&v).ok())
-            .map(Self::new)
-    }
-}
-
-impl ToParams for Program {
-    fn to_params(&self) -> impl Iterator<Item = (&'static str, String)> {
-        [self
-            .text
-            .with(|text| ("program", lz_str::compress_to_encoded_uri_component(text)))]
-        .into_iter()
-    }
 }
 
 impl FromParams for SigningKeys {

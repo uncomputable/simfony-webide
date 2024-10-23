@@ -92,6 +92,12 @@
     }
 }
 
+.copy-program {
+    position: absolute;
+    top: 80px;
+    right: 30px;
+}
+
 @keyframes topBubbles {
     0% {
         background-position: 5% 90%, 10% 90%, 10% 90%, 15% 90%, 25% 90%, 25% 90%, 40% 90%, 55% 90%, 70% 90%;

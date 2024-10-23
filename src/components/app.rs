@@ -17,7 +17,7 @@ pub(crate) struct ActiveRunTab(pub RwSignal<&'static str>);
 pub fn App() -> impl IntoView {
     let url_params = use_query_map().get_untracked();
 
-    let program = Program::from_map(&url_params).unwrap_or_default();
+    let program = Program::default();
     provide_context(program);
     let tx_params = TxParams::from_map(&url_params).unwrap_or_default();
     let tx_env = TxEnv::new(program, tx_params);
