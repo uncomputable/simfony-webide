@@ -1,5 +1,6 @@
 mod address_button;
 mod examples_dropdown;
+mod help_button;
 mod program_tab;
 mod run_button;
 mod share_button;
@@ -10,6 +11,7 @@ use leptos::{component, view, IntoView};
 
 use self::address_button::AddressButton;
 use self::examples_dropdown::ExamplesDropdown;
+use self::help_button::HelpButton;
 use self::program_tab::ProgramTab;
 use self::run_button::RunButton;
 use self::share_button::ShareButton;
@@ -26,6 +28,7 @@ pub fn ProgramWindow() -> impl IntoView {
             <ExamplesDropdown />
             <AddressButton />
             <TransactionButton />
+            <HelpButton />
             <ShareButton />
             <div class="beta-tag">beta</div>
         </Toolbar>
