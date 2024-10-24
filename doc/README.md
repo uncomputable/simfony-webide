@@ -16,9 +16,9 @@ _You can leave the default main function as it is. Customize it if you want._
 
 Click the "Address" button to copy the address of your program to the clipboard.
 
-![Screenshot of the web IDE](https://raw.githubusercontent.com/uncomputable/simfony-webide/master/doc/webide1.png)
-
 Leave the web IDE tab open. You will need it later.
+
+![Screenshot of the web IDE](https://raw.githubusercontent.com/uncomputable/simfony-webide/master/doc/webide1.png)
 
 ## Fund the address
 
