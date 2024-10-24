@@ -1,3 +1,4 @@
+use std::num::NonZeroU32;
 use std::sync::Arc;
 
 use elements::hashes::{sha256, Hash};
@@ -16,23 +17,23 @@ use crate::components::copy_to_clipboard::CopyToClipboard;
 #[derive(Copy, Clone, Debug)]
 pub struct SigningKeys {
     pub key_offset: RwSignal<u32>,
-    pub key_count: RwSignal<u32>,
-    secret_keys: Memo<Vec<secp256k1_zkp::Keypair>>,
-    public_keys: Memo<Vec<secp256k1_zkp::XOnlyPublicKey>>,
+    pub key_count: RwSignal<NonZeroU32>,
+    pub secret_keys: Memo<Vec<secp256k1_zkp::Keypair>>,
+    pub public_keys: Memo<Vec<secp256k1_zkp::XOnlyPublicKey>>,
 }
 
 impl Default for SigningKeys {
     fn default() -> Self {
-        Self::new(rand::random(), 1)
+        Self::new(rand::random(), NonZeroU32::MIN)
     }
 }
 
 impl SigningKeys {
-    pub fn new(key_offset: u32, key_count: u32) -> Self {
+    pub fn new(key_offset: u32, key_count: NonZeroU32) -> Self {
         let key_offset = create_rw_signal(key_offset);
         let key_count = create_rw_signal(key_count);
         let secret_keys = create_memo(move |_| {
-            (0..key_count.get())
+            (0..key_count.get().get())
                 .map(|index| new_key(key_offset.get(), index))
                 .collect::<Vec<secp256k1_zkp::Keypair>>()
         });
@@ -52,14 +53,18 @@ impl SigningKeys {
         }
     }
 
+    pub fn first_public_key(&self) -> secp256k1_zkp::XOnlyPublicKey {
+        self.public_keys.get_untracked()[0]
+    }
+
     pub fn push_key(&self) {
-        self.key_count.update(|n| *n += 1);
+        self.key_count.update(|n| *n = n.saturating_add(1));
     }
 
     pub fn pop_key(&self) {
-        let n = self.key_count.get();
-        if 1 < n {
-            self.key_count.set(n - 1);
+        let n = self.key_count.get().get();
+        if let Some(n_minus_one) = NonZeroU32::new(n - 1) {
+            self.key_count.set(n_minus_one);
         }
     }
 

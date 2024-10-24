@@ -13,12 +13,13 @@ pub struct ActiveRunTab(pub RwSignal<&'static str>);
 pub fn App() -> impl IntoView {
     let url_params = use_query_map().get_untracked();
 
-    let program = Program::default();
+    let signing_keys = SigningKeys::from_map(&url_params).unwrap_or_default();
+    provide_context(signing_keys);
+    let program = Program::new(signing_keys.first_public_key());
     provide_context(program);
     let tx_params = TxParams::from_map(&url_params).unwrap_or_default();
     let tx_env = TxEnv::new(program, tx_params);
     provide_context(tx_env);
-    provide_context(SigningKeys::from_map(&url_params).unwrap_or_default());
     provide_context(SignedData::new(tx_env.lazy_env));
     provide_context(HashedData::from_map(&url_params).unwrap_or_default());
     provide_context(Runtime::new(program, tx_env.lazy_env));

@@ -1,3 +1,5 @@
+use std::num::NonZeroU32;
+
 use leptos::{use_context, SignalGetUntracked};
 use leptos_router::ParamsMap;
 
@@ -19,7 +21,7 @@ pub trait ToParams {
 impl FromParams for SigningKeys {
     fn from_map(map: &ParamsMap) -> Option<Self> {
         let key_offset = map.get("seed").and_then(|s| s.parse::<u32>().ok())?;
-        let key_count = map.get("keys").and_then(|s| s.parse::<u32>().ok())?;
+        let key_count = map.get("keys").and_then(|s| s.parse::<NonZeroU32>().ok())?;
         Some(Self::new(key_offset, key_count))
     }
 }
