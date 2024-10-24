@@ -18,15 +18,19 @@ pub trait ToParams {
 
 impl FromParams for SigningKeys {
     fn from_map(map: &ParamsMap) -> Option<Self> {
-        map.get("keys")
-            .and_then(|s| s.parse::<u32>().ok())
-            .map(Self::new)
+        let key_offset = map.get("seed").and_then(|s| s.parse::<u32>().ok())?;
+        let key_count = map.get("keys").and_then(|s| s.parse::<u32>().ok())?;
+        Some(Self::new(key_offset, key_count))
     }
 }
 
 impl ToParams for SigningKeys {
     fn to_params(&self) -> impl Iterator<Item = (&'static str, String)> {
-        [("keys", self.key_count.get_untracked().to_string())].into_iter()
+        [
+            ("seed", self.key_offset.get_untracked().to_string()),
+            ("keys", self.key_count.get_untracked().to_string()),
+        ]
+        .into_iter()
     }
 }
 

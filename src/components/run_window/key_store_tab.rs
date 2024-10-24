@@ -2,11 +2,12 @@ use std::sync::Arc;
 
 use elements::hashes::{sha256, Hash};
 use elements::secp256k1_zkp;
+use elements::secp256k1_zkp::rand;
 use hex_conservative::{DisplayHex, FromHex};
 use leptos::{
-    component, create_rw_signal, ev, event_target_value, html, use_context, view, with, For,
-    IntoView, NodeRef, RwSignal, Signal, SignalGet, SignalGetUntracked, SignalSet, SignalUpdate,
-    SignalWith, View,
+    component, create_memo, create_rw_signal, ev, event_target_value, html, use_context, view,
+    with, For, IntoView, Memo, NodeRef, RwSignal, Signal, SignalGet, SignalGetUntracked, SignalSet,
+    SignalUpdate, SignalWith, View,
 };
 use simfony::{elements, simplicity};
 
@@ -14,32 +15,40 @@ use crate::components::copy_to_clipboard::CopyToClipboard;
 
 #[derive(Copy, Clone, Debug)]
 pub struct SigningKeys {
+    pub key_offset: RwSignal<u32>,
     pub key_count: RwSignal<u32>,
-    pub secret_keys: Signal<Vec<secp256k1_zkp::Keypair>>,
+    secret_keys: Memo<Vec<secp256k1_zkp::Keypair>>,
+    public_keys: Memo<Vec<secp256k1_zkp::XOnlyPublicKey>>,
 }
 
 impl Default for SigningKeys {
     fn default() -> Self {
-        Self::new(1)
+        Self::new(rand::random(), 1)
     }
 }
 
 impl SigningKeys {
-    pub fn new(key_count: u32) -> Self {
+    pub fn new(key_offset: u32, key_count: u32) -> Self {
+        let key_offset = create_rw_signal(key_offset);
         let key_count = create_rw_signal(key_count);
-        let secret_keys = Signal::derive(move || -> Vec<secp256k1_zkp::Keypair> {
-            let mut index = 0;
+        let secret_keys = create_memo(move |_| {
             (0..key_count.get())
-                .map(|_| {
-                    let (key, new_index) = new_key(index);
-                    index = new_index;
-                    key
-                })
-                .collect()
+                .map(|index| new_key(key_offset.get(), index))
+                .collect::<Vec<secp256k1_zkp::Keypair>>()
+        });
+        let public_keys = create_memo(move |_| {
+            with!(|secret_keys| {
+                secret_keys
+                    .iter()
+                    .map(|key| key.x_only_public_key().0)
+                    .collect()
+            })
         });
         Self {
+            key_offset,
             key_count,
             secret_keys,
+            public_keys,
         }
     }
 
@@ -54,24 +63,12 @@ impl SigningKeys {
         }
     }
 
-    pub fn public_keys(self) -> Signal<Vec<secp256k1_zkp::XOnlyPublicKey>> {
-        let secret_keys = self.secret_keys;
-        Signal::derive(move || {
-            with!(|secret_keys| {
-                secret_keys
-                    .iter()
-                    .map(|key| key.x_only_public_key().0)
-                    .collect()
-            })
-        })
-    }
-
     pub fn signatures(
         self,
         message: Signal<secp256k1_zkp::Message>,
-    ) -> Signal<Vec<secp256k1_zkp::schnorr::Signature>> {
+    ) -> Memo<Vec<secp256k1_zkp::schnorr::Signature>> {
         let secret_keys = self.secret_keys;
-        Signal::derive(move || {
+        create_memo(move |_| {
             with!(|secret_keys| {
                 secret_keys
                     .iter()
@@ -82,18 +79,18 @@ impl SigningKeys {
     }
 }
 
-fn new_key(start_index: u32) -> (secp256k1_zkp::Keypair, u32) {
-    let mut offset = 1;
-    loop {
-        let index = start_index + offset;
-        let mut secret_key_bytes = [0u8; 32];
-        secret_key_bytes[28..].copy_from_slice(&index.to_be_bytes());
-        match secp256k1_zkp::Keypair::from_seckey_slice(secp256k1_zkp::SECP256K1, &secret_key_bytes)
-        {
-            Ok(keypair) => return (keypair, index),
-            Err(..) => {
-                offset += 1;
-            }
+fn new_key(offset: u32, index: u32) -> secp256k1_zkp::Keypair {
+    let mut secret_key_bytes = [0u8; 32];
+    secret_key_bytes[24..28].copy_from_slice(&offset.to_be_bytes());
+    secret_key_bytes[28..].copy_from_slice(&index.to_be_bytes());
+    let secret_key = secp256k1_zkp::SecretKey::from_slice(&secret_key_bytes)
+        .expect("secret key should be valid");
+    let keypair = secp256k1_zkp::Keypair::from_secret_key(secp256k1_zkp::SECP256K1, &secret_key);
+    match keypair.x_only_public_key().1 {
+        secp256k1_zkp::Parity::Even => keypair,
+        secp256k1_zkp::Parity::Odd => {
+            let secret_key = secret_key.negate();
+            secp256k1_zkp::Keypair::from_secret_key(secp256k1_zkp::SECP256K1, &secret_key)
         }
     }
 }
@@ -179,7 +176,7 @@ fn CopyPublicKeysToClipboard() -> impl IntoView {
             </h3>
             <div class="button-row is-small">
                 <For
-                    each=move || signing_keys.public_keys().get().into_iter().enumerate()
+                    each=move || signing_keys.public_keys.get().into_iter().enumerate()
                     key=|(_index, key)| *key
                     children=copy_single_public_key
                 />
