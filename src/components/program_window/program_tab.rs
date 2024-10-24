@@ -1,11 +1,16 @@
 use crate::components::copy_to_clipboard::CopyToClipboard;
+use crate::function::Runner;
+use itertools::Itertools;
 use leptos::{
-    component, create_rw_signal, ev, event_target_value, use_context, view, with, IntoView,
-    RwSignal, SignalGetUntracked, SignalSet,
+    component, create_rw_signal, ev, event_target_value, html, spawn_local, use_context, view,
+    with, IntoView, NodeRef, RwSignal, Signal, SignalGetUntracked, SignalSet, SignalUpdate,
+    SignalWith,
 };
 use simfony::parse::ParseFromStr;
-use simfony::simplicity;
+use simfony::simplicity::jet::elements::ElementsEnv;
+use simfony::{elements, simplicity};
 use simfony::{CompiledProgram, SatisfiedProgram, WitnessValues};
+use std::sync::Arc;
 
 #[derive(Copy, Clone, Debug)]
 pub struct Program {
@@ -61,6 +66,73 @@ impl Default for Program {
             .expect("P2PK example should exist")
             .program_text();
         Self::new(text.to_string())
+    }
+}
+
+#[derive(Copy, Clone)]
+pub struct Runtime {
+    program: Program,
+    env: Signal<ElementsEnv<Arc<elements::Transaction>>>,
+    pub run_succeeded: RwSignal<Option<bool>>,
+    pub debug_output: RwSignal<String>,
+    pub error_output: RwSignal<String>,
+    // This node ref needs to be mounted somewhere in order to work.
+    pub alarm_audio_ref: NodeRef<html::Audio>,
+}
+
+impl Runtime {
+    pub fn new(program: Program, env: Signal<ElementsEnv<Arc<elements::Transaction>>>) -> Self {
+        Self {
+            program,
+            env,
+            run_succeeded: Default::default(),
+            debug_output: Default::default(),
+            error_output: Default::default(),
+            alarm_audio_ref: Default::default(),
+        }
+    }
+
+    fn set_success(self, success: bool) {
+        web_sys::window()
+            .as_ref()
+            .map(web_sys::Window::navigator)
+            .map(|navigator| match success {
+                true => navigator.vibrate_with_duration(200),
+                false => navigator.vibrate_with_duration(500),
+            });
+        if !success {
+            self.alarm_audio_ref.get().map(|audio| audio.play());
+        }
+        spawn_local(async move {
+            self.run_succeeded.set(Some(success));
+            gloo_timers::future::TimeoutFuture::new(500).await;
+            self.run_succeeded.set(None);
+        });
+    }
+
+    pub fn run(self) {
+        let satisfied_program = match self.program.satisfied() {
+            Ok(x) => x,
+            Err(error) => {
+                self.error_output.set(error);
+                self.set_success(false);
+                return;
+            }
+        };
+        let mut runner = Runner::for_program(satisfied_program);
+        let success = self.env.with(|env| match runner.run(env) {
+            Ok(..) => {
+                self.error_output.update(String::clear);
+                true
+            }
+            Err(error) => {
+                self.error_output.set(error.to_string());
+                false
+            }
+        });
+        self.debug_output
+            .set(runner.debug_output().into_iter().join("\n"));
+        self.set_success(success);
     }
 }
 
