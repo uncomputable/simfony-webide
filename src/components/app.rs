@@ -2,6 +2,7 @@ use leptos::{component, provide_context, view, IntoView, RwSignal, SignalGetUntr
 use leptos_router::use_query_map;
 
 use super::program_window::{Program, ProgramWindow, Runtime};
+use crate::components::footer::Footer;
 use crate::components::run_window::{HashedData, RunWindow, SignedData, SigningKeys, TxEnv};
 use crate::components::state::FromParams;
 use crate::transaction::TxParams;
@@ -28,5 +29,6 @@ pub fn App() -> impl IntoView {
     view! {
         <ProgramWindow />
         <RunWindow />
+        <Footer />
     }
 }
