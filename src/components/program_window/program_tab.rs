@@ -2,9 +2,9 @@ use crate::components::copy_to_clipboard::CopyToClipboard;
 use crate::function::Runner;
 use itertools::Itertools;
 use leptos::{
-    component, create_rw_signal, ev, event_target_value, html, spawn_local, use_context, view,
-    with, IntoView, NodeRef, RwSignal, Signal, SignalGetUntracked, SignalSet, SignalUpdate,
-    SignalWith,
+    component, create_node_ref, create_rw_signal, ev, event_target_value, html, spawn_local,
+    use_context, view, with, IntoView, NodeRef, RwSignal, Signal, SignalGetUntracked, SignalSet,
+    SignalUpdate, SignalWith,
 };
 use simfony::parse::ParseFromStr;
 use simfony::simplicity::jet::elements::ElementsEnv;
@@ -136,14 +136,50 @@ impl Runtime {
     }
 }
 
+const TAB_KEY: u32 = 9;
+const ENTER_KEY: u32 = 13;
+
 #[component]
 pub fn ProgramTab() -> impl IntoView {
     let program = use_context::<Program>().expect("program should exist in context");
+    let runtime = use_context::<Runtime>().expect("runtime should exist in context");
+    let textarea_ref = create_node_ref::<html::Textarea>();
 
     let update_program_text = move |event: ev::Event| {
         program.text.set(event_target_value(&event));
     };
-    let program_text_initial_value = program.text.get_untracked();
+    let insert_4_spaces = move || {
+        let element = textarea_ref.get().expect("<textarea> should be mounted");
+        if let Ok(Some(start)) = element.selection_start() {
+            let start_ = start as usize; // safety: 32-bit machine of higher
+            program.text.update(|s| s.insert_str(start_, "    "));
+            let _result = element.set_selection_range(start + 4, start + 4);
+        }
+    };
+    let delete_4_spaces = move || {
+        let element = textarea_ref.get().expect("<textarea> should be mounted");
+        if let Ok(Some(start)) = element.selection_start() {
+            let start_ = start as usize; // safety: 32-bit machine of higher
+            if start < 4 || program.text.with(|s| &s[start_ - 4..start_] != "    ") {
+                return;
+            }
+            program
+                .text
+                .update(|s| s.replace_range(start_ - 4..start_, ""));
+            let _result = element.set_selection_range(start - 4, start - 4);
+        }
+    };
+    let handle_keydown = move |event: ev::KeyboardEvent| {
+        if event.ctrl_key() && event.key_code() == ENTER_KEY {
+            runtime.run();
+        } else if event.key_code() == TAB_KEY {
+            event.prevent_default();
+            match event.shift_key() {
+                false => insert_4_spaces(),
+                true => delete_4_spaces(),
+            }
+        }
+    };
 
     view! {
         <div class="tab-content">
@@ -160,8 +196,10 @@ pub fn ProgramTab() -> impl IntoView {
                 spellcheck="false"
                 prop:value=program.text
                 on:input=update_program_text
+                on:keydown=handle_keydown
+                node_ref=textarea_ref
             >
-                {program_text_initial_value}
+                {program.text.get_untracked()}
             </textarea>
         </div>
     }
