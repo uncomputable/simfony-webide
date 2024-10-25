@@ -39,12 +39,14 @@ fn main() {{
             key.serialize().as_hex()
         );
 
-        Self {
+        let program = Self {
             text: create_rw_signal(text),
             cached_text: create_rw_signal("".to_string()),
             lazy_cmr: create_rw_signal(Err("".to_string())),
             lazy_satisfied: create_rw_signal(Err("".to_string())),
-        }
+        };
+        program.update_on_read();
+        program
     }
 
     pub fn cmr(self) -> Result<simplicity::Cmr, String> {
