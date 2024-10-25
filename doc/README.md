@@ -36,7 +36,7 @@ Paste the ID of the funding transaction into the [Blockstream Explorer for Liqui
 
 ![Screenshot of the Blockstream Explorer](https://raw.githubusercontent.com/uncomputable/simfony-webide/master/doc/esplora1.png)
 
-Scroll down and find the Simfony UTXO. The Liquid testnet faucet always sends 100000 tl-BTC. In our example, the Simfony UTXO is vout = 1.
+Scroll down and find the Simfony UTXO. The Liquid testnet faucet always sends 100000 tL-BTC. In our example, the Simfony UTXO is vout = 1.
 
 ![Screenshot of the Blockstream Explorer](https://raw.githubusercontent.com/uncomputable/simfony-webide/master/doc/esplora2.png)
 
@@ -80,7 +80,7 @@ Cause.
 
 Action to take.
 
-## "Transaction not found" (Blockstream Esplora)
+## "Transaction not found" (Blockstream Explorer)
 
 Fake error. The transaction actually worked :)
 
