@@ -70,7 +70,7 @@ Paste the spending transaction into the [Blockstream Liquid testnet explorer](ht
 
 ![Screenshot of the Simfony web IDE](https://raw.githubusercontent.com/uncomputable/simfony-webide/master/doc/esplora3.png)
 
-If everything worked, the explorer will open the broadcast transaction. In this case, congratulations, you made a Simfony transaction on Liquid testnet!!!
+If everything worked, the explorer will open the broadcast transaction. In this case, congratulations, you made a Simfony transaction on Liquid testnet!!! You can also look up your transaction on [mempool.space](https://liquid.network/testnet).
 
 If you see an error message, take a look at the following "Troubleshooting" section.
 
