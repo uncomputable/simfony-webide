@@ -10,6 +10,10 @@ pub fn Footer() -> impl IntoView {
                 <a href="https://simfony-lang.com/" target="blank">Simfony Lander</a>
             </div>
             <div>
+                "📜 "
+                <a href="https://docs.rs/simfony-as-rust/latest/simfony_as_rust/jet/index.html" target="blank">Jet documentation</a>
+            </div>
+            <div>
                 "🛠️ "
                 <a href="https://github.com/uncomputable/simfony-webide" target="blank">Simfony web IDE GitHub repository</a>
             </div>
