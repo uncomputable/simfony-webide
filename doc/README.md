@@ -129,3 +129,9 @@ A Simplicity jet fails.
 Double-check the conditions that your Simfony program enforces. Update the witness data or transaction parameters.
 
 Every time you change the transaction parameters, the signature hash of the transaction changes. In this case, you need to **regenerate signatures** using the "Key Store" tab.
+
+## `non-mandatory-script-verify-flag (Witness program hash mismatch)`
+
+The CMR of the Simplicity program inside the UTXO is different from the CMR of the program inside the transaction input.
+
+Use a backup to restore the original program that you used to create the UTXO. Alternatively, try to fix your current program to match the UTXO program.
