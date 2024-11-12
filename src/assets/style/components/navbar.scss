@@ -54,7 +54,6 @@
         }
     }
 
-
     .dropdown {
         .dropdown-content {
             display: none; // Hide dropdown by default
@@ -96,17 +95,60 @@
         }
     }
 
-    .beta-tag{
-        color: #ea9606;
+    .hamburger{
+        display: none;
         position: absolute;
-        right:40px;
-        top: 20px;
+        top: 12px;
+        right: 10px;
+        width: 34px;
+
+        @media screen and (max-width: 1000px) {
+            display: inline-block;
+        }
+    }
+
+    .hamburger-close{
+        display: none;
+        position: absolute;
+        top: 12px;
+        right: 10px;
+        width: 34px;
+
+        @media screen and (max-width: 1000px) {
+            display: inline-block;
+        }
+    }
+
+    .mobile-hidden{
+        .beta-tag{
+            color: #ea9606;
+            position: absolute;
+            right:40px;
+            top: 20px;
+        }
+
+        @media screen and (max-width: 1000px) {
+
+            display: none;
+            flex-direction: column;
+            position: absolute;
+            top: 55px;
+            right: 10px;
+            z-index: 2;
+            background: #0d0e10;
+
+            &.open{
+                display: flex;
+            }
+
+            button{
+                width: 100%;
+            }
+
+            .beta-tag{
+                display: none;
+            }
+        }
     }
 }
 
-.tab-content{
-    padding: 10px;
-    background: #1d2127;
-    margin-bottom: 20px;
-    min-height: 470px;
-}
