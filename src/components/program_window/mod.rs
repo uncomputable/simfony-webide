@@ -44,7 +44,6 @@ pub fn ProgramWindow() -> impl IntoView {
             } else {
                 view! { <img class="hamburger-close" src="/images/hamburger_close.svg" on:click=move |_| set_mobile_open.set(false) /> }
             }}
-            
         </Toolbar>
         <ProgramTab />
     }

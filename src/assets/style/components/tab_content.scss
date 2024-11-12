@@ -84,6 +84,27 @@
     font-weight: 700;
     line-height: normal;
     margin-bottom: 12px;
+
+    &.has-buttons{
+        
+    }
+}
+
+.tab-title-group{
+    display: flex;
+    align-items: center;
+    margin-top: 30px;
+    margin-bottom: 8px;
+    border-bottom: 1px solid #424242;
+
+    h3{
+        min-width: 160px;
+        margin: 12px 0;
+    }
+
+    .button-row{
+        margin-left: 20px;
+    }
 }
 
 .tab-description{

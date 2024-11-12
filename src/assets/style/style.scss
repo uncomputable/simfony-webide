@@ -42,7 +42,13 @@ p {
 }
 
 .button-row {
-    display: flex;
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: 4px;
+
+    button {
+        min-width: 92px;
+    }
 
     &.is-small{
         button{
@@ -107,7 +113,7 @@ input[type="radio"]{
     border-radius: 4px;
     padding: 6px 12px;
     color: white;
-    width: 260px;
+    width: 600px;
 
     &:focus-visible{
         outline: none;
