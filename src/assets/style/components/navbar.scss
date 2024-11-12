@@ -29,21 +29,33 @@
         }
     }
 
+    @keyframes run-button-success {
+        0%, 100% { background-color: initial; }
+        50% { background-color: MediumSeaGreen; }
+    }
+    
+    @keyframes run-button-failure {
+        0%, 100% { background-color: initial; }
+        50% { background-color: red; }
+    }
+
     .run-button{
         background: #b26e0f;
         margin-right: 2px;
+
+        &.success {
+            animation-name: run-button-success;
+            animation-duration: 0.5s;
+        }
+    
+        &.failure {
+            animation-name: run-button-failure;
+            animation-duration: 0.5s;
+        }
     }
 
-    .share-button{
-
-    }
 
     .dropdown {
-
-        .dropdown-button {
-            
-        }
-
         .dropdown-content {
             display: none; // Hide dropdown by default
             position: absolute;

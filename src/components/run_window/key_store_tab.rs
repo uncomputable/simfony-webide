@@ -352,7 +352,7 @@ fn SelectSignedData() -> impl IntoView {
             <h3 class="tab-title">
                 Signed Data
             </h3>
-            <fieldset class="button-col signed-data-content">
+            <fieldset class="signed-data-content">
                 <label class="key-store-display-row">
                     <input
                         type="radio"
