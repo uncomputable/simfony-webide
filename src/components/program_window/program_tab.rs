@@ -104,13 +104,6 @@ impl Runtime {
     }
 
     fn set_success(self, success: bool) {
-        web_sys::window()
-            .as_ref()
-            .map(web_sys::Window::navigator)
-            .map(|navigator| match success {
-                true => navigator.vibrate_with_duration(200),
-                false => navigator.vibrate_with_duration(500),
-            });
         if !success {
             self.alarm_audio_ref.get().map(|audio| audio.play());
         }
@@ -119,6 +112,13 @@ impl Runtime {
             gloo_timers::future::TimeoutFuture::new(500).await;
             self.run_succeeded.set(None);
         });
+        web_sys::window()
+            .as_ref()
+            .map(web_sys::Window::navigator)
+            .map(|navigator| match success {
+                true => navigator.vibrate_with_duration(200),
+                false => navigator.vibrate_with_duration(500),
+            });
     }
 
     pub fn run(self) {
