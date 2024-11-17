@@ -4,8 +4,8 @@ use hex_conservative::DisplayHex;
 use itertools::Itertools;
 use leptos::{
     component, create_node_ref, create_rw_signal, ev, event_target_value, html, spawn_local,
-    use_context, view, with, IntoView, NodeRef, RwSignal, Signal, SignalGetUntracked, SignalSet,
-    SignalUpdate, SignalWith,
+    use_context, view, IntoView, NodeRef, RwSignal, Signal, SignalGetUntracked, SignalSet,
+    SignalUpdate, SignalWith, SignalWithUntracked,
 };
 use simfony::elements::secp256k1_zkp as secp256k1;
 use simfony::parse::ParseFromStr;
@@ -60,13 +60,14 @@ fn main() {{
     }
 
     pub fn update_on_read(self) {
-        let text = self.text;
-        let cached_text = self.cached_text;
-        let needs_update = with!(|text, cached_text| { text != cached_text });
+        let needs_update = self.text.with_untracked(|text| {
+            self.cached_text
+                .with_untracked(|cached_text| text != cached_text)
+        });
         if !needs_update {
             return;
         }
-        with!(|text| {
+        self.text.with_untracked(|text| {
             self.cached_text.set(text.clone());
             let compiled = CompiledProgram::new(text);
             self.lazy_cmr
