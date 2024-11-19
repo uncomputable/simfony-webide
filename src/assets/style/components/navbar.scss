@@ -98,9 +98,12 @@
     .hamburger{
         display: none;
         position: absolute;
-        top: 12px;
+        top: 10px;
         right: 10px;
-        width: 34px;
+
+        &:before{
+            font-size: 34px;
+        }
 
         @media screen and (max-width: 1000px) {
             display: inline-block;
@@ -110,9 +113,12 @@
     .hamburger-close{
         display: none;
         position: absolute;
-        top: 12px;
-        right: 10px;
-        width: 34px;
+        top: 10px;
+        right: 14px;
+        
+        &:before{
+            font-size: 34px;
+        }
 
         @media screen and (max-width: 1000px) {
             display: inline-block;

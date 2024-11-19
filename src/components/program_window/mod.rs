@@ -40,9 +40,9 @@ pub fn ProgramWindow() -> impl IntoView {
             <HelpButton />
 
             {move || if !mobile_open.get() {
-                view! { <img class="hamburger" src="/images/hamburger.svg" on:click=move |_| set_mobile_open.set(true) /> }
+                view! { <i class="fa-solid fa-bars hamburger" on:click=move |_| set_mobile_open.set(true)></i>}
             } else {
-                view! { <img class="hamburger-close" src="/images/hamburger_close.svg" on:click=move |_| set_mobile_open.set(false) /> }
+                view! { <i class="fa-solid fa-xmark hamburger-close" on:click=move |_| set_mobile_open.set(false)></i> }
             }}
         </Toolbar>
         <ProgramTab />
