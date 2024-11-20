@@ -1,4 +1,11 @@
 
+.tab-content{
+    padding: 10px;
+    background: #1d2127;
+    margin-bottom: 20px;
+    min-height: 470px;
+}
+
 // witness tab
 .witness-table{
     position: relative;
@@ -79,6 +86,23 @@
     margin-bottom: 12px;
 }
 
+.tab-title-group{
+    display: flex;
+    align-items: center;
+    margin-top: 30px;
+    margin-bottom: 8px;
+    border-bottom: 1px solid #424242;
+
+    h3{
+        min-width: 160px;
+        margin: 12px 0;
+    }
+
+    .button-row{
+        margin-left: 20px;
+    }
+}
+
 .tab-description{
     font-size: 16px;
     font-style: normal;
@@ -91,3 +115,4 @@
         color: #ea9606;
     }
 }
+

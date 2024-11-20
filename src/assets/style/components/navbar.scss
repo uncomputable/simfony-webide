@@ -29,21 +29,32 @@
         }
     }
 
+    @keyframes run-button-success {
+        0%, 100% { background-color: initial; }
+        50% { background-color: MediumSeaGreen; }
+    }
+    
+    @keyframes run-button-failure {
+        0%, 100% { background-color: initial; }
+        50% { background-color: red; }
+    }
+
     .run-button{
         background: #b26e0f;
         margin-right: 2px;
-    }
 
-    .share-button{
-
+        &.success {
+            animation-name: run-button-success;
+            animation-duration: 0.5s;
+        }
+    
+        &.failure {
+            animation-name: run-button-failure;
+            animation-duration: 0.5s;
+        }
     }
 
     .dropdown {
-
-        .dropdown-button {
-            
-        }
-
         .dropdown-content {
             display: none; // Hide dropdown by default
             position: absolute;
@@ -84,17 +95,66 @@
         }
     }
 
-    .beta-tag{
-        color: #ea9606;
+    .hamburger{
+        display: none;
         position: absolute;
-        right:40px;
-        top: 20px;
+        top: 10px;
+        right: 10px;
+
+        &:before{
+            font-size: 34px;
+        }
+
+        @media screen and (max-width: 1000px) {
+            display: inline-block;
+        }
+    }
+
+    .hamburger-close{
+        display: none;
+        position: absolute;
+        top: 10px;
+        right: 14px;
+        
+        &:before{
+            font-size: 34px;
+        }
+
+        @media screen and (max-width: 1000px) {
+            display: inline-block;
+        }
+    }
+
+    .mobile-hidden{
+        .beta-tag{
+            color: #ea9606;
+            position: absolute;
+            right:40px;
+            top: 20px;
+        }
+
+        @media screen and (max-width: 1000px) {
+
+            display: none;
+            flex-direction: column;
+            position: absolute;
+            top: 55px;
+            right: 10px;
+            z-index: 2;
+            background: #0d0e10;
+
+            &.open{
+                display: flex;
+            }
+
+            button{
+                width: 100%;
+            }
+
+            .beta-tag{
+                display: none;
+            }
+        }
     }
 }
 
-.tab-content{
-    padding: 10px;
-    background: #1d2127;
-    margin-bottom: 20px;
-    min-height: 470px;
-}

@@ -1,0 +1,31 @@
+
+.program-input{
+    background-color: $background-light;
+    padding: 30px;
+    border-radius: 7.5px;
+
+
+    &-field{
+        width: 100%;
+        background-color: $background-dark;
+        border-radius: 7.5px;
+        border: 1px solid rgba(255, 255, 255, 0.10);
+        color: #fdc667;
+        font-family: 'Roboto Mono', monospace;
+        font-size: 12px;
+        resize: none;
+        padding: 12px;
+        &:focus-visible {
+            outline: none;
+        }
+
+        scrollbar-color: $background-dark #424242;
+        scrollbar-width: thin;
+    }
+}
+
+.copy-program {
+    position: absolute;
+    top: 80px;
+    right: 30px;
+}

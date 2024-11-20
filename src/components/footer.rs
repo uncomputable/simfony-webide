@@ -3,7 +3,7 @@ use leptos::{component, view, IntoView};
 #[component]
 pub fn Footer() -> impl IntoView {
     view! {
-        <div class="container center intro">
+        <div class="center">
             <h1 class="intro-title">Further Links</h1>
             <div>
                 "🚀 "
