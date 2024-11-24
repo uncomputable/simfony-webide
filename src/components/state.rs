@@ -1,64 +1,142 @@
 use std::num::NonZeroU32;
 
-use leptos::{use_context, SignalGetUntracked};
-use leptos_router::ParamsMap;
+use leptos::{use_context, SignalGetUntracked, SignalWithUntracked};
+use web_sys::window;
 
+use crate::components::program_window::Program;
 use crate::components::run_window::{HashedData, SigningKeys, TxEnv};
 use crate::transaction::TxParams;
 
-/// [`leptos_router::Params`] with simpler error handling via [`Option`].
-pub trait FromParams: Sized {
-    /// [`leptos_router::Params::from_map`] that returns `Option<Self>`
-    /// instead of `Result<Self, ParamsError>`.
-    fn from_map(map: &ParamsMap) -> Option<Self>;
+/// Get the browser's local storage.
+fn local_storage() -> Option<web_sys::Storage> {
+    let window = window()?;
+    window.local_storage().ok().flatten()
 }
 
-pub trait ToParams {
-    /// Convert the value into route parameters and route values.
-    fn to_params(&self) -> impl Iterator<Item = (&'static str, String)>;
-}
+/// Read / write an object to / from the browser's local storage.
+pub trait LocalStorage: Sized {
+    /// Iterate over the keys that make up the object.
+    fn keys() -> impl Iterator<Item = &'static str>;
 
-impl FromParams for SigningKeys {
-    fn from_map(map: &ParamsMap) -> Option<Self> {
-        let key_offset = map.get("seed").and_then(|s| s.parse::<u32>().ok())?;
-        let key_count = map.get("keys").and_then(|s| s.parse::<NonZeroU32>().ok())?;
-        Some(Self::new(key_offset, key_count))
+    /// Construct an object from the values of the corresponding keys.
+    ///
+    /// Return `None` if there are not enough values or
+    /// if there is an ill-formatted value.
+    fn from_values(values: impl Iterator<Item = String>) -> Option<Self>;
+
+    /// Convert an object into its underlying values, in the order of keys.
+    fn to_values(&self) -> impl Iterator<Item = String>;
+
+    /// Load an object from the browser's local storage.
+    fn load_from_storage() -> Option<Self> {
+        let storage = local_storage()?;
+        let values = Self::keys().filter_map(|key| storage.get_item(key).ok().flatten());
+        Self::from_values(values)
+    }
+
+    /// Store an object in the browser's local storage.
+    ///
+    /// Replaces any existing value.
+    fn store_in_storage(&self) {
+        let storage = match local_storage() {
+            Some(storage) => storage,
+            _ => return,
+        };
+        for (key, value) in Self::keys().zip(self.to_values()) {
+            let _result = storage.set_item(key, value.as_str());
+        }
     }
 }
 
-impl ToParams for SigningKeys {
-    fn to_params(&self) -> impl Iterator<Item = (&'static str, String)> {
+/// Store the app's entire state in the browser's local storage.
+pub fn update_local_storage() {
+    use_context::<Program>()
+        .expect("program should exist in context")
+        .store_in_storage();
+    use_context::<TxEnv>()
+        .expect("transaction environment should exist in context")
+        .params
+        .with_untracked(LocalStorage::store_in_storage);
+    use_context::<SigningKeys>()
+        .expect("signing keys should exist in context")
+        .store_in_storage();
+    use_context::<HashedData>()
+        .expect("hashed data should exist in context")
+        .store_in_storage();
+    leptos::logging::log!("Update storage");
+}
+
+impl LocalStorage for Program {
+    fn keys() -> impl Iterator<Item = &'static str> {
+        ["program"].into_iter()
+    }
+
+    fn from_values(mut values: impl Iterator<Item = String>) -> Option<Self> {
+        values.next().map(Self::new)
+    }
+
+    fn to_values(&self) -> impl Iterator<Item = String> {
+        [self.text.get_untracked()].into_iter()
+    }
+}
+
+impl LocalStorage for SigningKeys {
+    fn keys() -> impl Iterator<Item = &'static str> {
+        ["seed", "key_count"].into_iter()
+    }
+
+    fn from_values(mut values: impl Iterator<Item = String>) -> Option<Self> {
+        let seed = values.next().and_then(|s| s.parse::<u32>().ok())?;
+        let key_count = values.next().and_then(|s| s.parse::<NonZeroU32>().ok())?;
+        Some(Self::new(seed, key_count))
+    }
+
+    fn to_values(&self) -> impl Iterator<Item = String> {
         [
-            ("seed", self.key_offset.get_untracked().to_string()),
-            ("keys", self.key_count.get_untracked().to_string()),
+            self.key_offset.get_untracked().to_string(),
+            self.key_count.get_untracked().to_string(),
         ]
         .into_iter()
     }
 }
 
-impl FromParams for HashedData {
-    fn from_map(map: &ParamsMap) -> Option<Self> {
-        map.get("hashes")
-            .and_then(|s| s.parse::<u32>().ok())
-            .map(Self::new)
+impl LocalStorage for HashedData {
+    fn keys() -> impl Iterator<Item = &'static str> {
+        ["hash_count"].into_iter()
+    }
+
+    fn from_values(mut values: impl Iterator<Item = String>) -> Option<Self> {
+        let hash_count = values.next().and_then(|s| s.parse::<u32>().ok())?;
+        Some(Self::new(hash_count))
+    }
+
+    fn to_values(&self) -> impl Iterator<Item = String> {
+        [self.hash_count.get_untracked().to_string()].into_iter()
     }
 }
 
-impl ToParams for HashedData {
-    fn to_params(&self) -> impl Iterator<Item = (&'static str, String)> {
-        [("hashes", self.hash_count.get_untracked().to_string())].into_iter()
+impl LocalStorage for TxParams {
+    fn keys() -> impl Iterator<Item = &'static str> {
+        [
+            "txid",
+            "vout",
+            "value",
+            "recipient",
+            "fee",
+            "lock_time",
+            "sequence",
+        ]
+        .into_iter()
     }
-}
 
-impl FromParams for TxParams {
-    fn from_map(map: &ParamsMap) -> Option<Self> {
-        let txid = map.get("txid").and_then(|s| s.parse().ok())?;
-        let vout = map.get("vout").and_then(|s| s.parse().ok())?;
-        let value_in = map.get("value").and_then(|s| s.parse().ok())?;
-        let recipient_address = map.get("recipient").and_then(|s| s.parse().ok());
-        let fee = map.get("fee").and_then(|s| s.parse().ok())?;
-        let lock_time = map.get("lock_time").and_then(|s| s.parse().ok())?;
-        let sequence = map.get("sequence").and_then(|s| s.parse().ok())?;
+    fn from_values(mut values: impl Iterator<Item = String>) -> Option<Self> {
+        let txid = values.next().and_then(|s| s.parse().ok())?;
+        let vout = values.next().and_then(|s| s.parse().ok())?;
+        let value_in = values.next().and_then(|s| s.parse().ok())?;
+        let recipient_address = values.next().and_then(|s| s.parse().ok());
+        let fee = values.next().and_then(|s| s.parse().ok())?;
+        let lock_time = values.next().and_then(|s| s.parse().ok())?;
+        let sequence = values.next().and_then(|s| s.parse().ok())?;
 
         Some(Self {
             txid,
@@ -70,51 +148,20 @@ impl FromParams for TxParams {
             sequence,
         })
     }
-}
 
-impl ToParams for TxParams {
-    fn to_params(&self) -> impl Iterator<Item = (&'static str, String)> {
-        let mut params = vec![
-            ("txid", self.txid.to_string()),
-            ("vout", self.vout.to_string()),
-            ("value", self.value_in.to_string()),
-            ("fee", self.fee.to_string()),
-            ("lock_time", self.lock_time.to_string()),
-            ("sequence", self.sequence.to_string()),
-        ];
-        if let Some(address) = &self.recipient_address {
-            params.push(("recipient", address.to_string()));
-        }
-        params.into_iter()
+    fn to_values(&self) -> impl Iterator<Item = String> {
+        [
+            self.txid.to_string(),
+            self.vout.to_string(),
+            self.value_in.to_string(),
+            self.recipient_address
+                .as_ref()
+                .map(ToString::to_string)
+                .unwrap_or_default(),
+            self.fee.to_string(),
+            self.lock_time.to_string(),
+            self.sequence.to_string(),
+        ]
+        .into_iter()
     }
-}
-
-pub fn stateful_url() -> Option<String> {
-    web_sys::window().map(|window| {
-        let location = window.location();
-        let origin = location.origin().unwrap_or_default();
-        let pathname = location.pathname().unwrap_or_default();
-        let mut url = format!("{}{}", origin, pathname);
-
-        let tx_params = use_context::<TxEnv>()
-            .expect("transaction environment should exist in context")
-            .params
-            .get_untracked();
-        let signing_keys =
-            use_context::<SigningKeys>().expect("signing keys should exist in context");
-        let hashed_data = use_context::<HashedData>().expect("hashed data should exist in context");
-
-        for (param, value) in tx_params
-            .to_params()
-            .chain(signing_keys.to_params())
-            .chain(hashed_data.to_params())
-        {
-            url.push('?');
-            url.push_str(param);
-            url.push('=');
-            url.push_str(value.as_str());
-        }
-
-        url
-    })
 }

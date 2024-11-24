@@ -20,7 +20,7 @@ leptos_router = { version = "0.6.15", features = ["csr"] }
 console_error_panic_hook = "0.1.7"
 hex-conservative = "0.2.1"
 js-sys = "0.3.70"
-web-sys = { version = "0.3.70", features = ["Navigator", "Clipboard"] }
+web-sys = { version = "0.3.70", features = ["Navigator", "Clipboard", "Storage"] }
 wasm-bindgen-futures = "0.4.43"
 gloo-timers = { version = "0.3.0", features = ["futures"] }
 lz-str = "0.2.1"

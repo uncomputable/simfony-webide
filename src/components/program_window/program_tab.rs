@@ -25,7 +25,18 @@ pub struct Program {
 }
 
 impl Program {
-    pub fn new(key: secp256k1::XOnlyPublicKey) -> Self {
+    pub fn new(text: String) -> Self {
+        let program = Self {
+            text: create_rw_signal(text),
+            cached_text: create_rw_signal("".to_string()),
+            lazy_cmr: create_rw_signal(Err("".to_string())),
+            lazy_satisfied: create_rw_signal(Err("".to_string())),
+        };
+        program.update_on_read();
+        program
+    }
+
+    pub fn new_p2pk(key: secp256k1::XOnlyPublicKey) -> Self {
         let text = format!(
             r#"mod witness {{
     const SIG: Signature = 0x1d7d93f350e2db564f90da49fb00ee47294bb6d8f061929818b26065a3e50fdd87e0e8ab45eecd04df0b92b427e6d49a5c96810c23706566e9093c992e075dc5; // TODO: update this
@@ -39,14 +50,7 @@ fn main() {{
             key.serialize().as_hex()
         );
 
-        let program = Self {
-            text: create_rw_signal(text),
-            cached_text: create_rw_signal("".to_string()),
-            lazy_cmr: create_rw_signal(Err("".to_string())),
-            lazy_satisfied: create_rw_signal(Err("".to_string())),
-        };
-        program.update_on_read();
-        program
+        Self::new(text)
     }
 
     pub fn cmr(self) -> Result<simplicity::Cmr, String> {

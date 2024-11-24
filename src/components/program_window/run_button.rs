@@ -1,13 +1,17 @@
 use leptos::{component, ev, use_context, view, IntoView, SignalGet};
 
 use crate::components::program_window::Runtime;
+use crate::components::state::update_local_storage;
 
 #[component]
 pub fn RunButton() -> impl IntoView {
     let runtime = use_context::<Runtime>().expect("runtime should exist in context");
     let audio_ref = runtime.alarm_audio_ref;
 
-    let run_program = move |_event: ev::MouseEvent| runtime.run();
+    let run_program = move |_event: ev::MouseEvent| {
+        update_local_storage();
+        runtime.run();
+    };
     let button_class = move || match runtime.run_succeeded.get() {
         None => "button run-button",
         Some(false) => "button run-button failure",
