@@ -103,16 +103,21 @@ impl LocalStorage for SigningKeys {
 
 impl LocalStorage for HashedData {
     fn keys() -> impl Iterator<Item = &'static str> {
-        ["hash_count"].into_iter()
+        ["random_seed", "hash_count"].into_iter()
     }
 
     fn from_values(mut values: impl Iterator<Item = String>) -> Option<Self> {
-        let hash_count = values.next().and_then(|s| s.parse::<u32>().ok())?;
-        Some(Self::new(hash_count))
+        let random_seed = values.next().and_then(|s| s.parse::<U256>().ok())?;
+        let hash_count = values.next().and_then(|s| s.parse::<NonZeroU32>().ok())?;
+        Some(Self::new(random_seed, hash_count))
     }
 
     fn to_values(&self) -> impl Iterator<Item = String> {
-        [self.hash_count.get_untracked().to_string()].into_iter()
+        [
+            self.random_seed.get_untracked().to_string(),
+            self.hash_count.get_untracked().to_string(),
+        ]
+        .into_iter()
     }
 }
 
