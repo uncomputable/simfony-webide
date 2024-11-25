@@ -1,6 +1,7 @@
 use std::num::NonZeroU32;
 
 use leptos::{use_context, SignalGetUntracked, SignalWithUntracked};
+use simfony::num::U256;
 use web_sys::window;
 
 use crate::components::program_window::Program;
@@ -82,18 +83,18 @@ impl LocalStorage for Program {
 
 impl LocalStorage for SigningKeys {
     fn keys() -> impl Iterator<Item = &'static str> {
-        ["seed", "key_count"].into_iter()
+        ["random_seed", "key_count"].into_iter()
     }
 
     fn from_values(mut values: impl Iterator<Item = String>) -> Option<Self> {
-        let seed = values.next().and_then(|s| s.parse::<u32>().ok())?;
+        let random_seed = values.next().and_then(|s| s.parse::<U256>().ok())?;
         let key_count = values.next().and_then(|s| s.parse::<NonZeroU32>().ok())?;
-        Some(Self::new(seed, key_count))
+        Some(Self::new(random_seed, key_count))
     }
 
     fn to_values(&self) -> impl Iterator<Item = String> {
         [
-            self.key_offset.get_untracked().to_string(),
+            self.random_seed.get_untracked().to_string(),
             self.key_count.get_untracked().to_string(),
         ]
         .into_iter()
