@@ -1,4 +1,4 @@
-use std::num::NonZeroU32;
+use std::num::NonZeroUsize;
 use std::sync::Arc;
 
 use elements::hashes::{sha256, Hash};
@@ -17,36 +17,25 @@ use crate::components::copy_to_clipboard::CopyToClipboard;
 
 #[derive(Copy, Clone, Debug)]
 pub struct SigningKeys {
-    pub random_seed: RwSignal<U256>,
-    pub key_count: RwSignal<NonZeroU32>,
-    pub secret_keys: Memo<Vec<secp256k1::Keypair>>,
-    pub public_keys: Memo<Vec<secp256k1::XOnlyPublicKey>>,
+    pub random_seed: U256,
+    pub key_count: RwSignal<NonZeroUsize>,
+    pub secret_keys: [secp256k1::Keypair; 26],
+    pub public_keys: [secp256k1::XOnlyPublicKey; 26],
 }
 
 impl Default for SigningKeys {
     fn default() -> Self {
-        Self::new(U256::from_byte_array(rand::random()), NonZeroU32::MIN)
+        Self::new(U256::from_byte_array(rand::random()), NonZeroUsize::MIN)
     }
 }
 
 impl SigningKeys {
-    pub fn new(random_seed: U256, key_count: NonZeroU32) -> Self {
-        let random_seed = create_rw_signal(random_seed);
+    pub fn new(random_seed: U256, key_count: NonZeroUsize) -> Self {
         let key_count = create_rw_signal(key_count);
-        let secret_keys = create_memo(move |_| {
-            let mut rng = rand::rngs::StdRng::from_seed(random_seed.get().to_byte_array());
-            (0..key_count.get().get())
-                .map(|_| secp256k1::Keypair::new(secp256k1::SECP256K1, &mut rng))
-                .collect::<Vec<secp256k1::Keypair>>()
-        });
-        let public_keys = create_memo(move |_| {
-            with!(|secret_keys| {
-                secret_keys
-                    .iter()
-                    .map(|key| key.x_only_public_key().0)
-                    .collect()
-            })
-        });
+        let mut rng = rand::rngs::StdRng::from_seed(random_seed.to_byte_array());
+        let secret_keys =
+            std::array::from_fn(|_| secp256k1::Keypair::new(secp256k1::SECP256K1, &mut rng));
+        let public_keys = std::array::from_fn(|index| secret_keys[index].x_only_public_key().0);
         Self {
             random_seed,
             key_count,
@@ -55,17 +44,16 @@ impl SigningKeys {
         }
     }
 
-    pub fn first_public_key(&self) -> secp256k1::XOnlyPublicKey {
-        self.public_keys.get_untracked()[0]
-    }
-
     pub fn push_key(&self) {
-        self.key_count.update(|n| *n = n.saturating_add(1));
+        let n = self.key_count.get().get();
+        if n < 26 {
+            self.key_count.update(|n| *n = n.saturating_add(1));
+        }
     }
 
     pub fn pop_key(&self) {
         let n = self.key_count.get().get();
-        if let Some(n_minus_one) = NonZeroU32::new(n - 1) {
+        if let Some(n_minus_one) = NonZeroUsize::new(n - 1) {
             self.key_count.set(n_minus_one);
         }
     }
@@ -73,15 +61,9 @@ impl SigningKeys {
     pub fn signatures(
         self,
         message: Signal<secp256k1::Message>,
-    ) -> Memo<Vec<secp256k1::schnorr::Signature>> {
-        let secret_keys = self.secret_keys;
+    ) -> Memo<[secp256k1::schnorr::Signature; 26]> {
         create_memo(move |_| {
-            with!(|secret_keys| {
-                secret_keys
-                    .iter()
-                    .map(|key| key.sign_schnorr(message.get()))
-                    .collect()
-            })
+            std::array::from_fn(|index| self.secret_keys[index].sign_schnorr(message.get()))
         })
     }
 }
@@ -176,9 +158,10 @@ pub fn KeyStoreTab() -> impl IntoView {
 #[component]
 fn CopyPublicKeysToClipboard() -> impl IntoView {
     let signing_keys = use_context::<SigningKeys>().expect("signing keys should exist in context");
-    let copy_single_public_key = move |(index, key): (usize, secp256k1::XOnlyPublicKey)| -> View {
+    let copy_single_public_key = move |index: usize| -> View {
         let label = key_name(index);
-        let xonly_hex = move || format!("0x{}", key.serialize().as_hex());
+        let xonly_hex =
+            move || format!("0x{}", signing_keys.public_keys[index].serialize().as_hex());
 
         view! {
             <CopyToClipboard content=xonly_hex class="copy-button">
@@ -220,8 +203,8 @@ fn CopyPublicKeysToClipboard() -> impl IntoView {
             </div>
             <div class="button-row is-small">
                 <For
-                    each=move || signing_keys.public_keys.get().into_iter().enumerate()
-                    key=|(_index, key)| *key
+                    each=move || 0..signing_keys.key_count.get().get()
+                    key=|index| *index
                     children=copy_single_public_key
                 />
             </div>
@@ -276,7 +259,7 @@ fn CopySignaturesToClipboard() -> impl IntoView {
 
             <div class="button-row is-small">
                 <For
-                    each=move || signing_keys.signatures(signed_data.message()).get().into_iter().enumerate()
+                    each=move || (0..signing_keys.key_count.get().get()).zip(signing_keys.signatures(signed_data.message()).get().into_iter())
                     key=|(_index, signature)| *signature
                     children=copy_single_signature
                 />

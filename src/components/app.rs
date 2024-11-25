@@ -14,7 +14,7 @@ pub fn App() -> impl IntoView {
     let signing_keys = SigningKeys::load_from_storage().unwrap_or_default();
     provide_context(signing_keys);
     let program = Program::load_from_storage()
-        .unwrap_or_else(|| Program::new_p2pk(signing_keys.first_public_key()));
+        .unwrap_or_else(|| Program::new_p2pk(signing_keys.public_keys[0]));
     provide_context(program);
     let tx_params = TxParams::load_from_storage().unwrap_or_default();
     let tx_env = TxEnv::new(program, tx_params);
