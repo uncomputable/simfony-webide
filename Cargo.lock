@@ -1369,7 +1369,8 @@ dependencies = [
 [[package]]
 name = "secp256k1-zkp"
 version = "0.11.0"
-source = "git+https://github.com/BlockstreamResearch/rust-secp256k1-zkp?rev=0a3e73cf77236f967b2faab47909ba535273fd9a#0a3e73cf77236f967b2faab47909ba535273fd9a"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "52a44aed3002b5ae975f8624c5df3a949cfbf00479e18778b6058fcd213b76e3"
 dependencies = [
  "bitcoin-private",
  "rand",
@@ -1379,8 +1380,9 @@ dependencies = [
 
 [[package]]
 name = "secp256k1-zkp-sys"
-version = "0.10.0"
-source = "git+https://github.com/BlockstreamResearch/rust-secp256k1-zkp?rev=0a3e73cf77236f967b2faab47909ba535273fd9a#0a3e73cf77236f967b2faab47909ba535273fd9a"
+version = "0.10.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "57f08b2d0b143a22e07f798ae4f0ab20d5590d7c68e0d090f2088a48a21d1654"
 dependencies = [
  "cc",
  "secp256k1-sys",
@@ -1550,7 +1552,7 @@ dependencies = [
 [[package]]
 name = "simfony"
 version = "0.1.0"
-source = "git+https://github.com/uncomputable/simfony?branch=2024-10-fix-wasm#06b76410098824d58dd27e5425c95f70795bd345"
+source = "git+https://github.com/BlockstreamResearch/simfony?rev=869a0b217ec275a976828cb838cb3bf21c808afd#869a0b217ec275a976828cb838cb3bf21c808afd"
 dependencies = [
  "base64 0.21.7",
  "either",

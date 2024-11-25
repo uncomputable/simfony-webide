@@ -14,7 +14,7 @@ lib-profile-release = "wasm-release"
 
 [dependencies]
 itertools = "0.13.0"
-simfony = { git = "https://github.com/uncomputable/simfony", branch = "2024-10-fix-wasm" }
+simfony = { git = "https://github.com/BlockstreamResearch/simfony", rev = "869a0b217ec275a976828cb838cb3bf21c808afd" }
 leptos = { version = "0.6.14", features = ["csr"] }
 leptos_router = { version = "0.6.15", features = ["csr"] }
 console_error_panic_hook = "0.1.7"
@@ -24,9 +24,6 @@ web-sys = { version = "0.3.70", features = ["Navigator", "Clipboard", "Storage"]
 wasm-bindgen-futures = "0.4.43"
 gloo-timers = { version = "0.3.0", features = ["futures"] }
 lz-str = "0.2.1"
-
-[patch.crates-io]
-secp256k1-zkp = { git = "https://github.com/BlockstreamResearch/rust-secp256k1-zkp", rev = "0a3e73cf77236f967b2faab47909ba535273fd9a" }
 
 [dev-dependencies]
 wasm-bindgen-test = "0.3.43"

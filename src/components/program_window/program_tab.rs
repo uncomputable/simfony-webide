@@ -73,12 +73,12 @@ fn main() {{
         }
         self.text.with_untracked(|text| {
             self.cached_text.set(text.clone());
-            let compiled = CompiledProgram::new(text);
+            let compiled = CompiledProgram::new(text.as_str(), simfony::Arguments::default());
             self.lazy_cmr
                 .set(compiled.clone().map(|x| x.commit().cmr()));
             self.lazy_satisfied.set(compiled.and_then(|x| {
                 let witness = WitnessValues::parse_from_str(text)?;
-                x.satisfy(&witness)
+                x.satisfy(witness)
             }));
         });
     }

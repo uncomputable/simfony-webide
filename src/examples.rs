@@ -23,15 +23,15 @@ impl Example {
 
     #[cfg(test)]
     pub fn satisfied(self) -> simfony::SatisfiedProgram {
-        let compiled =
-            simfony::CompiledProgram::new(self.program).expect("example program should compile");
+        let compiled = simfony::CompiledProgram::new(self.program, simfony::Arguments::default())
+            .expect("example program should compile");
         let witness_values =
             <simfony::WitnessValues as simfony::parse::ParseFromStr>::parse_from_str(
                 self.program_text(),
             )
             .expect("example witness should parse");
         compiled
-            .satisfy(&witness_values)
+            .satisfy(witness_values)
             .expect("example program should be satisfied")
     }
 
