@@ -1,12 +1,11 @@
-use std::num::NonZeroUsize;
-
 use leptos::{use_context, SignalGetUntracked, SignalWithUntracked};
 use simfony::num::U256;
 use web_sys::window;
 
 use crate::components::program_window::Program;
-use crate::components::run_window::{HashedData, SigningKeys, TxEnv};
+use crate::components::run_window::{HashCount, KeyCount, TxEnv};
 use crate::transaction::TxParams;
+use crate::util::{Counter26, HashedData, SigningKeys};
 
 /// Get the browser's local storage.
 fn local_storage() -> Option<web_sys::Storage> {
@@ -64,6 +63,9 @@ pub fn update_local_storage() {
     use_context::<HashedData>()
         .expect("hashed data should exist in context")
         .store_in_storage();
+    use_context::<HashCount>()
+        .expect("hash count should exist in context")
+        .store_in_storage();
     leptos::logging::log!("Update storage");
 }
 
@@ -83,41 +85,71 @@ impl LocalStorage for Program {
 
 impl LocalStorage for SigningKeys {
     fn keys() -> impl Iterator<Item = &'static str> {
-        ["random_seed", "key_count"].into_iter()
+        ["random_seed"].into_iter()
     }
 
     fn from_values(mut values: impl Iterator<Item = String>) -> Option<Self> {
-        let random_seed = values.next().and_then(|s| s.parse::<U256>().ok())?;
-        let key_count = values.next().and_then(|s| s.parse::<NonZeroUsize>().ok())?;
-        Some(Self::new(random_seed, key_count))
+        values
+            .next()
+            .and_then(|s| s.parse::<U256>().ok())
+            .map(Self::new)
     }
 
     fn to_values(&self) -> impl Iterator<Item = String> {
-        [
-            self.random_seed.to_string(),
-            self.key_count.get_untracked().to_string(),
-        ]
-        .into_iter()
+        [self.random_seed.to_string()].into_iter()
     }
 }
 
 impl LocalStorage for HashedData {
     fn keys() -> impl Iterator<Item = &'static str> {
-        ["random_seed", "hash_count"].into_iter()
+        ["random_seed"].into_iter()
     }
 
     fn from_values(mut values: impl Iterator<Item = String>) -> Option<Self> {
-        let random_seed = values.next().and_then(|s| s.parse::<U256>().ok())?;
-        let hash_count = values.next().and_then(|s| s.parse::<NonZeroUsize>().ok())?;
-        Some(Self::new(random_seed, hash_count))
+        values
+            .next()
+            .and_then(|s| s.parse::<U256>().ok())
+            .map(Self::new)
     }
 
     fn to_values(&self) -> impl Iterator<Item = String> {
-        [
-            self.random_seed.to_string(),
-            self.hash_count.get_untracked().to_string(),
-        ]
-        .into_iter()
+        [self.random_seed.to_string()].into_iter()
+    }
+}
+
+impl LocalStorage for KeyCount {
+    fn keys() -> impl Iterator<Item = &'static str> {
+        ["key_count"].into_iter()
+    }
+
+    fn from_values(mut values: impl Iterator<Item = String>) -> Option<Self> {
+        values
+            .next()
+            .and_then(|s| s.parse::<usize>().ok())
+            .and_then(Counter26::new)
+            .map(Self::new)
+    }
+
+    fn to_values(&self) -> impl Iterator<Item = String> {
+        [self.0.get_untracked().get().to_string()].into_iter()
+    }
+}
+
+impl LocalStorage for HashCount {
+    fn keys() -> impl Iterator<Item = &'static str> {
+        ["hash_count"].into_iter()
+    }
+
+    fn from_values(mut values: impl Iterator<Item = String>) -> Option<Self> {
+        values
+            .next()
+            .and_then(|s| s.parse::<usize>().ok())
+            .and_then(Counter26::new)
+            .map(Self::new)
+    }
+
+    fn to_values(&self) -> impl Iterator<Item = String> {
+        [self.0.get_untracked().get().to_string()].into_iter()
     }
 }
 

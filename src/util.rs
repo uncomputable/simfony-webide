@@ -2,11 +2,108 @@ use std::fmt;
 
 use elements::hashes::{sha256, Hash};
 use elements::secp256k1_zkp as secp256k1;
+use secp256k1::rand::{self, Rng, SeedableRng};
+use simfony::num::U256;
+use simfony::simplicity::Preimage32;
 use simfony::{elements, simplicity};
 use simplicity::dag::{DagLike, MaxSharing, NoSharing};
 use simplicity::jet::Elements;
 use simplicity::node::Inner;
 use simplicity::{node, RedeemNode};
+
+#[derive(Clone, Debug)]
+pub struct SigningKeys {
+    pub random_seed: U256,
+    pub secret_keys: [secp256k1::Keypair; 26],
+    pub public_keys: [secp256k1::XOnlyPublicKey; 26],
+}
+
+impl SigningKeys {
+    pub fn new(random_seed: U256) -> Self {
+        let mut rng = rand::rngs::StdRng::from_seed(random_seed.to_byte_array());
+        let secret_keys =
+            std::array::from_fn(|_| secp256k1::Keypair::new(secp256k1::SECP256K1, &mut rng));
+        let public_keys = std::array::from_fn(|index| secret_keys[index].x_only_public_key().0);
+        Self {
+            random_seed,
+            secret_keys,
+            public_keys,
+        }
+    }
+}
+
+impl Default for SigningKeys {
+    fn default() -> Self {
+        Self::new(U256::MIN)
+    }
+}
+
+#[derive(Clone, Debug)]
+pub struct HashedData {
+    pub random_seed: U256,
+    pub preimages: [Preimage32; 26],
+    pub hashes: [sha256::Hash; 26],
+}
+
+impl HashedData {
+    pub fn new(random_seed: U256) -> Self {
+        let mut rng = rand::rngs::StdRng::from_seed(random_seed.to_byte_array());
+        let preimages = std::array::from_fn(|_| {
+            let mut preimage = [0; 32];
+            rng.fill(&mut preimage);
+            preimage
+        });
+        let hashes = std::array::from_fn(|index| sha256::Hash::hash(&preimages[index]));
+        Self {
+            random_seed,
+            preimages,
+            hashes,
+        }
+    }
+}
+
+impl Default for HashedData {
+    fn default() -> Self {
+        Self::new(U256::MIN)
+    }
+}
+
+/// A counter in the range `1..26`.
+#[derive(Copy, Clone, Debug)]
+pub struct Counter26(usize);
+
+impl Default for Counter26 {
+    fn default() -> Self {
+        Self(1)
+    }
+}
+
+impl Counter26 {
+    pub fn new(n: usize) -> Option<Self> {
+        match 0 < n && n < 26 {
+            true => Some(Self(n)),
+            false => None,
+        }
+    }
+
+    pub fn get(self) -> usize {
+        self.0
+    }
+
+    pub fn saturating_increment(&mut self) {
+        if self.0 < 26 {
+            self.0 = self.0.saturating_add(1);
+        }
+        debug_assert!(0 < self.0 && self.0 < 26);
+    }
+
+    pub fn saturating_decrement(&mut self) {
+        if 0 < self.0 - 1 {
+            self.0 -= 1;
+        }
+        debug_assert!(0 < self.0 && self.0 < 26);
+    }
+}
 
 pub type Expression = RedeemNode<Elements>;
 

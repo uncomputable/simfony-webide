@@ -12,8 +12,8 @@ use self::key_store_tab::KeyStoreTab;
 use self::transaction_tab::TransactionTab;
 use crate::components::navbar::{Navbar, Tab};
 
-pub use self::hash_store_tab::HashedData;
-pub use self::key_store_tab::{SignedData, SigningKeys};
+pub use self::hash_store_tab::HashCount;
+pub use self::key_store_tab::{KeyCount, SignedData};
 pub use self::transaction_tab::TxEnv;
 
 #[component]

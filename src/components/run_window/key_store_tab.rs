@@ -1,75 +1,29 @@
-use std::num::NonZeroUsize;
 use std::sync::Arc;
 
 use elements::hashes::{sha256, Hash};
 use elements::secp256k1_zkp as secp256k1;
 use hex_conservative::{DisplayHex, FromHex};
 use leptos::{
-    component, create_memo, create_rw_signal, ev, event_target_value, html, use_context, view,
-    with, For, IntoView, Memo, NodeRef, RwSignal, Signal, SignalGet, SignalGetUntracked, SignalSet,
-    SignalUpdate, SignalWith, View,
+    component, create_memo, create_rw_signal, ev, event_target_value, html, use_context, view, For,
+    IntoView, NodeRef, RwSignal, Signal, SignalGet, SignalGetUntracked, SignalSet, SignalUpdate,
+    SignalWith, View,
 };
-use secp256k1::rand::{self, SeedableRng};
-use simfony::num::U256;
 use simfony::{elements, simplicity};
 
 use crate::components::copy_to_clipboard::CopyToClipboard;
+use crate::util::{Counter26, SigningKeys};
 
-#[derive(Copy, Clone, Debug)]
-pub struct SigningKeys {
-    pub random_seed: U256,
-    pub key_count: RwSignal<NonZeroUsize>,
-    pub secret_keys: [secp256k1::Keypair; 26],
-    pub public_keys: [secp256k1::XOnlyPublicKey; 26],
-}
+#[derive(Copy, Clone, Debug, Default)]
+pub struct KeyCount(pub RwSignal<Counter26>);
 
-impl Default for SigningKeys {
-    fn default() -> Self {
-        Self::new(U256::from_byte_array(rand::random()), NonZeroUsize::MIN)
-    }
-}
-
-impl SigningKeys {
-    pub fn new(random_seed: U256, key_count: NonZeroUsize) -> Self {
-        let key_count = create_rw_signal(key_count);
-        let mut rng = rand::rngs::StdRng::from_seed(random_seed.to_byte_array());
-        let secret_keys =
-            std::array::from_fn(|_| secp256k1::Keypair::new(secp256k1::SECP256K1, &mut rng));
-        let public_keys = std::array::from_fn(|index| secret_keys[index].x_only_public_key().0);
-        Self {
-            random_seed,
-            key_count,
-            secret_keys,
-            public_keys,
-        }
-    }
-
-    pub fn push_key(&self) {
-        let n = self.key_count.get().get();
-        if n < 26 {
-            self.key_count.update(|n| *n = n.saturating_add(1));
-        }
-    }
-
-    pub fn pop_key(&self) {
-        let n = self.key_count.get().get();
-        if let Some(n_minus_one) = NonZeroUsize::new(n - 1) {
-            self.key_count.set(n_minus_one);
-        }
-    }
-
-    pub fn signatures(
-        self,
-        message: Signal<secp256k1::Message>,
-    ) -> Memo<[secp256k1::schnorr::Signature; 26]> {
-        create_memo(move |_| {
-            std::array::from_fn(|index| self.secret_keys[index].sign_schnorr(message.get()))
-        })
+impl KeyCount {
+    pub fn new(n: Counter26) -> Self {
+        Self(create_rw_signal(n))
     }
 }
 
 #[derive(Copy, Clone, Debug)]
-enum SignedDataMode {
+pub enum SignedDataMode {
     SighashAll,
     ThirtyTwoBytes,
     HashPreimageBytes,
@@ -77,38 +31,42 @@ enum SignedDataMode {
 
 #[derive(Clone, Copy, Debug)]
 pub struct SignedData {
-    mode: RwSignal<SignedDataMode>,
-    sighash_all: Signal<sha256::Hash>,
-    thirty_two_bytes: RwSignal<[u8; 32]>,
-    hash_preimage_bytes: RwSignal<Vec<u8>>,
+    pub mode: RwSignal<SignedDataMode>,
+    pub thirty_two_bytes: RwSignal<[u8; 32]>,
+    #[allow(dead_code)]
+    pub sighash_all: Signal<secp256k1::Message>,
+    pub hash_preimage_bytes: RwSignal<Vec<u8>>,
+    pub message: Signal<secp256k1::Message>,
 }
 
 impl SignedData {
     pub fn new(
         tx_env: Signal<simplicity::jet::elements::ElementsEnv<Arc<elements::Transaction>>>,
     ) -> Self {
-        let sighash_all =
-            Signal::derive(move || with!(|tx_env| { tx_env.c_tx_env().sighash_all() }));
-        Self {
-            mode: create_rw_signal(SignedDataMode::SighashAll),
-            sighash_all,
-            thirty_two_bytes: create_rw_signal([0; 32]),
-            hash_preimage_bytes: create_rw_signal(vec![]),
-        }
-    }
-
-    pub fn message(self) -> Signal<secp256k1::Message> {
-        Signal::derive(move || match self.mode.get() {
-            SignedDataMode::SighashAll => {
-                secp256k1::Message::from_digest(self.sighash_all.get().to_byte_array())
-            }
+        let mode = create_rw_signal(SignedDataMode::SighashAll);
+        let sighash_all = Signal::derive(move || {
+            tx_env.with(|tx_env| {
+                secp256k1::Message::from_digest(tx_env.c_tx_env().sighash_all().to_byte_array())
+            })
+        });
+        let thirty_two_bytes = create_rw_signal([0; 32]);
+        let hash_preimage_bytes = create_rw_signal(vec![]);
+        let message = Signal::derive(move || match mode.get() {
+            SignedDataMode::SighashAll => sighash_all.get(),
             SignedDataMode::ThirtyTwoBytes => {
-                secp256k1::Message::from_digest(self.thirty_two_bytes.get())
+                secp256k1::Message::from_digest(thirty_two_bytes.get())
             }
-            SignedDataMode::HashPreimageBytes => self.hash_preimage_bytes.with(|bytes| {
+            SignedDataMode::HashPreimageBytes => hash_preimage_bytes.with(|bytes| {
                 secp256k1::Message::from_digest(sha256::Hash::hash(bytes).to_byte_array())
             }),
-        })
+        });
+        Self {
+            mode,
+            thirty_two_bytes,
+            sighash_all,
+            hash_preimage_bytes,
+            message,
+        }
     }
 }
 
@@ -158,6 +116,7 @@ pub fn KeyStoreTab() -> impl IntoView {
 #[component]
 fn CopyPublicKeysToClipboard() -> impl IntoView {
     let signing_keys = use_context::<SigningKeys>().expect("signing keys should exist in context");
+    let key_count = use_context::<KeyCount>().expect("key count should exist in context");
     let copy_single_public_key = move |index: usize| -> View {
         let label = key_name(index);
         let xonly_hex =
@@ -186,7 +145,7 @@ fn CopyPublicKeysToClipboard() -> impl IntoView {
                     <button
                         class="flat-button bordered"
                         type="button"
-                        on:click=move |_| signing_keys.push_key()
+                        on:click=move |_| key_count.0.update(Counter26::saturating_increment)
                     >
                         <i class="fas fa-plus"></i>
                         More
@@ -194,7 +153,7 @@ fn CopyPublicKeysToClipboard() -> impl IntoView {
                     <button
                         class="flat-button bordered"
                         type="button"
-                        on:click=move |_| signing_keys.pop_key()
+                        on:click=move |_| key_count.0.update(Counter26::saturating_decrement)
                     >
                         <i class="fas fa-minus"></i>
                         Less
@@ -203,7 +162,7 @@ fn CopyPublicKeysToClipboard() -> impl IntoView {
             </div>
             <div class="button-row is-small">
                 <For
-                    each=move || 0..signing_keys.key_count.get().get()
+                    each=move || 0..key_count.0.get().get()
                     key=|index| *index
                     children=copy_single_public_key
                 />
@@ -216,6 +175,12 @@ fn CopyPublicKeysToClipboard() -> impl IntoView {
 fn CopySignaturesToClipboard() -> impl IntoView {
     let signing_keys = use_context::<SigningKeys>().expect("signing keys should exist in context");
     let signed_data = use_context::<SignedData>().expect("signed data should exist in context");
+    let key_count = use_context::<KeyCount>().expect("key count should exist in context");
+    let signatures = create_memo(move |_| -> [secp256k1::schnorr::Signature; 26] {
+        std::array::from_fn(|index| {
+            signing_keys.secret_keys[index].sign_schnorr(signed_data.message.get())
+        })
+    });
 
     let copy_single_signature =
         move |(index, signature): (usize, secp256k1::schnorr::Signature)| -> View {
@@ -241,7 +206,7 @@ fn CopySignaturesToClipboard() -> impl IntoView {
                     <button
                         class="flat-button bordered"
                         type="button"
-                        on:click=move |_| signing_keys.push_key()
+                        on:click=move |_| key_count.0.update(Counter26::saturating_increment)
                     >
                         <i class="fas fa-plus"></i>
                         More
@@ -249,7 +214,7 @@ fn CopySignaturesToClipboard() -> impl IntoView {
                     <button
                         class="flat-button bordered"
                         type="button"
-                        on:click=move |_| signing_keys.pop_key()
+                        on:click=move |_| key_count.0.update(Counter26::saturating_increment)
                     >
                         <i class="fas fa-minus"></i>
                         Less
@@ -259,7 +224,7 @@ fn CopySignaturesToClipboard() -> impl IntoView {
 
             <div class="button-row is-small">
                 <For
-                    each=move || (0..signing_keys.key_count.get().get()).zip(signing_keys.signatures(signed_data.message()).get().into_iter())
+                    each=move || (0..key_count.0.get().get()).zip(signatures.get().into_iter())
                     key=|(_index, signature)| *signature
                     children=copy_single_signature
                 />

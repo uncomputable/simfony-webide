@@ -1,64 +1,20 @@
-use std::num::NonZeroUsize;
-
-use elements::secp256k1_zkp as secp256k1;
-use hashes::{sha256, Hash};
+use hashes::Hash;
 use hex_conservative::DisplayHex;
 use leptos::{
-    component, create_rw_signal, use_context, view, For, IntoView, RwSignal, SignalGet, SignalSet,
+    component, create_rw_signal, use_context, view, For, IntoView, RwSignal, SignalGet,
     SignalUpdate, View,
 };
-use secp256k1::rand::{self, SeedableRng};
-use simfony::elements::secp256k1_zkp::rand::Rng;
-use simfony::elements::{self, hashes};
-use simfony::num::U256;
-use simfony::simplicity::Preimage32;
+use simfony::elements::hashes;
 
 use crate::components::copy_to_clipboard::CopyToClipboard;
+use crate::util::{Counter26, HashedData};
 
-#[derive(Clone, Copy, Debug)]
-pub struct HashedData {
-    pub random_seed: U256,
-    pub hash_count: RwSignal<NonZeroUsize>,
-    pub preimages: [Preimage32; 26],
-    pub hashes: [sha256::Hash; 26],
-}
+#[derive(Copy, Clone, Debug, Default)]
+pub struct HashCount(pub RwSignal<Counter26>);
 
-impl Default for HashedData {
-    fn default() -> Self {
-        Self::new(U256::from_byte_array(rand::random()), NonZeroUsize::MIN)
-    }
-}
-
-impl HashedData {
-    pub fn new(random_seed: U256, hash_count: NonZeroUsize) -> Self {
-        let hash_count = create_rw_signal(hash_count);
-        let mut rng = rand::rngs::StdRng::from_seed(random_seed.to_byte_array());
-        let preimages = std::array::from_fn(|_| {
-            let mut preimage = [0; 32];
-            rng.fill(&mut preimage);
-            preimage
-        });
-        let hashes = std::array::from_fn(|index| sha256::Hash::hash(&preimages[index]));
-        Self {
-            random_seed,
-            hash_count,
-            preimages,
-            hashes,
-        }
-    }
-
-    pub fn push_hash(&self) {
-        let n = self.hash_count.get().get();
-        if n < 26 {
-            self.hash_count.update(|n| *n = n.saturating_add(1));
-        }
-    }
-
-    pub fn pop_hash(&self) {
-        let n = self.hash_count.get().get();
-        if let Some(n_minus_one) = NonZeroUsize::new(n - 1) {
-            self.hash_count.set(n_minus_one);
-        }
+impl HashCount {
+    pub fn new(n: Counter26) -> Self {
+        Self(create_rw_signal(n))
     }
 }
 
@@ -75,6 +31,7 @@ pub fn HashStoreTab() -> impl IntoView {
 #[component]
 fn CopyHashesToClipboard() -> impl IntoView {
     let hashed_data = use_context::<HashedData>().expect("hashed data should exist in context");
+    let hash_count = use_context::<HashCount>().expect("hash count should exist in context");
     let copy_single_hash = move |index: usize| -> View {
         let label = format!("Hash {}", index);
         let hash_hex = move || format!("0x{}", hashed_data.hashes[index].to_byte_array().as_hex());
@@ -102,7 +59,7 @@ fn CopyHashesToClipboard() -> impl IntoView {
                     <button
                         class="flat-button bordered"
                         type="button"
-                        on:click=move |_| hashed_data.push_hash()
+                        on:click=move |_| hash_count.0.update(Counter26::saturating_increment)
                     >
                         <i class="fas fa-plus"></i>
                         More
@@ -110,7 +67,7 @@ fn CopyHashesToClipboard() -> impl IntoView {
                     <button
                         class="flat-button bordered"
                         type="button"
-                        on:click=move |_| hashed_data.pop_hash()
+                        on:click=move |_| hash_count.0.update(Counter26::saturating_decrement)
                     >
                         <i class="fas fa-minus"></i>
                         Less
@@ -120,7 +77,7 @@ fn CopyHashesToClipboard() -> impl IntoView {
 
             <div class="button-row is-small">
                 <For
-                    each=move || 0..hashed_data.hash_count.get().get()
+                    each=move || 0..hash_count.0.get().get()
                     key=|index| *index
                     children=copy_single_hash
                 />
@@ -132,6 +89,7 @@ fn CopyHashesToClipboard() -> impl IntoView {
 #[component]
 fn CopyPreimagesToClipboard() -> impl IntoView {
     let hashed_data = use_context::<HashedData>().expect("hashed data should exist in context");
+    let hash_count = use_context::<HashCount>().expect("hash count should exist in context");
     let copy_single_preimage = move |index: usize| -> View {
         let label = format!("Pre {}", index);
         let preimage_hex = move || format!("0x{}", hashed_data.preimages[index].as_hex());
@@ -155,7 +113,7 @@ fn CopyPreimagesToClipboard() -> impl IntoView {
                     <button
                         class="flat-button bordered"
                         type="button"
-                        on:click=move |_| hashed_data.push_hash()
+                        on:click=move |_| hash_count.0.update(Counter26::saturating_increment)
                     >
                         <i class="fas fa-plus"></i>
                         More
@@ -163,7 +121,7 @@ fn CopyPreimagesToClipboard() -> impl IntoView {
                     <button
                         class="flat-button bordered"
                         type="button"
-                        on:click=move |_| hashed_data.pop_hash()
+                        on:click=move |_| hash_count.0.update(Counter26::saturating_decrement)
                     >
                         <i class="fas fa-minus"></i>
                         Less
@@ -173,7 +131,7 @@ fn CopyPreimagesToClipboard() -> impl IntoView {
 
             <div class="button-row is-small">
                 <For
-                    each=move || 0..hashed_data.hash_count.get().get()
+                    each=move || 0..hash_count.0.get().get()
                     key=|index| *index
                     children=copy_single_preimage
                 />
