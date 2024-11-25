@@ -271,17 +271,12 @@ mod tests {
             let satisfied = example.satisfied();
             let tx_env = example.params().tx_env(satisfied.redeem().cmr());
             let mut runner = Runner::for_program(satisfied);
-            match runner.run(&tx_env) {
-                Ok(..) if name.contains('❌') => panic!("Expected failure"),
-                Ok(..) => {}
-                Err(..) if name.contains('❌') => {}
-                Err(error) => {
-                    println!("sighash all = {}", tx_env.c_tx_env().sighash_all());
-                    for debug_line in runner.debug_output() {
-                        println!("{debug_line}");
-                    }
-                    panic!("Unexpected error: {error}")
+            if let Err(error) = runner.run(&tx_env) {
+                println!("sighash all = {}", tx_env.c_tx_env().sighash_all());
+                for debug_line in runner.debug_output() {
+                    println!("{debug_line}");
                 }
+                panic!("Unexpected error: {error}");
             }
         }
     }
