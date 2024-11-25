@@ -259,17 +259,47 @@ impl Runner {
 
 #[cfg(test)]
 mod tests {
+    use simfony::elements::{hashes::Hash, secp256k1_zkp as secp256k1};
+    use simfony::CompiledProgram;
+
     use super::*;
     use crate::examples;
+    use crate::examples::Example;
+    use crate::util::{HashedData, SigningKeys};
+
+    fn satisfied_and_tx_env(
+        example: Example,
+        signing_keys: &SigningKeys,
+        hashed_data: &HashedData,
+    ) -> (SatisfiedProgram, ElementsEnv<Arc<elements::Transaction>>) {
+        let arguments = example.arguments(&signing_keys.public_keys, &hashed_data.hashes);
+        let compiled = CompiledProgram::new(example.template_text(), arguments)
+            .expect("example should compile");
+        let tx_env = example.params().tx_env(compiled.commit().cmr());
+        let sighash_all =
+            secp256k1::Message::from_digest(tx_env.c_tx_env().sighash_all().to_byte_array());
+        let witness = example.witness(
+            &signing_keys.secret_keys,
+            &hashed_data.preimages,
+            sighash_all,
+        );
+        let satisfied = compiled
+            .satisfy(witness)
+            .expect("example should be satisfied");
+
+        (satisfied, tx_env)
+    }
 
     #[test]
     #[wasm_bindgen_test::wasm_bindgen_test]
-    fn test() {
+    fn run_examples() {
+        let signing_keys = SigningKeys::default();
+        let hashed_data = HashedData::default();
+
         for name in examples::keys() {
             println!("{name}");
             let example = examples::get(name).unwrap();
-            let satisfied = example.satisfied();
-            let tx_env = example.params().tx_env(satisfied.redeem().cmr());
+            let (satisfied, tx_env) = satisfied_and_tx_env(example, &signing_keys, &hashed_data);
             let mut runner = Runner::for_program(satisfied);
             if let Err(error) = runner.run(&tx_env) {
                 println!("sighash all = {}", tx_env.c_tx_env().sighash_all());
@@ -284,11 +314,13 @@ mod tests {
     #[test]
     #[wasm_bindgen_test::wasm_bindgen_test]
     fn compare_with_rust_simplicity() {
+        let signing_keys = SigningKeys::default();
+        let hashed_data = HashedData::default();
+
         for name in examples::keys() {
             println!("{name}");
             let example = examples::get(name).unwrap();
-            let satisfied = example.satisfied();
-            let tx_env = example.params().tx_env(satisfied.redeem().cmr());
+            let (satisfied, tx_env) = satisfied_and_tx_env(example, &signing_keys, &hashed_data);
             let rust_simplicity_result = simplicity::BitMachine::for_program(satisfied.redeem())
                 .exec(satisfied.redeem(), &tx_env);
             let webide_result = Runner::for_program(satisfied).run(&tx_env);

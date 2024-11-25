@@ -1,12 +1,23 @@
-use elements::hashes::Hash;
-use simfony::elements;
+use std::collections::HashMap;
 
 use crate::transaction::TxParams;
+use elements::hashes::{sha256, Hash};
+use elements::secp256k1_zkp as secp256k1;
+use simfony::elements::hashes::HashEngine;
+use simfony::num::U256;
+use simfony::simplicity::Preimage32;
+use simfony::str::WitnessName;
+use simfony::types::TypeConstructible;
+use simfony::value::ValueConstructible;
+use simfony::{elements, ResolvedType, Value};
 
 #[derive(Clone, Copy, Debug)]
 pub struct Example {
     description: &'static str,
     program: &'static str,
+    compute_args: fn(&[secp256k1::XOnlyPublicKey], &[sha256::Hash]) -> simfony::Arguments,
+    compute_witness:
+        fn(&[secp256k1::Keypair], &[Preimage32], secp256k1::Message) -> simfony::WitnessValues,
     lock_time: u32,
     sequence: u32,
 }
@@ -17,22 +28,25 @@ impl Example {
         self.description
     }
 
-    pub fn program_text(self) -> &'static str {
+    pub fn template_text(self) -> &'static str {
         self.program
     }
 
-    #[cfg(test)]
-    pub fn satisfied(self) -> simfony::SatisfiedProgram {
-        let compiled = simfony::CompiledProgram::new(self.program, simfony::Arguments::default())
-            .expect("example program should compile");
-        let witness_values =
-            <simfony::WitnessValues as simfony::parse::ParseFromStr>::parse_from_str(
-                self.program_text(),
-            )
-            .expect("example witness should parse");
-        compiled
-            .satisfy(witness_values)
-            .expect("example program should be satisfied")
+    pub fn arguments(
+        self,
+        public_keys: &[secp256k1::XOnlyPublicKey],
+        hashes: &[sha256::Hash],
+    ) -> simfony::Arguments {
+        (self.compute_args)(public_keys, hashes)
+    }
+
+    pub fn witness(
+        self,
+        secret_keys: &[secp256k1::Keypair],
+        preimages: &[Preimage32],
+        sighash_all: secp256k1::Message,
+    ) -> simfony::WitnessValues {
+        (self.compute_witness)(secret_keys, preimages, sighash_all)
     }
 
     pub fn params(self) -> TxParams {
@@ -48,61 +62,139 @@ impl Example {
     }
 }
 
+fn p2pk_args(
+    public_keys: &[secp256k1::XOnlyPublicKey],
+    _hashes: &[sha256::Hash],
+) -> simfony::Arguments {
+    simfony::Arguments::from(HashMap::from([(
+        WitnessName::from_str_unchecked("ALICE_PUBLIC_KEY"),
+        Value::u256(U256::from_byte_array(public_keys[0].serialize())),
+    )]))
+}
+
+fn p2pk_witness(
+    secret_keys: &[secp256k1::Keypair],
+    _preimages: &[Preimage32],
+    sighash_all: secp256k1::Message,
+) -> simfony::WitnessValues {
+    simfony::WitnessValues::from(HashMap::from([(
+        WitnessName::from_str_unchecked("ALICE_SIGNATURE"),
+        Value::byte_array(secret_keys[0].sign_schnorr(sighash_all).serialize()),
+    )]))
+}
+
 const P2PK: Example = Example {
     description: r#"Pay to public key.
 
 The coins move if the person with the given public key signs the transaction."#,
-    program: r#"mod witness {
-    const SIG: Signature = 0x1d7d93f350e2db564f90da49fb00ee47294bb6d8f061929818b26065a3e50fdd87e0e8ab45eecd04df0b92b427e6d49a5c96810c23706566e9093c992e075dc5;
-}
-
-fn main() {
-    let pk: Pubkey = 0x79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798; // 1 * G
-    let msg: u256 = jet::sig_all_hash();
-    jet::bip_0340_verify((pk, msg), witness::SIG)
+    program: r#"fn main() {
+    jet::bip_0340_verify((param::ALICE_PUBLIC_KEY, jet::sig_all_hash()), witness::ALICE_SIGNATURE)
 }"#,
+    compute_args: p2pk_args,
+    compute_witness: p2pk_witness,
     lock_time: 0,
     sequence: 0,
 };
+
+fn p2pkh_args(
+    public_keys: &[secp256k1::XOnlyPublicKey],
+    _hashes: &[sha256::Hash],
+) -> simfony::Arguments {
+    let pk_hash = sha256::Hash::hash(&public_keys[0].serialize());
+    simfony::Arguments::from(HashMap::from([(
+        WitnessName::from_str_unchecked("ALICE_PUBLIC_KEY_HASH"),
+        Value::u256(U256::from_byte_array(pk_hash.to_byte_array())),
+    )]))
+}
+
+fn p2pkh_witness(
+    secret_keys: &[secp256k1::Keypair],
+    _preimages: &[Preimage32],
+    sighash_all: secp256k1::Message,
+) -> simfony::WitnessValues {
+    let alice_pk = secret_keys[0].x_only_public_key().0;
+    simfony::WitnessValues::from(HashMap::from([
+        (
+            WitnessName::from_str_unchecked("ALICE_PUBLIC_KEY"),
+            Value::u256(U256::from_byte_array(alice_pk.serialize())),
+        ),
+        (
+            WitnessName::from_str_unchecked("ALICE_SIGNATURE"),
+            Value::byte_array(secret_keys[0].sign_schnorr(sighash_all).serialize()),
+        ),
+    ]))
+}
 
 const P2PKH: Example = Example {
     description: r#"Pay to public key hash.
 
 The coins move if the person with the public key that matches the given hash signs the transaction."#,
-    program: r#"mod witness {
-    const PK: Pubkey = 0x79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798;
-    const SIG: Signature = 0xcdd52dd650ad4628d0813e9c4533abb21de4c6ee69ef4512c60ffb1c93d1dbb12ef081b1d60e3ecdd23155efe45a52d19088b6cf8073dac8cd356b1eddb5ce8f;
-}
-
-fn sha2(string: u256) -> u256 {
+    program: r#"fn sha2(string: u256) -> u256 {
     let hasher: Ctx8 = jet::sha_256_ctx_8_init();
     let hasher: Ctx8 = jet::sha_256_ctx_8_add_32(hasher, string);
     jet::sha_256_ctx_8_finalize(hasher)
 }
 
 fn main() {
-    let pk: Pubkey = witness::PK;
-    let expected_pk_hash: u256 = 0x132f39a98c31baaddba6525f5d43f2954472097fa15265f45130bfdb70e51def; // sha2(1 * G)
+    let pk: Pubkey = witness::ALICE_PUBLIC_KEY;
+    let expected_pk_hash: u256 = param::ALICE_PUBLIC_KEY_HASH;
     let pk_hash: u256 = sha2(pk);
     assert!(jet::eq_256(pk_hash, expected_pk_hash));
 
     let msg: u256 = jet::sig_all_hash();
-    jet::bip_0340_verify((pk, msg), witness::SIG)
+    jet::bip_0340_verify((pk, msg), witness::ALICE_SIGNATURE)
 }"#,
+    compute_args: p2pkh_args,
+    compute_witness: p2pkh_witness,
     lock_time: 0,
     sequence: 0,
 };
+
+fn p2ms_args(
+    public_keys: &[secp256k1::XOnlyPublicKey],
+    _hashes: &[sha256::Hash],
+) -> simfony::Arguments {
+    simfony::Arguments::from(HashMap::from([
+        (
+            WitnessName::from_str_unchecked("ALICE_PUBLIC_KEY"),
+            Value::u256(U256::from_byte_array(public_keys[0].serialize())),
+        ),
+        (
+            WitnessName::from_str_unchecked("BOB_PUBLIC_KEY"),
+            Value::u256(U256::from_byte_array(public_keys[1].serialize())),
+        ),
+        (
+            WitnessName::from_str_unchecked("CHARLIE_PUBLIC_KEY"),
+            Value::u256(U256::from_byte_array(public_keys[2].serialize())),
+        ),
+    ]))
+}
+
+fn p2ms_witness(
+    secret_keys: &[secp256k1::Keypair],
+    _preimages: &[Preimage32],
+    sighash_all: secp256k1::Message,
+) -> simfony::WitnessValues {
+    let alice_sig = Value::some(Value::byte_array(
+        secret_keys[0].sign_schnorr(sighash_all).serialize(),
+    ));
+    let bob_sig = Value::none(ResolvedType::byte_array(64));
+    let charlie_sig = Value::some(Value::byte_array(
+        secret_keys[2].sign_schnorr(sighash_all).serialize(),
+    ));
+    let ty = alice_sig.ty().clone();
+    let signatures = Value::array([alice_sig, bob_sig, charlie_sig], ty);
+    simfony::WitnessValues::from(HashMap::from([(
+        WitnessName::from_str_unchecked("SIGNATURES_2_OF_3"),
+        signatures,
+    )]))
+}
 
 const P2MS: Example = Example {
     description: r#"Pay to multisig.
 
 The coins move if 2 of 3 people agree to move them. These people provide their signatures, of which exactly 2 are required."#,
-    program: r#"mod witness {
-    const MAYBE_SIGS: [Option<Signature>; 3] =
-        [Some(0x2747bff425b0a94b12b60aa9c4e6091c8a0adbdd2536780023ab6d4883bdddaa43587a8e29bbaccbd71001ef5ba3cd06f26f0347773761124dfa2a20ada8aeb0), None, Some(0x768db05f0402104962f2cd0a1f235cde45b284a664123b9f4606d119b95feb011a28e33d2af5c6b565107e8edc5326a33dbf3f7e2c97d959e21345749c2c244c)];
-}
-
-fn not(bit: bool) -> bool {
+    program: r#"fn not(bit: bool) -> bool {
     <u1>::into(jet::complement_1(<bool>::into(bit)))
 }
 
@@ -137,16 +229,19 @@ fn check2of3multisig(pks: [Pubkey; 3], maybe_sigs: [Option<Signature>; 3]) {
 
 fn main() {
     let pks: [Pubkey; 3] = [
-        0x79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798, // 1 * G
-        0xc6047f9441ed7d6d3045406e95c07cd85c778e4b8cef3ca7abac09b95c709ee5, // 2 * G
-        0xf9308a019258c31049344f85f89d5229b531c845836f99b08601f113bce036f9, // 3 * G
+        param::ALICE_PUBLIC_KEY,
+        param::BOB_PUBLIC_KEY,
+        param::CHARLIE_PUBLIC_KEY,
     ];
-    check2of3multisig(pks, witness::MAYBE_SIGS);
+    check2of3multisig(pks, witness::SIGNATURES_2_OF_3);
 }"#,
+    compute_args: p2ms_args,
+    compute_witness: p2ms_witness,
     lock_time: 0,
     sequence: 0,
 };
 
+/*
 const SIGHASH_ANYPREVOUT: Example = Example {
     description: r#"Pay to public key with SIGHASH_ANYPREVOUT.
 
@@ -185,6 +280,46 @@ fn main() {
     lock_time: 0,
     sequence: 0,
 };
+*/
+
+fn htlc_args(
+    public_keys: &[secp256k1::XOnlyPublicKey],
+    hashes: &[sha256::Hash],
+) -> simfony::Arguments {
+    simfony::Arguments::from(HashMap::from([
+        (
+            WitnessName::from_str_unchecked("ALICE_PUBLIC_KEY"),
+            Value::u256(U256::from_byte_array(public_keys[0].serialize())),
+        ),
+        (
+            WitnessName::from_str_unchecked("BOB_PUBLIC_KEY"),
+            Value::u256(U256::from_byte_array(public_keys[1].serialize())),
+        ),
+        (
+            WitnessName::from_str_unchecked("EXPECTED_HASH"),
+            Value::u256(U256::from_byte_array(hashes[0].to_byte_array())),
+        ),
+    ]))
+}
+
+fn htlc_witness(
+    secret_keys: &[secp256k1::Keypair],
+    preimages: &[Preimage32],
+    sighash_all: secp256k1::Message,
+) -> simfony::WitnessValues {
+    let alice_sig = secret_keys[0].sign_schnorr(sighash_all);
+    let complete_or_cancel = Value::left(
+        Value::product(
+            Value::u256(U256::from_byte_array(preimages[0])),
+            Value::byte_array(alice_sig.serialize()),
+        ),
+        ResolvedType::byte_array(64),
+    );
+    simfony::WitnessValues::from(HashMap::from([(
+        WitnessName::from_str_unchecked("COMPLETE_OR_CANCEL"),
+        complete_or_cancel,
+    )]))
+}
 
 const HTLC: Example = Example {
     description: r#"Hash Time-Locked contract.
@@ -193,12 +328,7 @@ The recipient can spend the coins by providing the secret preimage of a hash.
 The sender can cancel the transfer after a fixed block height.
 
 HTLCs enable two-way payment channels and multi-hop payments, such as on the Lightning network."#,
-    program: r#"mod witness {
-    const COMPLETE_OR_CANCEL: Either<(u256, Signature), Signature> =
-        Left((0x0000000000000000000000000000000000000000000000000000000000000000, 0x9d59801a7d276756c61aac762f2009ccf48a824941aacf993bd33e383b77c8de54d346824635bceb6455574b4c2150a6205f99bb7bf8d195bd05ec7e5613583c));
-}
-
-fn sha2(string: u256) -> u256 {
+    program: r#"fn sha2(string: u256) -> u256 {
     let hasher: Ctx8 = jet::sha_256_ctx_8_init();
     let hasher: Ctx8 = jet::sha_256_ctx_8_add_32(hasher, string);
     jet::sha_256_ctx_8_finalize(hasher)
@@ -211,31 +341,88 @@ fn checksig(pk: Pubkey, sig: Signature) {
 
 fn complete_spend(preimage: u256, recipient_sig: Signature) {
     let hash: u256 = sha2(preimage);
-    let expected_hash: u256 = 0x66687aadf862bd776c8fc18b8e9f8e20089714856ee233b3902a591d0d5f2925; // sha2([0x00; 32])
-    assert!(jet::eq_256(hash, expected_hash));
-    let recipient_pk: Pubkey = 0x79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798; // 1 * G
+    assert!(jet::eq_256(hash, param::EXPECTED_HASH));
+    let recipient_pk: Pubkey = param::ALICE_PUBLIC_KEY;
     checksig(recipient_pk, recipient_sig);
 }
 
 fn cancel_spend(sender_sig: Signature) {
     let timeout: Height = 1000;
     jet::check_lock_height(timeout);
-    let sender_pk: Pubkey = 0xc6047f9441ed7d6d3045406e95c07cd85c778e4b8cef3ca7abac09b95c709ee5; // 2 * G
+    let sender_pk: Pubkey = param::BOB_PUBLIC_KEY;
     checksig(sender_pk, sender_sig)
 }
 
 fn main() {
     match witness::COMPLETE_OR_CANCEL {
-        Left(preimage_sig: (u256, Signature)) => {
-            let (preimage, recipient_sig): (u256, Signature) = preimage_sig;
+        Left(preimage_and_sig: (u256, Signature)) => {
+            let (preimage, recipient_sig): (u256, Signature) = preimage_and_sig;
             complete_spend(preimage, recipient_sig);
         },
         Right(sender_sig: Signature) => cancel_spend(sender_sig),
     }
 }"#,
+    compute_args: htlc_args,
+    compute_witness: htlc_witness,
     lock_time: 0,
     sequence: 0,
 };
+
+fn hodl_vault_args(
+    public_keys: &[secp256k1::XOnlyPublicKey],
+    _hashes: &[sha256::Hash],
+) -> simfony::Arguments {
+    simfony::Arguments::from(HashMap::from([
+        (
+            WitnessName::from_str_unchecked("MIN_HEIGHT"),
+            Value::u32(1000),
+        ),
+        (
+            WitnessName::from_str_unchecked("TARGET_PRICE"),
+            Value::u32(100_000),
+        ),
+        (
+            WitnessName::from_str_unchecked("ALICE_PUBLIC_KEY"),
+            Value::u256(U256::from_byte_array(public_keys[0].serialize())),
+        ),
+        (
+            WitnessName::from_str_unchecked("BOB_PUBLIC_KEY"),
+            Value::u256(U256::from_byte_array(public_keys[1].serialize())),
+        ),
+    ]))
+}
+
+fn hodl_vault_witness(
+    secret_keys: &[secp256k1::Keypair],
+    _preimages: &[Preimage32],
+    sighash_all: secp256k1::Message,
+) -> simfony::WitnessValues {
+    let mut witness_values = HashMap::new();
+    let oracle_height = 1000;
+    witness_values.insert(
+        WitnessName::from_str_unchecked("ORACLE_HEIGHT"),
+        Value::u32(oracle_height),
+    );
+    let oracle_price = 100_000;
+    witness_values.insert(
+        WitnessName::from_str_unchecked("ORACLE_PRICE"),
+        Value::u32(oracle_price),
+    );
+    let mut hasher = sha256::HashEngine::default();
+    hasher.input(&oracle_height.to_be_bytes());
+    hasher.input(&oracle_price.to_be_bytes());
+    let oracle_hash =
+        secp256k1::Message::from_digest(sha256::Hash::from_engine(hasher).to_byte_array());
+    witness_values.insert(
+        WitnessName::from_str_unchecked("ALICE_SIGNATURE"),
+        Value::byte_array(secret_keys[0].sign_schnorr(oracle_hash).serialize()),
+    );
+    witness_values.insert(
+        WitnessName::from_str_unchecked("BOB_SIGNATURE"),
+        Value::byte_array(secret_keys[1].sign_schnorr(sighash_all).serialize()),
+    );
+    simfony::WitnessValues::from(witness_values)
+}
 
 const HOLD_VAULT: Example = Example {
     description: r#"Lock your coins until the Bitcoin price exceeds a threshold.
@@ -244,14 +431,7 @@ An oracle signs a message with the current block height and the current Bitcoin 
 The block height is compared with a minimum height to prevent the use of old data.
 The transaction is timelocked to the oracle height,
 which means that the transaction becomes valid after the oracle height."#,
-    program: r#"mod witness {
-    const ORACLE_HEIGHT: u32 = 1000;
-    const ORACLE_PRICE: u32 = 100000;
-    const ORACLE_SIG: Signature = 0x90231b8de96a1f940ddcf406fe8389417ca8fb0b03151608e2f94b31b443a7e0d26a12e437df69028f09027c37d5f6742a10c1e8864061d119b8bbce962d26d3;
-    const OWNER_SIG: Signature = 0x34e36ba57db85d092c6cd7b820209839aa9a3936f5d843700b1f4d9b0b29a8ca64b13cdb6e1aef1bab64e712e9ee663cbddb5f269ba85b87af6ef5f2cba3a327;
-}
-
-fn checksig(pk: Pubkey, sig: Signature) {
+    program: r#"fn checksig(pk: Pubkey, sig: Signature) {
     let msg: u256 = jet::sig_all_hash();
     jet::bip_0340_verify((pk, msg), sig);
 }
@@ -266,37 +446,68 @@ fn checksigfromstack(pk: Pubkey, bytes: [u32; 2], sig: Signature) {
 }
 
 fn main() {
-    let min_height: Height = 1000;
     let oracle_height: Height = witness::ORACLE_HEIGHT;
-    assert!(jet::le_32(min_height, oracle_height));
+    assert!(jet::le_32(param::MIN_HEIGHT, oracle_height));
     jet::check_lock_height(oracle_height);
 
-    let target_price: u32 = 100000; // laser eyes until 100k
     let oracle_price: u32 = witness::ORACLE_PRICE;
-    assert!(jet::le_32(target_price, oracle_price));
+    assert!(jet::le_32(param::TARGET_PRICE, oracle_price));
 
-    let oracle_pk: Pubkey = 0x79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798; // 1 * G
-    let oracle_sig: Signature = witness::ORACLE_SIG;
+    let oracle_pk: Pubkey = param::ALICE_PUBLIC_KEY;
+    let oracle_sig: Signature = witness::ALICE_SIGNATURE;
     checksigfromstack(oracle_pk, [oracle_height, oracle_price], oracle_sig);
 
-    let owner_pk: Pubkey = 0xc6047f9441ed7d6d3045406e95c07cd85c778e4b8cef3ca7abac09b95c709ee5; // 2 * G
-    let owner_sig: Signature = witness::OWNER_SIG;
+    let owner_pk: Pubkey = param::BOB_PUBLIC_KEY;
+    let owner_sig: Signature = witness::BOB_SIGNATURE;
     checksig(owner_pk, owner_sig);
 }"#,
+    compute_args: hodl_vault_args,
+    compute_witness: hodl_vault_witness,
     lock_time: 1000,
     sequence: 0,
 };
+
+fn last_will_args(
+    public_keys: &[secp256k1::XOnlyPublicKey],
+    _hashes: &[sha256::Hash],
+) -> simfony::Arguments {
+    simfony::Arguments::from(HashMap::from([
+        (
+            WitnessName::from_str_unchecked("ALICE_PUBLIC_KEY"),
+            Value::u256(U256::from_byte_array(public_keys[0].serialize())),
+        ),
+        (
+            WitnessName::from_str_unchecked("BOB_PUBLIC_KEY"),
+            Value::u256(U256::from_byte_array(public_keys[1].serialize())),
+        ),
+        (
+            WitnessName::from_str_unchecked("CHARLIE_PUBLIC_KEY"),
+            Value::u256(U256::from_byte_array(public_keys[2].serialize())),
+        ),
+    ]))
+}
+
+fn last_will_witness(
+    secret_keys: &[secp256k1::Keypair],
+    _preimages: &[Preimage32],
+    sighash_all: secp256k1::Message,
+) -> simfony::WitnessValues {
+    let alice_sig = Value::byte_array(secret_keys[0].sign_schnorr(sighash_all).serialize());
+    let inherit_or_not = Value::left(
+        alice_sig,
+        ResolvedType::either(ResolvedType::byte_array(64), ResolvedType::byte_array(64)),
+    );
+    simfony::WitnessValues::from(HashMap::from([(
+        WitnessName::from_str_unchecked("INHERIT_OR_NOT"),
+        inherit_or_not,
+    )]))
+}
 
 const LAST_WILL: Example = Example {
     description: r#"The inheritor can spend the coins if the owner doesn't move the them for 180 days.
 The owner has to repeat the covenant when he moves the coins with his hot key.
 The owner can break out of the covenant with his cold key."#,
-    program: r#"mod witness {
-    const INHERIT_OR_NOT: Either<Signature, Either<Signature, Signature>> =
-        Left(0x940cd8a1261a08e677eeefab5d93ba617a92a45c7eaab8cd03c1675b3bd0b1c9bb81ce0301d74fa46fd5cb8402b758462cacfb8b08b9b28e13eb97adb963fa6c);
-}
-
-fn checksig(pk: Pubkey, sig: Signature) {
+    program: r#"fn checksig(pk: Pubkey, sig: Signature) {
     let msg: u256 = jet::sig_all_hash();
     jet::bip_0340_verify((pk, msg), sig);
 }
@@ -316,17 +527,17 @@ fn recursive_covenant() {
 fn inherit_spend(inheritor_sig: Signature) {
     let days_180: Distance = 25920;
     jet::check_lock_distance(days_180);
-    let inheritor_pk: Pubkey = 0x79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798; // 1 * G
+    let inheritor_pk: Pubkey = param::ALICE_PUBLIC_KEY;
     checksig(inheritor_pk, inheritor_sig);
 }
 
 fn cold_spend(cold_sig: Signature) {
-    let cold_pk: Pubkey = 0xc6047f9441ed7d6d3045406e95c07cd85c778e4b8cef3ca7abac09b95c709ee5; // 2 * G
+    let cold_pk: Pubkey = param::BOB_PUBLIC_KEY;
     checksig(cold_pk, cold_sig);
 }
 
 fn refresh_spend(hot_sig: Signature) {
-    let hot_pk: Pubkey = 0xf9308a019258c31049344f85f89d5229b531c845836f99b08601f113bce036f9; // 3 * G
+    let hot_pk: Pubkey = param::CHARLIE_PUBLIC_KEY;
     checksig(hot_pk, hot_sig);
     recursive_covenant();
 }
@@ -340,15 +551,30 @@ fn main() {
         },
     }
 }"#,
+    compute_args: last_will_args,
+    compute_witness: last_will_witness,
     lock_time: 0,
     sequence: 25920,
 };
 
+fn empty_args(
+    _public_keys: &[secp256k1::XOnlyPublicKey],
+    _hashes: &[sha256::Hash],
+) -> simfony::Arguments {
+    simfony::Arguments::default()
+}
+
+fn empty_witness(
+    _secret_keys: &[secp256k1::Keypair],
+    _preimages: &[Preimage32],
+    _sighash_all: secp256k1::Message,
+) -> simfony::WitnessValues {
+    simfony::WitnessValues::default()
+}
+
 const HASH_LOOP: Example = Example {
     description: r#"Test how fast your browser is with this explosive program."#,
-    program: r#"mod witness {}
-
-// Add counter to streaming hash and finalize when the loop exists
+    program: r#"// Add counter to streaming hash and finalize when the loop exists
 fn hash_counter_8(ctx: Ctx8, unused: (), byte: u8) -> Either<u256, Ctx8> {
     let new_ctx: Ctx8 = jet::sha_256_ctx_8_add_1(ctx, dbg!(byte));
     match jet::all_8(byte) {
@@ -380,16 +606,18 @@ fn main() {
     // let expected: u256 = 0x281f79f89f0121c31db2bea5d7151db246349b25f5901c114505c18bfaa50ba1;
     // assert!(jet::eq_256(expected, unwrap_left::<Ctx8>(out)));
 }"#,
+    compute_args: empty_args,
+    compute_witness: empty_witness,
     lock_time: 0,
     sequence: 0,
 };
 
 /// Names must be unique because they serve as primary keys.
-const EXAMPLES: [(&str, Example); 8] = [
+const EXAMPLES: [(&str, Example); 7] = [
     ("✍️️ P2PK", P2PK),
     ("✍️ P2PKH", P2PKH),
     ("✍️ P2MS", P2MS),
-    ("✍️ SIGHASH_ANYPREVOUT", SIGHASH_ANYPREVOUT),
+    // ("✍️ SIGHASH_ANYPREVOUT", SIGHASH_ANYPREVOUT),
     ("⚡ HTLC", HTLC),
     ("💸 Hodl vault", HOLD_VAULT),
     ("📜 Last will", LAST_WILL),

@@ -19,6 +19,7 @@ use self::share_button::ShareButton;
 use self::transaction_button::TransactionButton;
 use crate::components::toolbar::Toolbar;
 
+pub use self::examples_dropdown::select_example;
 pub use self::program_tab::{Program, Runtime};
 
 #[component]

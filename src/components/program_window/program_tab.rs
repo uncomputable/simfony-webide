@@ -1,13 +1,11 @@
 use std::sync::Arc;
 
-use hex_conservative::DisplayHex;
 use itertools::Itertools;
 use leptos::{
     component, create_node_ref, create_rw_signal, ev, event_target_value, html, spawn_local,
     use_context, view, IntoView, NodeRef, RwSignal, Signal, SignalGetUntracked, SignalSet,
     SignalUpdate, SignalWith, SignalWithUntracked,
 };
-use simfony::elements::secp256k1_zkp as secp256k1;
 use simfony::parse::ParseFromStr;
 use simfony::simplicity::jet::elements::ElementsEnv;
 use simfony::{elements, simplicity};
@@ -24,6 +22,12 @@ pub struct Program {
     lazy_satisfied: RwSignal<Result<SatisfiedProgram, String>>,
 }
 
+impl Default for Program {
+    fn default() -> Self {
+        Self::new(String::default())
+    }
+}
+
 impl Program {
     pub fn new(text: String) -> Self {
         let program = Self {
@@ -36,21 +40,8 @@ impl Program {
         program
     }
 
-    pub fn new_p2pk(key: secp256k1::XOnlyPublicKey) -> Self {
-        let text = format!(
-            r#"mod witness {{
-    const SIG: Signature = 0x1d7d93f350e2db564f90da49fb00ee47294bb6d8f061929818b26065a3e50fdd87e0e8ab45eecd04df0b92b427e6d49a5c96810c23706566e9093c992e075dc5; // TODO: update this
-}}
-
-fn main() {{
-    let pk: Pubkey = 0x{};
-    let msg: u256 = jet::sig_all_hash();
-    jet::bip_0340_verify((pk, msg), witness::SIG)
-}}"#,
-            key.serialize().as_hex()
-        );
-
-        Self::new(text)
+    pub fn is_empty(&self) -> bool {
+        self.text.with_untracked(String::is_empty)
     }
 
     pub fn cmr(self) -> Result<simplicity::Cmr, String> {
@@ -73,13 +64,19 @@ fn main() {{
         }
         self.text.with_untracked(|text| {
             self.cached_text.set(text.clone());
-            let compiled = CompiledProgram::new(text.as_str(), simfony::Arguments::default());
-            self.lazy_cmr
-                .set(compiled.clone().map(|x| x.commit().cmr()));
-            self.lazy_satisfied.set(compiled.and_then(|x| {
+            let compiled = simfony::Arguments::parse_from_str(text)
+                .map_err(|error| error.to_string())
+                .and_then(|args| CompiledProgram::new(text.as_str(), args));
+            let cmr = compiled
+                .as_ref()
+                .map(|x| x.commit().cmr())
+                .map_err(Clone::clone);
+            self.lazy_cmr.set(cmr);
+            let satisfied = compiled.and_then(|x| {
                 let witness = WitnessValues::parse_from_str(text)?;
                 x.satisfy(witness)
-            }));
+            });
+            self.lazy_satisfied.set(satisfied);
         });
     }
 }

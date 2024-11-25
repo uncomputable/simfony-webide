@@ -33,7 +33,6 @@ pub enum SignedDataMode {
 pub struct SignedData {
     pub mode: RwSignal<SignedDataMode>,
     pub thirty_two_bytes: RwSignal<[u8; 32]>,
-    #[allow(dead_code)]
     pub sighash_all: Signal<secp256k1::Message>,
     pub hash_preimage_bytes: RwSignal<Vec<u8>>,
     pub message: Signal<secp256k1::Message>,
