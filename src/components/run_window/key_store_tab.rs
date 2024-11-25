@@ -2,14 +2,14 @@ use std::num::NonZeroU32;
 use std::sync::Arc;
 
 use elements::hashes::{sha256, Hash};
-use elements::secp256k1_zkp;
+use elements::secp256k1_zkp as secp256k1;
 use hex_conservative::{DisplayHex, FromHex};
 use leptos::{
     component, create_memo, create_rw_signal, ev, event_target_value, html, use_context, view,
     with, For, IntoView, Memo, NodeRef, RwSignal, Signal, SignalGet, SignalGetUntracked, SignalSet,
     SignalUpdate, SignalWith, View,
 };
-use secp256k1_zkp::rand::{self, SeedableRng};
+use secp256k1::rand::{self, SeedableRng};
 use simfony::num::U256;
 use simfony::{elements, simplicity};
 
@@ -19,8 +19,8 @@ use crate::components::copy_to_clipboard::CopyToClipboard;
 pub struct SigningKeys {
     pub random_seed: RwSignal<U256>,
     pub key_count: RwSignal<NonZeroU32>,
-    pub secret_keys: Memo<Vec<secp256k1_zkp::Keypair>>,
-    pub public_keys: Memo<Vec<secp256k1_zkp::XOnlyPublicKey>>,
+    pub secret_keys: Memo<Vec<secp256k1::Keypair>>,
+    pub public_keys: Memo<Vec<secp256k1::XOnlyPublicKey>>,
 }
 
 impl Default for SigningKeys {
@@ -36,8 +36,8 @@ impl SigningKeys {
         let secret_keys = create_memo(move |_| {
             let mut rng = rand::rngs::StdRng::from_seed(random_seed.get().to_byte_array());
             (0..key_count.get().get())
-                .map(|_| secp256k1_zkp::Keypair::new(secp256k1_zkp::SECP256K1, &mut rng))
-                .collect::<Vec<secp256k1_zkp::Keypair>>()
+                .map(|_| secp256k1::Keypair::new(secp256k1::SECP256K1, &mut rng))
+                .collect::<Vec<secp256k1::Keypair>>()
         });
         let public_keys = create_memo(move |_| {
             with!(|secret_keys| {
@@ -55,7 +55,7 @@ impl SigningKeys {
         }
     }
 
-    pub fn first_public_key(&self) -> secp256k1_zkp::XOnlyPublicKey {
+    pub fn first_public_key(&self) -> secp256k1::XOnlyPublicKey {
         self.public_keys.get_untracked()[0]
     }
 
@@ -72,8 +72,8 @@ impl SigningKeys {
 
     pub fn signatures(
         self,
-        message: Signal<secp256k1_zkp::Message>,
-    ) -> Memo<Vec<secp256k1_zkp::schnorr::Signature>> {
+        message: Signal<secp256k1::Message>,
+    ) -> Memo<Vec<secp256k1::schnorr::Signature>> {
         let secret_keys = self.secret_keys;
         create_memo(move |_| {
             with!(|secret_keys| {
@@ -115,16 +115,16 @@ impl SignedData {
         }
     }
 
-    pub fn message(self) -> Signal<secp256k1_zkp::Message> {
+    pub fn message(self) -> Signal<secp256k1::Message> {
         Signal::derive(move || match self.mode.get() {
             SignedDataMode::SighashAll => {
-                secp256k1_zkp::Message::from_digest(self.sighash_all.get().to_byte_array())
+                secp256k1::Message::from_digest(self.sighash_all.get().to_byte_array())
             }
             SignedDataMode::ThirtyTwoBytes => {
-                secp256k1_zkp::Message::from_digest(self.thirty_two_bytes.get())
+                secp256k1::Message::from_digest(self.thirty_two_bytes.get())
             }
             SignedDataMode::HashPreimageBytes => self.hash_preimage_bytes.with(|bytes| {
-                secp256k1_zkp::Message::from_digest(sha256::Hash::hash(bytes).to_byte_array())
+                secp256k1::Message::from_digest(sha256::Hash::hash(bytes).to_byte_array())
             }),
         })
     }
@@ -144,18 +144,17 @@ pub fn KeyStoreTab() -> impl IntoView {
 #[component]
 fn CopyPublicKeysToClipboard() -> impl IntoView {
     let signing_keys = use_context::<SigningKeys>().expect("signing keys should exist in context");
-    let copy_single_public_key =
-        move |(index, key): (usize, secp256k1_zkp::XOnlyPublicKey)| -> View {
-            let label = format!("Key {}", index);
-            let xonly_hex = move || format!("0x{}", key.serialize().as_hex());
+    let copy_single_public_key = move |(index, key): (usize, secp256k1::XOnlyPublicKey)| -> View {
+        let label = format!("Key {}", index);
+        let xonly_hex = move || format!("0x{}", key.serialize().as_hex());
 
-            view! {
-                <CopyToClipboard content=xonly_hex class="copy-button">
-                    {label}
-                    <i class="far fa-copy"></i>
-                </CopyToClipboard>
-            }
-        };
+        view! {
+            <CopyToClipboard content=xonly_hex class="copy-button">
+                {label}
+                <i class="far fa-copy"></i>
+            </CopyToClipboard>
+        }
+    };
 
     view! {
         <div>
@@ -204,7 +203,7 @@ fn CopySignaturesToClipboard() -> impl IntoView {
     let signed_data = use_context::<SignedData>().expect("signed data should exist in context");
 
     let copy_single_signature =
-        move |(index, signature): (usize, secp256k1_zkp::schnorr::Signature)| -> View {
+        move |(index, signature): (usize, secp256k1::schnorr::Signature)| -> View {
             let label = format!("Sig {}", index);
             let signature_hex = move || format!("0x{}", signature.serialize().as_hex());
 
