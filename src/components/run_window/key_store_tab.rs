@@ -130,6 +130,38 @@ impl SignedData {
     }
 }
 
+fn key_name(index: usize) -> &'static str {
+    match index {
+        0 => "Alice",
+        1 => "Bob",
+        2 => "Charlie",
+        3 => "David",
+        4 => "Eve",
+        5 => "Frank",
+        6 => "Grace",
+        7 => "Heidi",
+        8 => "Ivan",
+        9 => "Judy",
+        10 => "Kevin",
+        11 => "Luther",
+        12 => "Mallory",
+        13 => "Niaj",
+        14 => "Olivia",
+        15 => "Peggy",
+        16 => "Quentin",
+        17 => "Rupert",
+        18 => "Sybil",
+        19 => "Trent",
+        20 => "Ursula",
+        21 => "Victor",
+        22 => "Wendy",
+        23 => "Xavier",
+        24 => "Yvonne",
+        25 => "Zoe",
+        _ => "Unnamed",
+    }
+}
+
 #[component]
 pub fn KeyStoreTab() -> impl IntoView {
     view! {
@@ -145,7 +177,7 @@ pub fn KeyStoreTab() -> impl IntoView {
 fn CopyPublicKeysToClipboard() -> impl IntoView {
     let signing_keys = use_context::<SigningKeys>().expect("signing keys should exist in context");
     let copy_single_public_key = move |(index, key): (usize, secp256k1::XOnlyPublicKey)| -> View {
-        let label = format!("Key {}", index);
+        let label = key_name(index);
         let xonly_hex = move || format!("0x{}", key.serialize().as_hex());
 
         view! {
@@ -204,7 +236,7 @@ fn CopySignaturesToClipboard() -> impl IntoView {
 
     let copy_single_signature =
         move |(index, signature): (usize, secp256k1::schnorr::Signature)| -> View {
-            let label = format!("Sig {}", index);
+            let label = key_name(index);
             let signature_hex = move || format!("0x{}", signature.serialize().as_hex());
 
             view! {
