@@ -1546,7 +1546,7 @@ dependencies = [
 [[package]]
 name = "simfony"
 version = "0.1.0"
-source = "git+https://github.com/BlockstreamResearch/simfony?rev=869a0b217ec275a976828cb838cb3bf21c808afd#869a0b217ec275a976828cb838cb3bf21c808afd"
+source = "git+https://github.com/BlockstreamResearch/simfony?rev=980a2e1fde7b0c99da6019a7595b2c3cb5bb47e3#980a2e1fde7b0c99da6019a7595b2c3cb5bb47e3"
 dependencies = [
  "base64 0.21.7",
  "either",

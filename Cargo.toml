@@ -14,7 +14,7 @@ lib-profile-release = "wasm-release"
 
 [dependencies]
 itertools = "0.13.0"
-simfony = { git = "https://github.com/BlockstreamResearch/simfony", rev = "869a0b217ec275a976828cb838cb3bf21c808afd" }
+simfony = { git = "https://github.com/BlockstreamResearch/simfony", rev = "980a2e1fde7b0c99da6019a7595b2c3cb5bb47e3" }
 leptos = { version = "0.6.14", features = ["csr"] }
 leptos_router = { version = "0.6.15", features = ["csr"] }
 console_error_panic_hook = "0.1.7"
