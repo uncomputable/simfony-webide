@@ -3,7 +3,7 @@ use std::sync::Arc;
 
 use leptos::{
     component, create_rw_signal, ev, event_target_value, use_context, view, with, Children,
-    IntoView, RwSignal, Signal, SignalGetUntracked, SignalSet, SignalUpdate,
+    IntoView, RwSignal, Signal, SignalGetUntracked, SignalSet, SignalUpdate, spawn_local
 };
 use simfony::{elements, simplicity};
 use simplicity::jet::elements::ElementsEnv;
@@ -11,6 +11,7 @@ use simplicity::jet::elements::ElementsEnv;
 use crate::components::program_window::Program;
 use crate::components::string_box::ErrorBox;
 use crate::transaction::TxParams;
+use crate::util;
 
 #[derive(Copy, Clone, Debug)]
 pub struct TxEnv {
@@ -35,6 +36,8 @@ impl TxEnv {
 #[component]
 pub fn TransactionTab() -> impl IntoView {
     let tx_env = use_context::<TxEnv>().expect("transaction environment should exist in context");
+    let program = use_context::<Program>().expect("program should exist in context");
+
     let txid_parse_error = create_rw_signal("".to_string());
     let vout_parse_error = create_rw_signal("".to_string());
     let value_in_parse_error = create_rw_signal("".to_string());
@@ -104,6 +107,40 @@ pub fn TransactionTab() -> impl IntoView {
         Err(error) => sequence_parse_error.set(error.to_string()),
     };
 
+    let update_utxo = move |_|  {
+        leptos::logging::log!("update_utxo");
+
+        let client = lwk_wollet::EsploraWasmClient::new(
+            lwk_wollet::ElementsNetwork::LiquidTestnet,
+            "https://blockstream.info/liquidtestnet/api",
+            false,
+        );
+
+        let address = program
+            .cmr()
+            .ok()
+            .map(util::liquid_testnet_address);
+
+        match address {
+            Some(address) => {
+                leptos::logging::log!("{}", address);
+                let script = address.script_pubkey();
+                leptos::logging::log!("{:?}", script);
+                spawn_local(async move {
+                    let history = client.get_scripts_history(&[&script]).await.unwrap(); // TODO, unfortunately history is missing the vout, another call get_transaction is necessary for it
+                    leptos::logging::log!("history {:?}", history);
+                    let txid = history[0][0].txid; // TODO just taking the first for demo purpose
+                    txid_parse_error.set(txid.to_string()); // TODO should update the text instead of the error, taking a shortcut for demo purpose
+
+
+                });
+            },
+            None =>  leptos::logging::log!("None"),
+        }
+        leptos::logging::log!("update_utxo end");
+
+    };
+
     view! {
         <div class="tab-content transaction-tab">
             <p class="tab-description">
@@ -138,6 +175,14 @@ pub fn TransactionTab() -> impl IntoView {
                     />
                 </Item>
             </Section>
+
+            <button
+                class="flat-button bordered"
+                type="button"
+                on:click=update_utxo>
+                Fetch
+            </button>
+
             <Section name="Transaction">
                 <Item name="recipient address" error=recipient_address_parse_error>
                     <input
