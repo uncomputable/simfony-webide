@@ -79,6 +79,20 @@ impl Program {
             self.lazy_satisfied.set(satisfied);
         });
     }
+
+    pub fn add_default_modules(self) {
+        let (contains_witness, contains_param) = self
+            .text
+            .with_untracked(|text| (text.contains("mod witness"), text.contains("mod param")));
+        if !contains_param {
+            self.text
+                .update(|text| text.insert_str(0, "mod param {}\n\n"));
+        }
+        if !contains_witness {
+            self.text
+                .update(|text| text.insert_str(0, "mod witness {}\n\n"));
+        }
+    }
 }
 
 #[derive(Copy, Clone)]
