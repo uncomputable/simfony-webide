@@ -7,7 +7,6 @@ pub fn Footer() -> impl IntoView {
             <div class="footer-left">
                 <img class="footer-logo" src="images/simfony_logo.svg" />
                 <p>Developers write Simfony, full nodes execute Simplicity.</p>
-                <p>"©2024 Simfony. All rights reserved."</p>
             </div>
             <div class="footer-right">
                 <h1 class="footer-title">Learn more</h1>
