@@ -1,0 +1,19 @@
+.footer{
+    margin: 60px 0;
+
+    .footer-logo{
+        height: 36px;
+    }
+    .footer-links{
+        display: flex;
+        justify-content: center;
+        gap: 40px;
+
+        .footer-link{
+
+            a {
+                text-decoration: none;
+            }
+        }
+    }
+}
