@@ -24,5 +24,11 @@ web-sys = { version = "0.3.70", features = ["Navigator", "Clipboard", "Storage"]
 wasm-bindgen-futures = "0.4.43"
 gloo-timers = { version = "0.3.0", features = ["futures"] }
 
+# using a rev instead of released 0.8.0 because a needed fn isn't pub
+lwk_wollet = { git = "https://github.com/blockstream/lwk", rev="5a2d868cc9f33f75a1eff90acc62b55a49de82c3", default-features = false, features = [
+    "esplora_wasm",
+] }
+
+
 [dev-dependencies]
 wasm-bindgen-test = "0.3.43"
