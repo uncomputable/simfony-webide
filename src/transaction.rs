@@ -2,7 +2,9 @@ use std::sync::Arc;
 
 use elements::confidential;
 use elements::hashes::Hash;
-use simfony::{elements, simplicity, SatisfiedProgram};
+use simfony::simplicity::jet::Elements;
+use simfony::simplicity::RedeemNode;
+use simfony::{elements, simplicity};
 use simplicity::jet::elements::{ElementsEnv, ElementsUtxo};
 
 use crate::util;
@@ -88,11 +90,10 @@ impl TxParams {
         )
     }
 
-    pub fn transaction(&self, satisfied: &SatisfiedProgram) -> elements::Transaction {
+    pub fn transaction(&self, pruned: &RedeemNode<Elements>) -> elements::Transaction {
         let mut tx = self.unsatisfied_transaction();
-        let (simplicity_program_bytes, simplicity_witness_bytes) =
-            satisfied.redeem().encode_to_vec();
-        let cmr = satisfied.redeem().cmr();
+        let (simplicity_program_bytes, simplicity_witness_bytes) = pruned.encode_to_vec();
+        let cmr = pruned.cmr();
         tx.input[0].witness = elements::TxInWitness {
             amount_rangeproof: None,
             inflation_keys_rangeproof: None,
