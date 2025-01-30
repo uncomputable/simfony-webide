@@ -96,6 +96,7 @@ mod tests {
     use super::*;
 
     #[wasm_bindgen_test::wasm_bindgen_test]
+    #[allow(dead_code)]
     fn wasm_sanity_checks() {
         assert!(simplicity::ffi::c_jets::sanity_checks());
     }

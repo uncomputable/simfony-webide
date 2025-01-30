@@ -123,7 +123,7 @@ impl<'a, M: node::Marker> From<&'a node::Node<M>> for DisplayInner<'a, M> {
     }
 }
 
-impl<'a, M: node::Marker> fmt::Display for DisplayInner<'a, M> {
+impl<M: node::Marker> fmt::Display for DisplayInner<'_, M> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self.0.inner() {
             Inner::Iden => f.write_str("iden"),
@@ -146,7 +146,7 @@ impl<'a, M: node::Marker> fmt::Display for DisplayInner<'a, M> {
     }
 }
 
-impl<'a, M: node::Marker> fmt::Debug for DisplayInner<'a, M> {
+impl<M: node::Marker> fmt::Debug for DisplayInner<'_, M> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt::Display::fmt(self, f)
     }
