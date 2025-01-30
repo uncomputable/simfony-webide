@@ -137,6 +137,7 @@ impl Runtime {
     }
 
     pub fn run(self) {
+        self.debug_output.update(String::clear);
         let satisfied_program = match self.program.satisfied() {
             Ok(x) => x,
             Err(error) => {
