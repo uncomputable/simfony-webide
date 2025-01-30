@@ -20,9 +20,14 @@ pub struct SigningKeys {
 
 impl SigningKeys {
     pub fn new(random_seed: U256) -> Self {
-        let mut rng = rand::rngs::StdRng::from_seed(random_seed.to_byte_array());
-        let secret_keys =
-            std::array::from_fn(|_| secp256k1::Keypair::new(secp256k1::SECP256K1, &mut rng));
+        // let mut rng = rand::rngs::StdRng::from_seed(random_seed.to_byte_array());
+        let secret_keys = std::array::from_fn(|index: usize| {
+            let mut secret_key_bytes = [0u8; 32];
+            secret_key_bytes[31] = (index as u8) + 1; // safety: index < 26
+            let secret_key = secp256k1::SecretKey::from_slice(&secret_key_bytes)
+                .expect("secret key should be valid");
+            secp256k1::Keypair::from_secret_key(secp256k1::SECP256K1, &secret_key)
+        });
         let public_keys = std::array::from_fn(|index| secret_keys[index].x_only_public_key().0);
         Self {
             random_seed,

@@ -23,10 +23,11 @@ impl TxEnv {
         let params = create_rw_signal(params);
         let lazy_cmr = program.lazy_cmr;
         let lazy_env = Signal::derive(move || {
-            with!(|params, lazy_cmr| match lazy_cmr {
-                Ok(cmr) => params.tx_env(*cmr),
-                Err(..) => params.tx_env(simplicity::Cmr::unit()),
-            })
+            //with!(|params, lazy_cmr| match lazy_cmr {
+            //    Ok(cmr) => params.tx_env(*cmr),
+            //    Err(..) => params.tx_env(simplicity::Cmr::unit()),
+            //})
+            simfony::dummy_env::dummy()
         });
         Self { params, lazy_env }
     }
